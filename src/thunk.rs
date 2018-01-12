@@ -2,6 +2,7 @@ use std::cell::*;
 use std::sync::*;
 use std::sync::atomic::*;
 
+use arguments::*;
 use value::*;
 
 #[derive(Debug)]
@@ -10,6 +11,7 @@ pub struct Thunk(Arc<RefCell<ThunkInner>>);
 #[derive(Debug)]
 enum State {
     Normal,
+    App,
 }
 
 #[derive(Debug)]
@@ -21,6 +23,7 @@ struct ThunkInner {
 #[derive(Debug)]
 enum Content {
     Normal(Value),
+    App(Value, Arguments),
 }
 
 impl Thunk {
