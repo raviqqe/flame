@@ -25,16 +25,16 @@ impl Thunk {
 
 #[derive(Debug, Eq, PartialEq)]
 enum State {
-    App,
-    Normal,
+    App = 0,
+    Normal = 1,
 }
 
 impl From<u8> for State {
     fn from(u: u8) -> Self {
         match u {
-            1 => State::App,
-            0 => State::Normal,
-            _ => panic!(""),
+            0 => State::App,
+            1 => State::Normal,
+            _ => panic!("Invalid value"),
         }
     }
 }
