@@ -18,7 +18,7 @@ impl Thunk {
         })));
     }
 
-    pub fn eval(mut self) -> Value {
+    pub fn eval(self) -> Value {
         unsafe { &mut *self.0.get() }.eval()
     }
 }
