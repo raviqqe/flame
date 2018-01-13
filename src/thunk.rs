@@ -24,6 +24,7 @@ impl Thunk {
 }
 
 #[derive(Debug, Eq, PartialEq)]
+#[repr(u8)]
 enum State {
     App = 0,
     Normal = 1,
