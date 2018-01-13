@@ -12,7 +12,7 @@ pub struct Thunk(Arc<UnsafeCell<Inner>>);
 
 impl Thunk {
     pub fn new(f: Value, a: Arguments) -> Thunk {
-        return Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))));
+        Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
     pub fn eval(self) -> Value {
