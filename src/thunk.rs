@@ -12,10 +12,7 @@ pub struct Thunk(Arc<UnsafeCell<Inner>>);
 
 impl Thunk {
     pub fn new(f: Value, a: Arguments) -> Thunk {
-        return Thunk(Arc::new(UnsafeCell::new(Inner {
-            state: AtomicU8::new(State::App as u8),
-            content: App(f, a),
-        })));
+        return Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))));
     }
 
     pub fn eval(self) -> Value {
@@ -53,6 +50,13 @@ struct Inner {
 }
 
 impl Inner {
+    pub fn new(f: Value, a: Arguments) -> Self {
+        Inner {
+            state: AtomicU8::new(State::App as u8),
+            content: App(f, a),
+        }
+    }
+
     pub fn eval(&mut self) -> Value {
         match self.content.clone() {
             App(v, a) => v,
