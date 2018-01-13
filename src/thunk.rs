@@ -14,7 +14,7 @@ impl Thunk {
     pub fn app(f: Value, a: Arguments) -> Thunk {
         return Thunk(Arc::new(UnsafeCell::new(Inner {
             state: AtomicU8::new(State::App as u8),
-            content: Content::App(f, a),
+            content: App(f, a),
         })));
     }
 
