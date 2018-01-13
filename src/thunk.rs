@@ -11,10 +11,10 @@ use self::Content::*;
 pub struct Thunk(Arc<UnsafeCell<Inner>>);
 
 impl Thunk {
-    pub fn normal(v: Value) -> Thunk {
+    pub fn app(f: Value, a: Arguments) -> Thunk {
         return Thunk(Arc::new(UnsafeCell::new(Inner {
-            state: AtomicU8::new(State::Normal as u8),
-            content: Content::Normal(v),
+            state: AtomicU8::new(State::App as u8),
+            content: Content::App(f, a),
         })));
     }
 
