@@ -1,4 +1,4 @@
 use value::*;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Arguments(Value);

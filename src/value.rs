@@ -5,6 +5,7 @@ use arguments::*;
 use thunk;
 use Value::*;
 
+#[derive(Clone)]
 pub enum Value {
     Func(Arc<Fn(Arguments) -> Value>),
     Num(f64),
