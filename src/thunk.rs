@@ -11,7 +11,7 @@ use self::Content::*;
 pub struct Thunk(Arc<UnsafeCell<Inner>>);
 
 impl Thunk {
-    pub fn app(f: Value, a: Arguments) -> Thunk {
+    pub fn new(f: Value, a: Arguments) -> Thunk {
         return Thunk(Arc::new(UnsafeCell::new(Inner {
             state: AtomicU8::new(State::App as u8),
             content: App(f, a),
