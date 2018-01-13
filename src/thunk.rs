@@ -1,21 +1,25 @@
-use std::cell::*;
-use std::sync::*;
-use std::sync::atomic::*;
-use std::sync::atomic::Ordering::*;
+use std::cell::UnsafeCell;
+use std::sync::Arc;
+use std::sync::atomic::AtomicU8;
+use std::sync::atomic::Ordering::SeqCst;
 
 use arguments::*;
 use value::*;
 use self::Content::*;
 
 #[derive(Clone, Debug)]
-pub struct Thunk(Arc<RefCell<Inner>>);
+pub struct Thunk(Arc<UnsafeCell<Inner>>);
 
 impl Thunk {
     pub fn normal(v: Value) -> Thunk {
-        return Thunk(Arc::new(RefCell::new(Inner {
+        return Thunk(Arc::new(UnsafeCell::new(Inner {
             state: AtomicU8::new(State::Normal as u8),
             content: Content::Normal(v),
         })));
+    }
+
+    pub fn eval(mut self) -> Value {
+        unsafe { &mut *self.0.get() }.eval()
     }
 }
 
