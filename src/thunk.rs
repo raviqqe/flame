@@ -55,7 +55,7 @@ impl Inner {
     pub fn eval(&mut self) -> Value {
         match self.content.clone() {
             App(v, a) => v,
-            Normal(v) => return v,
+            Normal(v) => v,
         }
     }
 
