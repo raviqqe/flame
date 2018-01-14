@@ -3,13 +3,9 @@
 extern crate futures_await as futures;
 extern crate futures_black_hole;
 
-mod arguments;
-mod thunk;
-mod value;
-mod normal;
+mod core;
 
-use value::*;
-use normal::*;
+use core::*;
 
 fn main() {
     println!("{:#?}", Value::Normal(Normal::Num(42.0)));

@@ -1,8 +1,8 @@
 use std::fmt::{Debug, Error, Formatter};
 use std::sync::*;
 
-use arguments::*;
-use value::Value;
+use super::arguments::*;
+use super::value::Value;
 
 use self::Normal::*;
 

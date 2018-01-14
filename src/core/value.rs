@@ -1,5 +1,5 @@
-use thunk;
-use normal::Normal;
+use super::thunk;
+use super::normal::Normal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
