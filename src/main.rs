@@ -2,6 +2,7 @@
 
 extern crate futures_await as futures;
 extern crate futures_black_hole;
+extern crate hamt_rs;
 
 mod core;
 
