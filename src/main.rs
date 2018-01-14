@@ -6,9 +6,11 @@ extern crate futures_black_hole;
 mod arguments;
 mod thunk;
 mod value;
+mod normal;
 
 use value::*;
+use normal::*;
 
 fn main() {
-    println!("{:#?}", Value::Num(42.0));
+    println!("{:#?}", Value::Normal(Normal::Num(42.0)));
 }

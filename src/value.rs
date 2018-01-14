@@ -1,23 +1,8 @@
-use std::fmt::{Debug, Error, Formatter};
-use std::sync::*;
-
-use arguments::*;
 use thunk;
-use Value::*;
+use normal::Normal;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Value {
-    Func(Arc<Fn(Arguments) -> Value>),
-    Num(f64),
+    Normal(Normal),
     Thunk(thunk::Thunk),
-}
-
-impl Debug for Value {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), Error> {
-        match *self {
-            Func(_) => write!(f, "<func>"),
-            Num(n) => write!(f, "{}", n),
-            Thunk(ref t) => write!(f, "{:?}", t),
-        }
-    }
 }
