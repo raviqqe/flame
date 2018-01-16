@@ -1,7 +1,8 @@
 mod arguments;
+mod list;
+mod normal;
 mod thunk;
 mod value;
-mod normal;
 
-pub use self::value::Value;
 pub use self::normal::Normal;
+pub use self::value::Value;
