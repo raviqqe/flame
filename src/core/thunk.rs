@@ -34,7 +34,7 @@ impl Thunk {
 
             i.black_hole.release();
         } else {
-            await!(i.black_hole.clone());
+            await!(i.black_hole.clone()).unwrap();
         }
 
         match i.content.clone() {
