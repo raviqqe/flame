@@ -1,4 +1,5 @@
 mod arguments;
+mod error;
 mod list;
 mod normal;
 mod thunk;
