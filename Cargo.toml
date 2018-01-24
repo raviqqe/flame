@@ -6,4 +6,4 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 [dependencies]
 futures-await = "0.1"
 futures-black-hole = "0.1"
-hamt-rs = "0.3"
+hamt-sync = "0.1"
