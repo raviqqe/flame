@@ -1,4 +1,5 @@
 mod arguments;
+mod dictionary;
 mod error;
 mod list;
 mod normal;
