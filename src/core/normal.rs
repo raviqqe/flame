@@ -12,6 +12,7 @@ use self::Normal::*;
 
 #[derive(Clone)]
 pub enum Normal {
+    Bool(bool),
     Dict(Dictionary),
     Error(Error),
     Func(Arc<Fn(Arguments) -> Value>),
