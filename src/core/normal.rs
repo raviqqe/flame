@@ -18,6 +18,7 @@ pub enum Normal {
     List(list::List),
     Nil,
     Num(f64),
+    Str(String),
 }
 
 impl Debug for Normal {
