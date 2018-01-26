@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use hamt_sync::Map;
 
-use super::normal::Normal;
 use super::value::Value;
 
 use self::Key::*;
