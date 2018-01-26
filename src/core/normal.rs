@@ -16,6 +16,7 @@ pub enum Normal {
     Error(Error),
     Func(Arc<Fn(Arguments) -> Value>),
     List(list::List),
+    Nil,
     Num(f64),
 }
 
