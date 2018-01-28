@@ -18,8 +18,20 @@ impl Display for Value {
     }
 }
 
+impl From<f64> for Value {
+    fn from(n: f64) -> Self {
+        Value::from(Normal::from(n))
+    }
+}
+
 impl From<List> for Value {
     fn from(l: List) -> Self {
-        Value::Normal(Normal::List(l))
+        Value::from(Normal::from(l))
+    }
+}
+
+impl From<Normal> for Value {
+    fn from(n: Normal) -> Self {
+        Value::Normal(n)
     }
 }

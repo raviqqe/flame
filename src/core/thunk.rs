@@ -90,3 +90,13 @@ impl Inner {
         ) != State::App
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn new() {
+        Thunk::new(Value::from(0.0), Arguments::new(vec![], vec![], vec![]));
+    }
+}
