@@ -10,13 +10,17 @@ use self::Key::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Key {
+    Nil,
     Num(f64),
+    Str(String),
 }
 
 impl Hash for Key {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match *self {
+            Nil => state.write_u8(0),
             Num(n) => state.write_u64(unsafe { transmute(n) }),
+            Str(ref s) => state.write(s.as_bytes()),
         }
     }
 }
