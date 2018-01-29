@@ -1,8 +1,12 @@
 mod arguments;
 mod dictionary;
 mod error;
+mod half_signature;
 mod list;
 mod normal;
+mod optional_argument;
+mod result;
+mod signature;
 mod thunk;
 mod value;
 

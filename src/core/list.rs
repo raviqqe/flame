@@ -23,4 +23,8 @@ impl List {
 
         l
     }
+
+    pub fn cons(v: Value, l: Value) -> Value {
+        Value::from(List::Cons(Arc::new(Cons(v, l))))
+    }
 }
