@@ -1,4 +1,8 @@
+use std::mem::replace;
+
+use super::error::Error;
 use super::list::List;
+use super::result::Result;
 use super::value::Value;
 
 #[derive(Clone, Debug)]
@@ -29,6 +33,48 @@ impl Arguments {
             keywords: ks,
             expanded_dicts: ds,
         }
+    }
+
+    pub fn search_keyword(&mut self, s: &str) -> Result<Value> {
+        for k in &mut self.keywords {
+            if s == k.name {
+                return Ok(replace(k, Default::default()).value);
+            }
+        }
+
+        for v in &mut self.expanded_dicts {
+            unimplemented!()
+        }
+
+        Err(Error::argument("cannot find a keyword argument"))
+    }
+
+    pub fn rest_keywords(&mut self) -> Value {
+        unimplemented!()
+    }
+
+    pub fn check_empty(&self) -> Result<()> {
+        if !self.positionals.is_empty() {
+            return Err(Error::argument(&format!(
+                "{} positional arguments are left.",
+                self.positionals.len()
+            )));
+        }
+
+        let mut n = 0;
+
+        for v in &self.expanded_dicts {
+            unimplemented!()
+        }
+
+        if n != 0 || self.keywords.len() > 0 {
+            return Err(Error::argument(&format!(
+                "{} keyword arguments are left.",
+                self.keywords.len() + n
+            )));
+        }
+
+        Ok(())
     }
 
     fn merge_positional_arguments(ps: &[PositionalArgument]) -> Value {
@@ -78,5 +124,14 @@ pub struct KeywordArgument {
 impl KeywordArgument {
     pub fn new(s: String, v: Value) -> Self {
         KeywordArgument { name: s, value: v }
+    }
+}
+
+impl Default for KeywordArgument {
+    fn default() -> Self {
+        KeywordArgument {
+            name: String::from(""),
+            value: Value::Invalid,
+        }
     }
 }

@@ -29,6 +29,11 @@ impl Signature {
         let mut vs = vec![];
         self.positionals.bind_positionals(&mut args, &mut vs)?;
         self.keywords.bind_keywords(&mut args, &mut vs)?;
+        args.check_empty()?;
         Ok(vs)
+    }
+
+    pub fn arity(&self) -> usize {
+        self.positionals.arity() + self.keywords.arity()
     }
 }

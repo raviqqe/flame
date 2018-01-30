@@ -8,8 +8,6 @@ use super::error::Error;
 use super::list::List;
 use super::value::Value;
 
-use self::Normal::*;
-
 #[derive(Clone)]
 pub enum Normal {
     Bool(bool),

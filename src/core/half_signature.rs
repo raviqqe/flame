@@ -24,10 +24,22 @@ impl HalfSignature {
     }
 
     pub fn bind_keywords(&self, args: &mut Arguments, vs: &mut Vec<Value>) -> Result<()> {
-        unimplemented!()
+        for s in &self.requireds {
+            vs.push(args.search_keyword(&s)?);
+        }
+
+        for o in &self.optionals {
+            vs.push(args.search_keyword(&o.name).unwrap_or(o.value.clone()));
+        }
+
+        if self.rest != "" {
+            vs.push(args.rest_keywords());
+        }
+
+        Ok(())
     }
 
-    fn arity(&self) -> usize {
+    pub fn arity(&self) -> usize {
         self.requireds.len() + self.optionals.len() + if self.rest == "" { 0 } else { 1 }
     }
 }

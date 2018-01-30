@@ -2,8 +2,8 @@ use super::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct OptionalArgument {
-    name: String,
-    value: Value,
+    pub name: String,
+    pub value: Value,
 }
 
 impl OptionalArgument {
