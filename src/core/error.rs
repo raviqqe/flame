@@ -29,9 +29,7 @@ impl Error {
     #[async]
     pub fn typ(n: Normal, t: String) -> Result<Error> {
         let s = await!(n.to_string())?;
-        let s = format!("{} is not a {}.", s, t);
-
-        Ok(Self::new( "TypeError", &s))
+        Ok(Self::new( "TypeError", &format!("{} is not a {}.", s, t)))
     }
 
     #[async]
