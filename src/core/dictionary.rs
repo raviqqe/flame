@@ -46,16 +46,16 @@ impl Dictionary {
 
     #[async]
     pub fn to_string(self) -> Result<String> {
-        let mut m: Map<Key, Value> = (*self.0).clone();
         let mut ss = vec!["{".to_string()];
+        let kvs: Vec<(Key, Value)> = self.0.into_iter().map(|(k, v)| (k.clone(), v.clone())).collect();
 
-        while let Some((k, v, mm)) = m.first_rest() {
-            let n: Normal = k.clone().into();
+        for (k, v) in kvs {
+            let n: Normal = k.into();
             let k = await!(n.to_string())?;
-            let v = await!(v.clone().to_string())?;
             ss.push(k);
+
+            let v = await!(v.to_string())?;
             ss.push(v);
-            m = mm;
         }
 
         ss.push("}".to_string());
