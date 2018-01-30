@@ -9,5 +9,5 @@ mod core;
 use core::*;
 
 fn main() {
-    println!("{:#?}", Value::Normal(Normal::Num(42.0)));
+    println!("{:#?}", Value::Normal(Normal::Number(42.0)));
 }

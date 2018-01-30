@@ -2,28 +2,47 @@ use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::sync::*;
 
+use futures::prelude::*;
+
 use super::arguments::Arguments;
 use super::dictionary::Dictionary;
 use super::error::Error;
 use super::list::List;
+use super::result::Result;
 use super::value::Value;
 
 #[derive(Clone)]
 pub enum Normal {
-    Bool(bool),
-    Dict(Dictionary),
+    Boolean(bool),
+    Dictionary(Dictionary),
     Error(Error),
-    Func(Arc<Fn(Arguments) -> Value>),
+    Function(Arc<Fn(Arguments) -> Value>),
     List(List),
     Nil,
-    Num(f64),
-    Str(String),
+    Number(f64),
+    String(String),
+}
+
+impl Normal {
+    #[async]
+    pub fn to_string(self) -> Result<String> {
+        Ok(match self {
+            Normal::Boolean(b) => (if b { "true" } else { "false" }).to_string(),
+            Normal::Dictionary(d) => await!(d.to_string())?,
+            Normal::Error(e) => return Err(e),
+            Normal::Function(_) => "<function>".to_string(),
+            Normal::List(l) => await!(l.to_string())?,
+            Normal::Number(n) => n.to_string(),
+            Normal::Nil => "nil".to_string(),
+            Normal::String(s) => s,
+        })
+    }
 }
 
 impl Debug for Normal {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         match *self {
-            Normal::Func(_) => write!(f, "<func>"),
+            Normal::Function(_) => write!(f, "<function>"),
             ref x => write!(f, "{:?}", x),
         }
     }
@@ -31,7 +50,7 @@ impl Debug for Normal {
 
 impl From<f64> for Normal {
     fn from(n: f64) -> Self {
-        Normal::Num(n)
+        Normal::Number(n)
     }
 }
 

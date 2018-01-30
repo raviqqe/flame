@@ -1,3 +1,5 @@
+use futures::prelude::*;
+
 use super::arguments::Arguments;
 use super::half_signature::HalfSignature;
 use super::optional_argument::OptionalArgument;
@@ -25,11 +27,12 @@ impl Signature {
         }
     }
 
-    pub fn bind(&self, mut args: Arguments) -> Result<Vec<Value>> {
+    #[async]
+    pub fn bind(self, mut args: Arguments) -> Result<Vec<Value>> {
         let mut vs = vec![];
         self.positionals.bind_positionals(&mut args, &mut vs)?;
         self.keywords.bind_keywords(&mut args, &mut vs)?;
-        args.check_empty()?;
+        await!(args.check_empty())?;
         Ok(vs)
     }
 

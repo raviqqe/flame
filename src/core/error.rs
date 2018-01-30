@@ -1,4 +1,7 @@
-use super::value::Value;
+use futures::prelude::*;
+
+use super::normal::Normal;
+use super::result::Result;
 
 #[derive(Clone, Debug)]
 pub struct Error {
@@ -23,36 +26,52 @@ impl Error {
         Self::new("ValueError", m)
     }
 
-    pub fn typ(v: Value, t: &str) -> Error {
-        Self::new("TypeError", &format!("{} is not a {}", v, t))
+    #[async]
+    pub fn typ(n: Normal, t: String) -> Result<Error> {
+        Ok(Self::new(
+            "TypeError",
+            &vec![
+                await!(n.to_string())?,
+                " is not a ".to_string(),
+                t,
+                ".".to_string(),
+            ].join(""),
+        ))
     }
 
-    pub fn not_boolean(v: Value) -> Error {
-        Self::typ(v, "boolean")
+    #[async]
+    pub fn not_boolean(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "boolean".to_string()))
     }
 
-    pub fn not_dictionary(v: Value) -> Error {
-        Self::typ(v, "dictionary")
+    #[async]
+    pub fn not_dictionary(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "dictionary".to_string()))
     }
 
-    pub fn not_function(v: Value) -> Error {
-        Self::typ(v, "function")
+    #[async]
+    pub fn not_function(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "function".to_string()))
     }
 
-    pub fn not_list(v: Value) -> Error {
-        Self::typ(v, "list")
+    #[async]
+    pub fn not_list(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "list".to_string()))
     }
 
-    pub fn not_nil(v: Value) -> Error {
-        Self::typ(v, "nil")
+    #[async]
+    pub fn not_nil(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "nil".to_string()))
     }
 
-    pub fn not_number(v: Value) -> Error {
-        Self::typ(v, "number")
+    #[async]
+    pub fn not_number(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "number".to_string()))
     }
 
-    pub fn not_string(v: Value) -> Error {
-        Self::typ(v, "string")
+    #[async]
+    pub fn not_string(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "string".to_string()))
     }
 
     pub fn name(&self) -> &str {

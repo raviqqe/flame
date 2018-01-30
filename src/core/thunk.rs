@@ -6,11 +6,10 @@ use std::sync::atomic::Ordering::SeqCst;
 use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
-use super::arguments::*;
-use super::error::Error;
-use super::value::*;
-
-use self::Content::*;
+use super::arguments::Arguments;
+use super::normal::Normal;
+use super::result::Result;
+use super::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct Thunk(Arc<UnsafeCell<Inner>>);
@@ -21,16 +20,18 @@ impl Thunk {
     }
 
     #[async]
-    pub fn eval(self) -> Result<Value, Error> {
+    pub fn eval(self) -> Result<Normal> {
         let i = unsafe { &mut *self.0.get() };
 
         if i.lock() {
-            let v = match i.content.clone() {
-                App(v, _) => v,
-                Normal(_) => panic!("Thunk is already evaluated into normal form."),
+            let c = i.content.clone();
+
+            let v = match c {
+                Content::App(v, _) => await!(v.normal())?,
+                Content::Normal(_) => unreachable!(),
             };
 
-            i.content = Normal(v);
+            i.content = Content::Normal(v.clone());
 
             i.black_hole.release();
         } else {
@@ -38,8 +39,8 @@ impl Thunk {
         }
 
         match i.content.clone() {
-            App(_, _) => panic!("Thunk is not evaluated"),
-            Normal(v) => Ok(v),
+            Content::App(_, _) => unreachable!(),
+            Content::Normal(v) => Ok(v),
         }
     }
 }
@@ -64,7 +65,7 @@ impl From<u8> for State {
 #[derive(Clone, Debug)]
 enum Content {
     App(Value, Arguments),
-    Normal(Value),
+    Normal(Normal),
 }
 
 #[derive(Debug)]
@@ -78,7 +79,7 @@ impl Inner {
     pub fn new(f: Value, a: Arguments) -> Self {
         Inner {
             state: AtomicU8::new(State::App as u8),
-            content: App(f, a),
+            content: Content::App(f, a),
             black_hole: BlackHole::new(),
         }
     }

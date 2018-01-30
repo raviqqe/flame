@@ -1,7 +1,12 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+use futures::prelude::*;
+
+use super::dictionary::Dictionary;
+use super::error::Error;
 use super::list::List;
+use super::result::Result;
 use super::thunk;
 use super::normal::Normal;
 
@@ -12,8 +17,54 @@ pub enum Value {
     Thunk(thunk::Thunk),
 }
 
+impl Value {
+    #[async]
+    pub fn normal(self) -> Result<Normal> {
+        Ok(match self {
+            Value::Invalid => unreachable!(),
+            Value::Normal(n) => n,
+            Value::Thunk(t) => await!(t.eval())?,
+        })
+    }
+
+    #[async]
+    pub fn boolean(self) -> Result<bool> {
+        let n = await!(self.normal())?;
+
+        match n {
+            Normal::Boolean(b) => Ok(b),
+            _ => Err(await!(Error::not_boolean(n))?),
+        }
+    }
+
+    #[async]
+    pub fn dictionary(self) -> Result<Dictionary> {
+        let n = await!(self.normal())?;
+
+        match n {
+            Normal::Dictionary(d) => Ok(d),
+            _ => Err(await!(Error::not_dictionary(n))?),
+        }
+    }
+
+    #[async]
+    pub fn list(self) -> Result<List> {
+        let n = await!(self.normal())?;
+
+        match n {
+            Normal::List(l) => Ok(l),
+            _ => Err(await!(Error::not_list(n))?),
+        }
+    }
+
+    #[async]
+    pub fn to_string(self) -> Result<String> {
+        await!(await!(self.normal())?.to_string())
+    }
+}
+
 impl Display for Value {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }

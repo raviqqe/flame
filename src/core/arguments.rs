@@ -1,5 +1,7 @@
 use std::mem::replace;
 
+use futures::prelude::*;
+
 use super::error::Error;
 use super::list::List;
 use super::result::Result;
@@ -53,7 +55,8 @@ impl Arguments {
         unimplemented!()
     }
 
-    pub fn check_empty(&self) -> Result<()> {
+    #[async]
+    pub fn check_empty(self) -> Result<()> {
         if !self.positionals.is_empty() {
             return Err(Error::argument(&format!(
                 "{} positional arguments are left.",
@@ -64,7 +67,7 @@ impl Arguments {
         let mut n = 0;
 
         for v in &self.expanded_dicts {
-            unimplemented!()
+            let d = await!(v.dictionary());
         }
 
         if n != 0 || self.keywords.len() > 0 {
