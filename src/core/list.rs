@@ -35,14 +35,13 @@ impl List {
 
         while let List::Cons(a) = self {
             let Cons(v, l) = (*a).clone();
-            ss.push(await!(v.clone().to_string())?);
+            let s = await!(v.clone().to_string())?;
+            ss.push(s);
             self = await!(l.clone().list())?;
         }
 
         ss.push("]".to_string());
 
-        let s = ss.join(" ");
-
-        Ok(String::from(s))
+        Ok(ss.join(" "))
     }
 }

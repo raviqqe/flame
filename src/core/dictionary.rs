@@ -46,21 +46,21 @@ impl Dictionary {
 
     #[async]
     pub fn to_string(self) -> Result<String> {
-        let mut m = (*self.0).clone();
+        let mut m: Map<Key, Value> = (*self.0).clone();
         let mut ss = vec!["{".to_string()];
 
         while let Some((k, v, mm)) = m.first_rest() {
             let n: Normal = k.clone().into();
-            let v = v.clone();
-            let mm = mm.clone();
-            ss.push(await!(n.to_string())?);
-            ss.push(await!(v.to_string())?);
+            let k = await!(n.to_string())?;
+            let v = await!(v.clone().to_string())?;
+            ss.push(k);
+            ss.push(v);
             m = mm;
         }
 
         ss.push("}".to_string());
 
-        Ok(String::from(ss.join(" ")))
+        Ok(ss.join(" "))
     }
 
     pub fn size(&self) -> usize {
