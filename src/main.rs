@@ -1,5 +1,6 @@
 #![feature(conservative_impl_trait, generators, integer_atomics, proc_macro)]
 
+extern crate fixed_size_vector;
 extern crate futures_await as futures;
 extern crate futures_black_hole;
 extern crate hamt_sync;
