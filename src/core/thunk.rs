@@ -98,6 +98,6 @@ mod test {
 
     #[test]
     fn new() {
-        Thunk::new(Value::from(0.0), Arguments::new(vec![], vec![], vec![]));
+        Thunk::new(Value::from(0.0), Arguments::new(&[], &[], &[]));
     }
 }

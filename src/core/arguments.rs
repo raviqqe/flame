@@ -1,5 +1,6 @@
 use std::mem::replace;
 
+use fixed_size_vector::ArrayVec;
 use futures::prelude::*;
 
 use super::error::Error;
@@ -9,31 +10,43 @@ use super::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct Arguments {
-    positionals: Vec<Value>,
+    positionals: ArrayVec<[Value; 4]>,
     expanded_list: Value,
-    keywords: Vec<KeywordArgument>,
-    expanded_dicts: Vec<Value>,
+    keywords: ArrayVec<[KeywordArgument; 4]>,
+    expanded_dict: Value,
 }
 
 impl Arguments {
-    pub fn new(ps: Vec<PositionalArgument>, ks: Vec<KeywordArgument>, ds: Vec<Value>) -> Arguments {
+    pub fn new(ps: &[PositionalArgument], ks: &[KeywordArgument], ds: &[Value]) -> Arguments {
         let mut l = Value::Invalid;
-        let mut vs = vec![];
+        let mut pv = ArrayVec::new();
 
         for (i, p) in ps.iter().enumerate() {
-            if p.expanded {
-                l = Self::merge_positional_arguments(&ps.as_slice()[i..]);
+            if p.expanded || !p.expanded && pv.push(&p.value).is_err() {
+                l = Self::merge_positional_arguments(&ps[i..]);
                 break;
             }
+        }
 
-            vs.push(p.value.clone());
+        let mut kv = ArrayVec::new();
+        let mut d = Value::Invalid;
+
+        for (i, k) in ks.iter().enumerate() {
+            if kv.push(k).is_err() {
+                d = Self::merge_keyword_arguments(&ks[i..], ds);
+                break;
+            }
+        }
+
+        for d in ds {
+            unimplemented!()
         }
 
         Arguments {
-            positionals: vs,
+            positionals: pv,
             expanded_list: l,
-            keywords: ks,
-            expanded_dicts: ds,
+            keywords: kv,
+            expanded_dict: d,
         }
     }
 
@@ -44,9 +57,7 @@ impl Arguments {
             }
         }
 
-        for v in &mut self.expanded_dicts {
-            unimplemented!()
-        }
+        unimplemented!(); // Search in self.expanded_dict.
 
         Err(Error::argument("cannot find a keyword argument"))
     }
@@ -66,10 +77,8 @@ impl Arguments {
 
         let mut n = 0;
 
-        for v in &self.expanded_dicts {
-            // let d = await!(v.clone().dictionary())?;
-            unimplemented!()
-        }
+        // let d = await!(v.clone().dictionary())?;
+        unimplemented!();
 
         if n != 0 || self.keywords.len() > 0 {
             return Err(Error::argument(&format!(
@@ -101,6 +110,10 @@ impl Arguments {
         }
 
         l
+    }
+
+    fn merge_keyword_arguments(ks: &[KeywordArgument], ds: &[Value]) -> Value {
+        unimplemented!()
     }
 }
 
