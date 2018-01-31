@@ -7,7 +7,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "coel"
 version = "0.1.0"
 dependencies = [
- "fixed-size-vector 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fixed-size-vector 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-await 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-black-hole 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hamt-sync 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -15,7 +15,7 @@ dependencies = [
 
 [[package]]
 name = "fixed-size-vector"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -174,7 +174,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
 "checksum bitflags 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b3c30d3802dfb7281680d6285f2ccdaa8c2d8fee41f93805dba5c4cf50dc23cf"
-"checksum fixed-size-vector 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "b983cc09ee9cf3256ea1083e0c19641fc18766e784bf938dbc4fcdea72278f7d"
+"checksum fixed-size-vector 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "db6e33e843328a444d43e5f8415902767edc3751bd8ce82e13147578fa0ce66b"
 "checksum fuchsia-zircon 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2e9763c69ebaae630ba35f74888db465e49e259ba1bc0eda7d06f4a067615d82"
 "checksum fuchsia-zircon-sys 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "3dcaa9ae7725d12cdb85b3ad99a434db70b468c09ded17e012d86b5c1010f7a7"
 "checksum futures 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)" = "0bab5b5e94f5c31fc764ba5dd9ad16568aae5d4825538c01d6bca680c9bf94a7"
