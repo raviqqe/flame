@@ -2,6 +2,7 @@ use std::str::FromStr;
 
 use nom::digit;
 
+use super::super::ast::Effect;
 use super::super::ast::Expression;
 
 named!(
@@ -31,6 +32,10 @@ named!(
             number => { |n| Expression::Number(n) }
         )
     )
+);
+
+named!(effect<&str, Effect>,
+    map!(expression, { |e| Effect::new(e, false) })
 );
 
 #[cfg(test)]
