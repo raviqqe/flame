@@ -6,6 +6,7 @@ mod keyword_argument;
 mod optional_parameter;
 mod positional_argument;
 mod signature;
+mod statement;
 
 pub use self::app::App;
 pub use self::arguments::Arguments;
