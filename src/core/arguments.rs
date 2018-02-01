@@ -152,3 +152,13 @@ impl Default for KeywordArgument {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn new() {
+        Arguments::new(&[], &[], &[]);
+    }
+}
