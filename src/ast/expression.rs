@@ -4,4 +4,5 @@ use super::app::App;
 pub enum Expression<'a> {
     App(&'a App<'a>),
     Name(&'a str),
+    Number(f64),
 }
