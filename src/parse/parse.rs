@@ -4,6 +4,7 @@ use nom::digit;
 
 use super::super::ast::Effect;
 use super::super::ast::Expression;
+use super::super::ast::Statement;
 
 named!(
     unsigned_number<&str, f64>,
@@ -38,9 +39,28 @@ named!(effect<&str, Effect>,
     map!(expression, { |e| Effect::new(e, false) })
 );
 
+named!(
+    statement<&str, Statement>,
+    ws!(
+        alt!(
+            effect => { |e| Statement::Effect(e) }
+        )
+    )
+);
+
 #[cfg(test)]
 mod test {
     use super::*;
+
+    const EXPRESSIONS: &[&'static str] = &[
+        "nil",
+        "  nil\t",
+        "123",
+        "0.1",
+        "-123",
+        "-0.1",
+        "  \n-0.1\t ",
+    ];
 
     #[test]
     fn unsigned_number_parser() {
@@ -53,15 +73,16 @@ mod test {
 
     #[test]
     fn expression_parser() {
-        for s in &[
-            "nil",
-            "  nil\t",
-            "123",
-            "0.1",
-            "-123",
-            "-0.1",
-            "  \n-0.1\t ",
-        ] {
+        for s in EXPRESSIONS {
+            let r = expression(s);
+            println!("{:?}", r);
+            assert!(r.is_done());
+        }
+    }
+
+    #[test]
+    fn statement_parser() {
+        for s in EXPRESSIONS {
             let r = expression(s);
             println!("{:?}", r);
             assert!(r.is_done());
