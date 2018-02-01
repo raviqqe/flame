@@ -1,6 +1,6 @@
 use std::mem::replace;
 
-use fixed_size_vector::ArrayVec;
+use array_queue::ArrayQueue;
 use futures::prelude::*;
 
 use super::error::Error;
@@ -10,29 +10,29 @@ use super::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct Arguments {
-    positionals: ArrayVec<[Value; 4]>,
+    positionals: ArrayQueue<[Value; 4]>,
     expanded_list: Value,
-    keywords: ArrayVec<[KeywordArgument; 4]>,
+    keywords: ArrayQueue<[KeywordArgument; 4]>,
     expanded_dict: Value,
 }
 
 impl Arguments {
     pub fn new(ps: &[PositionalArgument], ks: &[KeywordArgument], ds: &[Value]) -> Arguments {
         let mut l = Value::Invalid;
-        let mut pv = ArrayVec::new();
+        let mut pq = ArrayQueue::new();
 
         for (i, p) in ps.iter().enumerate() {
-            if p.expanded || !p.expanded && pv.push(&p.value).is_err() {
+            if p.expanded || !p.expanded && pq.push_back(&p.value).is_err() {
                 l = Self::merge_positional_arguments(&ps[i..]);
                 break;
             }
         }
 
-        let mut kv = ArrayVec::new();
+        let mut kq = ArrayQueue::new();
         let mut d = Value::Invalid;
 
         for (i, k) in ks.iter().enumerate() {
-            if kv.push(k).is_err() {
+            if kq.push_back(k).is_err() {
                 d = Self::merge_keyword_arguments(&ks[i..], ds);
                 break;
             }
@@ -43,9 +43,9 @@ impl Arguments {
         }
 
         Arguments {
-            positionals: pv,
+            positionals: pq,
             expanded_list: l,
-            keywords: kv,
+            keywords: kq,
             expanded_dict: d,
         }
     }
