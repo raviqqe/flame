@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Yota Toyama <raviqqe@gmail.com>"]
 
 [dependencies]
-fixed-size-vector = "0.2"
+array-queue = "0.2"
 futures-await = "0.1"
 futures-black-hole = "0.1"
 hamt-sync = "0.1"
