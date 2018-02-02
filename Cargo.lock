@@ -9,7 +9,7 @@ version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "coel"
+name = "flame"
 version = "0.1.0"
 dependencies = [
  "array-queue 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
