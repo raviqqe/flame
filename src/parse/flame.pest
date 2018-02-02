@@ -1,0 +1,17 @@
+main_module = { soi ~ statement* ~ eoi }
+
+statement = { effect }
+
+effect = { expression }
+
+expression = { boolean | number | nil }
+
+number = @{ "-"? ~ integer ~ ("." ~ '0'..'9'+)? }
+integer = @{ "0" | '1'..'9' ~ '0'..'9'* }
+
+boolean = { "true" | "false" }
+
+nil = { "nil" }
+
+whitespace = _{ " " | "\t" | "\r" | "\n" }
+comment = _{ ";" ~ (!"\n" ~ any)* }

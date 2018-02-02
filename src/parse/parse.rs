@@ -1,91 +1,48 @@
-use std::str::FromStr;
-
-use nom::digit;
+use pest::Parser;
 
 use super::super::ast::Effect;
 use super::super::ast::Expression;
 use super::super::ast::Statement;
 
-named!(
-    unsigned_number<&str, f64>,
-    map_res!(
-        alt_complete!(
-            recognize!(tuple!(digit, tag!("."), digit)) |
-            recognize!(digit)
-        ),
-        FromStr::from_str
-    )
-);
+const _GRAMMAR: &'static str = include_str!("flame.pest");
 
-named!(
-    number<&str, f64>,
-    map!(
-        pair!(opt!(tag!("-")), unsigned_number),
-        |(s, n): (Option<&str>, f64)| { if s == Some("-") { -1.0 * n  } else { n }}
-    )
-);
-
-named!(
-    expression<&str, Expression>,
-    ws!(
-        alt!(
-            tag!("nil") => { |_| Expression::Nil } |
-            number => { |n| Expression::Number(n) }
-        )
-    )
-);
-
-named!(effect<&str, Effect>,
-    map!(expression, { |e| Effect::new(e, false) })
-);
-
-named!(
-    statement<&str, Statement>,
-    ws!(
-        alt!(
-            effect => { |e| Statement::Effect(e) }
-        )
-    )
-);
+#[derive(Parser)]
+#[grammar = "parse/flame.pest"]
+struct FlameParser;
 
 #[cfg(test)]
 mod test {
     use super::*;
 
-    const EXPRESSIONS: &[&'static str] = &[
-        "nil",
-        "  nil\t",
-        "123",
-        "0.1",
-        "-123",
-        "-0.1",
-        "  \n-0.1\t ",
-    ];
+    const EXPRESSIONS: &[&'static str] = &["nil", "123", "0.1", "-123", "-0.1"];
 
     #[test]
-    fn unsigned_number_parser() {
-        for s in &["123", "0.1"] {
-            let r = unsigned_number(s);
-            println!("{:?}", r);
-            assert!(r.is_done());
+    fn nil() {
+        for s in vec!["nil"] {
+            FlameParser::parse(Rule::nil, s).unwrap();
         }
     }
 
     #[test]
-    fn expression_parser() {
-        for s in EXPRESSIONS {
-            let r = expression(s);
-            println!("{:?}", r);
-            assert!(r.is_done());
+    fn number() {
+        for s in vec!["123", "-0.1"] {
+            FlameParser::parse(Rule::number, s).unwrap();
         }
     }
 
     #[test]
-    fn statement_parser() {
+    fn expression() {
         for s in EXPRESSIONS {
-            let r = expression(s);
-            println!("{:?}", r);
-            assert!(r.is_done());
+            println!("{}", s);
+            FlameParser::parse(Rule::expression, s).unwrap();
+        }
+    }
+
+    #[test]
+    fn main_module() {
+        for s in &[""] {
+            println!("{}", s);
+            FlameParser::parse(Rule::main_module, s).unwrap();
         }
     }
 }

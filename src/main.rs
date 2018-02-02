@@ -4,8 +4,9 @@ extern crate array_queue;
 extern crate futures_await as futures;
 extern crate futures_black_hole;
 extern crate hamt_sync;
+extern crate pest;
 #[macro_use]
-extern crate nom;
+extern crate pest_derive;
 
 mod ast;
 mod core;
