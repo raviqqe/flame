@@ -1,7 +1,6 @@
 use pest::{Error, Parser};
 use pest::iterators::Pair;
 
-use super::super::ast::Effect;
 use super::super::ast::Expression;
 use super::super::ast::Statement;
 
@@ -20,7 +19,9 @@ pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
                 let p = p.into_inner().nth(0).unwrap();
 
                 match p.as_rule() {
-                    Rule::effect => Statement::Effect(expression(p.into_inner().nth(0).unwrap())),
+                    Rule::effect => {
+                        Statement::effect(expression(p.into_inner().nth(0).unwrap()), false)
+                    }
                     _ => unreachable!(),
                 }
             }
