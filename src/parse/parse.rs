@@ -15,17 +15,17 @@ pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
     let mut ss = vec![];
 
     for p in LanguageParser::parse(Rule::main_module, s)? {
-        ss.push(Statement::Effect(match p.as_rule() {
+        ss.push(match p.as_rule() {
             Rule::statement => {
                 let p = p.into_inner().nth(0).unwrap();
 
                 match p.as_rule() {
-                    Rule::effect => unimplemented!(),
+                    Rule::effect => Statement::Effect(expression(p.into_inner().nth(0).unwrap())),
                     _ => unreachable!(),
                 }
             }
             _ => unreachable!(),
-        }));
+        });
     }
 
     Ok(ss)
