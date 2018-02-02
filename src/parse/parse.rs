@@ -1,4 +1,5 @@
 use pest::{Error, Parser};
+use pest::iterators::Pair;
 
 use super::super::ast::Effect;
 use super::super::ast::Expression;
@@ -11,16 +12,27 @@ const _GRAMMAR: &'static str = include_str!("grammer.pest");
 struct LanguageParser;
 
 pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
-    let ss = vec![];
+    let mut ss = vec![];
 
     for p in LanguageParser::parse(Rule::main_module, s)? {
-        let p = match p.as_rule() {
-            Rule::statement => p,
+        ss.push(Statement::Effect(match p.as_rule() {
+            Rule::statement => {
+                let p = p.into_inner().nth(0).unwrap();
+
+                match p.as_rule() {
+                    Rule::effect => unimplemented!(),
+                    _ => unreachable!(),
+                }
+            }
             _ => unreachable!(),
-        };
+        }));
     }
 
     Ok(ss)
+}
+
+fn expression<'a>(p: Pair<Rule>) -> Expression<'a> {
+    unimplemented!()
 }
 
 #[cfg(test)]
