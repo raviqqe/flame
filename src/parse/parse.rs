@@ -4,11 +4,11 @@ use super::super::ast::Effect;
 use super::super::ast::Expression;
 use super::super::ast::Statement;
 
-const _GRAMMAR: &'static str = include_str!("flame.pest");
+const _GRAMMAR: &'static str = include_str!("grammer.pest");
 
 #[derive(Parser)]
-#[grammar = "parse/flame.pest"]
-struct FlameParser;
+#[grammar = "parse/grammer.pest"]
+struct LanguageParser;
 
 #[cfg(test)]
 mod test {
@@ -19,19 +19,19 @@ mod test {
     #[test]
     fn boolean() {
         for s in vec!["true", "false"] {
-            FlameParser::parse(Rule::boolean, s).unwrap();
+            LanguageParser::parse(Rule::boolean, s).unwrap();
         }
     }
 
     #[test]
     fn nil() {
-        FlameParser::parse(Rule::nil, "nil").unwrap();
+        LanguageParser::parse(Rule::nil, "nil").unwrap();
     }
 
     #[test]
     fn number() {
         for s in vec!["123", "-0.1"] {
-            FlameParser::parse(Rule::number, s).unwrap();
+            LanguageParser::parse(Rule::number, s).unwrap();
         }
     }
 
@@ -39,7 +39,7 @@ mod test {
     fn expression() {
         for s in EXPRESSIONS {
             println!("{}", s);
-            FlameParser::parse(Rule::expression, s).unwrap();
+            LanguageParser::parse(Rule::expression, s).unwrap();
         }
     }
 
@@ -47,7 +47,7 @@ mod test {
     fn main_module() {
         for s in &["", " 123 nil \n \ttrue", "; comment", "; comment\n123"] {
             println!("{}", s);
-            FlameParser::parse(Rule::main_module, s).unwrap();
+            LanguageParser::parse(Rule::main_module, s).unwrap();
         }
     }
 }
