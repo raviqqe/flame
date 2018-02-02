@@ -1,4 +1,4 @@
-use pest::Parser;
+use pest::{Error, Parser};
 
 use super::super::ast::Effect;
 use super::super::ast::Expression;
@@ -9,6 +9,19 @@ const _GRAMMAR: &'static str = include_str!("grammer.pest");
 #[derive(Parser)]
 #[grammar = "parse/grammer.pest"]
 struct LanguageParser;
+
+pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
+    let ss = vec![];
+
+    for p in LanguageParser::parse(Rule::main_module, s)? {
+        let p = match p.as_rule() {
+            Rule::statement => p,
+            _ => unreachable!(),
+        };
+    }
+
+    Ok(ss)
+}
 
 #[cfg(test)]
 mod test {
