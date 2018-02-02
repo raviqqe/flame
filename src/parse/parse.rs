@@ -14,13 +14,18 @@ struct FlameParser;
 mod test {
     use super::*;
 
-    const EXPRESSIONS: &[&'static str] = &["nil", "123", "0.1", "-123", "-0.1"];
+    const EXPRESSIONS: &[&'static str] = &["nil", "123", "0.1", "-123", "-0.1", "true", "false"];
+
+    #[test]
+    fn boolean() {
+        for s in vec!["true", "false"] {
+            FlameParser::parse(Rule::boolean, s).unwrap();
+        }
+    }
 
     #[test]
     fn nil() {
-        for s in vec!["nil"] {
-            FlameParser::parse(Rule::nil, s).unwrap();
-        }
+        FlameParser::parse(Rule::nil, "nil").unwrap();
     }
 
     #[test]
@@ -40,7 +45,7 @@ mod test {
 
     #[test]
     fn main_module() {
-        for s in &[""] {
+        for s in &["", " 123 nil \n \ttrue", "; comment", "; comment\n123"] {
             println!("{}", s);
             FlameParser::parse(Rule::main_module, s).unwrap();
         }
