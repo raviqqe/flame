@@ -6,12 +6,14 @@ effect = { expression }
 
 expression = { boolean | nil | number }
 
+boolean = { "true" | "false" }
+nil = { "nil" }
+
 number = @{ "-"? ~ integer ~ ("." ~ '0'..'9'+)? }
 integer = @{ "0" | '1'..'9' ~ '0'..'9'* }
 
-boolean = { "true" | "false" }
-
-nil = { "nil" }
+string  = @{ "\"" ~ (escape | !("\"" | "\\") ~ any)* ~ "\"" }
+escape  = @{ "\\" ~ ("\"" | "\\" | "n" | "r" | "t") }
 
 whitespace = _{ " " | "\t" | "\r" | "\n" }
 comment = _{ ";" ~ (!"\n" ~ any)* }
