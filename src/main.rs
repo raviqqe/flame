@@ -9,6 +9,7 @@ extern crate pest;
 extern crate pest_derive;
 
 mod ast;
+mod compile;
 mod core;
 mod desugar;
 mod parse;
