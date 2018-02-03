@@ -7,7 +7,6 @@ use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
 use super::arguments::Arguments;
-use super::error::Error;
 use super::normal::Normal;
 use super::result::Result;
 use super::value::Value;
@@ -22,27 +21,43 @@ impl Thunk {
 
     #[async]
     pub fn eval(self) -> Result<Normal> {
-        let i = unsafe { &mut *self.0.get() };
-
-        if i.lock() {
-            let c = i.content.clone();
+        if self.inner_mut().lock() {
+            let c = self.inner().content.clone();
 
             let v = match c {
                 Content::App(v, _) => await!(v.normal())?,
                 Content::Normal(_) => unreachable!(),
             };
 
-            i.content = Content::Normal(v.clone());
+            self.inner_mut().content = Content::Normal(v.clone());
 
-            i.black_hole.release()?;
+            self.inner().black_hole.release()?;
         } else {
-            await!(&i.black_hole)?;
+            // This block is basically:
+            // await!(&self.inner_mut().black_hole)?;
+            loop {
+                let p = (&self.inner_mut().black_hole).poll();
+
+                match p {
+                    Ok(Async::Ready(())) => break,
+                    Ok(Async::NotReady) => yield Async::NotReady,
+                    Err(e) => return Err(e.into()),
+                }
+            }
         }
 
-        match i.content.clone() {
+        match self.inner().content.clone() {
             Content::App(_, _) => unreachable!(),
             Content::Normal(v) => Ok(v),
         }
+    }
+
+    fn inner(&self) -> &Inner {
+        unsafe { &*self.0.get() }
+    }
+
+    fn inner_mut(&self) -> &mut Inner {
+        unsafe { &mut *self.0.get() }
     }
 }
 
