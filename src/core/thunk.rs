@@ -71,7 +71,7 @@ impl From<u8> for State {
         match u {
             0 => State::App,
             1 => State::Normal,
-            _ => panic!("Invalid value"),
+            _ => unreachable!(),
         }
     }
 }
