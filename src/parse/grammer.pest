@@ -4,7 +4,7 @@ statement = { effect }
 
 effect = { expression }
 
-expression = { boolean | nil | number }
+expression = { boolean | nil | number | string }
 
 boolean = { "true" | "false" }
 nil = { "nil" }

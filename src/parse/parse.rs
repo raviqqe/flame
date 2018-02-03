@@ -41,6 +41,7 @@ fn expression<'a>(p: Pair<Rule>) -> Expression<'a> {
         Rule::boolean => Expression::Boolean(FromStr::from_str(p.as_str()).unwrap()),
         Rule::nil => Expression::Nil,
         Rule::number => Expression::Number(FromStr::from_str(p.as_str()).unwrap()),
+        Rule::string => Expression::String(FromStr::from_str(p.as_str()).unwrap()),
         _ => unreachable!(),
     }
 }
@@ -108,11 +109,12 @@ mod test {
                 vec![Statement::effect(Expression::Number(123.0), false)],
             ),
             (
-                "true nil 123",
+                "true nil 123 \"foo\"",
                 vec![
                     Statement::effect(Expression::Boolean(true), false),
                     Statement::effect(Expression::Nil, false),
                     Statement::effect(Expression::Number(123.0), false),
+                    Statement::effect(Expression::String("foo".to_string()), false),
                 ],
             ),
             (
