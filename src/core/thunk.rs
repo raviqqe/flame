@@ -22,14 +22,10 @@ impl Thunk {
     #[async]
     pub fn eval(self) -> Result<Normal> {
         if self.inner_mut().lock() {
-            let c = self.inner().content.clone();
-
-            let v = match c {
+            self.inner_mut().content = Content::Normal(match self.inner().content.clone() {
                 Content::App(v, _) => await!(v.normal())?,
                 Content::Normal(_) => unreachable!(),
-            };
-
-            self.inner_mut().content = Content::Normal(v.clone());
+            });
 
             self.inner().black_hole.release()?;
         } else {
@@ -46,9 +42,9 @@ impl Thunk {
             }
         }
 
-        match self.inner().content.clone() {
+        match self.inner().content {
             Content::App(_, _) => unreachable!(),
-            Content::Normal(v) => Ok(v),
+            Content::Normal(ref n) => Ok(n.clone()),
         }
     }
 
