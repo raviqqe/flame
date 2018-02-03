@@ -38,8 +38,10 @@ fn expression<'a>(p: Pair<Rule>) -> Expression<'a> {
     let p = first(p);
 
     match p.as_rule() {
+        Rule::boolean => Expression::Boolean(FromStr::from_str(p.as_str()).unwrap()),
+        Rule::nil => Expression::Nil,
         Rule::number => Expression::Number(FromStr::from_str(p.as_str()).unwrap()),
-        _ => unimplemented!(),
+        _ => unreachable!(),
     }
 }
 
@@ -95,6 +97,14 @@ mod test {
             (
                 "123",
                 vec![Statement::effect(Expression::Number(123.0), false)],
+            ),
+            (
+                "true nil 123",
+                vec![
+                    Statement::effect(Expression::Boolean(true), false),
+                    Statement::effect(Expression::Nil, false),
+                    Statement::effect(Expression::Number(123.0), false),
+                ],
             ),
             (
                 " 123 ; foo \n456",
