@@ -13,7 +13,9 @@ struct LanguageParser;
 pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
     let mut ss = vec![];
 
-    for p in LanguageParser::parse(Rule::main_module, s)? {
+    let p = LanguageParser::parse(Rule::main_module, s)?.nth(0).unwrap();
+
+    for p in p.into_inner() {
         ss.push(match p.as_rule() {
             Rule::statement => {
                 let p = p.into_inner().nth(0).unwrap();
@@ -70,10 +72,19 @@ mod test {
     }
 
     #[test]
-    fn main_module() {
+    fn main_module_combinator() {
         for s in &["", " 123 nil \n \ttrue", "; comment", "; comment\n123"] {
             println!("{}", s);
             LanguageParser::parse(Rule::main_module, s).unwrap();
+        }
+    }
+
+    #[test]
+    fn main_module_function() {
+        for &(s, ref m) in &[("", Vec::new())] {
+            println!("{:?}", s);
+            println!("{:?}", m);
+            assert_eq!(main_module(s), Ok(m.clone()));
         }
     }
 }

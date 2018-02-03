@@ -2,7 +2,7 @@ use super::expression::Expression;
 use super::keyword_argument::KeywordArgument;
 use super::positional_argument::PositionalArgument;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Arguments<'a> {
     positionals: Vec<PositionalArgument<'a>>,
     keywords: Vec<KeywordArgument<'a>>,

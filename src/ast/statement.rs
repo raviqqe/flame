@@ -1,6 +1,6 @@
 use super::expression::Expression;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Statement<'a> {
     Effect {
         value: Expression<'a>,

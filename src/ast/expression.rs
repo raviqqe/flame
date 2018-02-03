@@ -1,6 +1,6 @@
 use super::app::App;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum Expression<'a> {
     App(&'a App<'a>),
     Name(&'a str),
