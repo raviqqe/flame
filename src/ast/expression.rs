@@ -7,4 +7,5 @@ pub enum Expression<'a> {
     Name(&'a str),
     Nil,
     Number(f64),
+    String(String),
 }
