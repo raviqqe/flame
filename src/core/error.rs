@@ -1,4 +1,7 @@
+use std::error::Error as ErrorTrait;
+
 use futures::prelude::*;
+use futures_black_hole::BlackHoleError;
 
 use super::normal::Normal;
 use super::result::Result;
@@ -22,6 +25,10 @@ impl Error {
         Self::new("ArgumentError", m)
     }
 
+    pub fn runtime(m: &str) -> Error {
+        Self::new("RuntimeError", m)
+    }
+
     pub fn value(m: &str) -> Error {
         Self::new("ValueError", m)
     }
@@ -29,7 +36,7 @@ impl Error {
     #[async]
     pub fn typ(n: Normal, t: String) -> Result<Error> {
         let s = await!(n.to_string())?;
-        Ok(Self::new( "TypeError", &format!("{} is not a {}.", s, t)))
+        Ok(Self::new("TypeError", &format!("{} is not a {}.", s, t)))
     }
 
     #[async]
@@ -73,5 +80,11 @@ impl Error {
 
     pub fn message(&self) -> &str {
         &self.message
+    }
+}
+
+impl From<BlackHoleError> for Error {
+    fn from(e: BlackHoleError) -> Self {
+        Error::runtime(e.description())
     }
 }

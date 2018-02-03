@@ -34,9 +34,9 @@ impl Thunk {
 
             i.content = Content::Normal(v.clone());
 
-            i.black_hole.release();
+            i.black_hole.release()?;
         } else {
-            await!(i.black_hole.clone()).unwrap();
+            await!(&i.black_hole).unwrap();
         }
 
         match i.content.clone() {
