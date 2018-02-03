@@ -11,5 +11,13 @@ lazy_static! {
 
 #[async]
 pub fn run(es: Vec<Effect>) -> Result<(), ()> {
+    for e in es {
+        if e.expanded {
+            unimplemented!()
+        } else {
+            POOL.spawn(e.value);
+        }
+    }
+
     Ok(())
 }
