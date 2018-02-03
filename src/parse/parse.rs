@@ -41,7 +41,16 @@ fn expression<'a>(p: Pair<Rule>) -> Expression<'a> {
         Rule::boolean => Expression::Boolean(FromStr::from_str(p.as_str()).unwrap()),
         Rule::nil => Expression::Nil,
         Rule::number => Expression::Number(FromStr::from_str(p.as_str()).unwrap()),
-        Rule::string => Expression::String(FromStr::from_str(p.as_str()).unwrap()),
+        Rule::string => Expression::String({
+            let s = p.as_str();
+
+            s[1..(s.len() - 1)]
+                .replace("\\\"", "\"")
+                .replace("\\\\", "\\")
+                .replace("\\n", "\n")
+                .replace("\\r", "\r")
+                .replace("\\t", "\t")
+        }),
         _ => unreachable!(),
     }
 }
@@ -78,10 +87,28 @@ mod test {
     #[test]
     fn string() {
         for s in vec![
-            "\"\"", "\"a\"", "\"abc\"", "\"\\\"\"", "\"\\n\"", "\"\\r\"", "\"\\t\""
+            "\"\"",
+            "\"a\"",
+            "\"abc\"",
+            "\"\\\"\"",
+            "\"\\\\\"",
+            "\"\\n\"",
+            "\"\\r\"",
+            "\"\\t\"",
+            "\"\\\"\\\\\\n\\r\\t\"",
         ] {
             LanguageParser::parse(Rule::string, s).unwrap();
         }
+    }
+
+    #[test]
+    fn escaped_string() {
+        assert_eq!(
+            main_module("\"\\\"\\\\\\n\\r\\t\"").unwrap(),
+            vec![
+                Statement::effect(Expression::String("\"\\\n\r\t".to_string()), false),
+            ]
+        );
     }
 
     #[test]
