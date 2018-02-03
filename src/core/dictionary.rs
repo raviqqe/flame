@@ -47,7 +47,10 @@ impl Dictionary {
     #[async]
     pub fn to_string(self) -> Result<String> {
         let mut ss = vec!["{".to_string()];
-        let kvs: Vec<(Key, Value)> = self.0.into_iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        let kvs: Vec<(Key, Value)> = self.0
+            .into_iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
 
         for (k, v) in kvs {
             let n: Normal = k.into();
@@ -65,5 +68,23 @@ impl Dictionary {
 
     pub fn size(&self) -> usize {
         self.0.size()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::thread::spawn;
+
+    use super::*;
+
+    #[test]
+    fn new() {
+        Dictionary::new();
+    }
+
+    #[test]
+    fn send_and_sync() {
+        let d = Dictionary::new();
+        spawn(move || d);
     }
 }

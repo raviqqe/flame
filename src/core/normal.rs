@@ -16,7 +16,7 @@ pub enum Normal {
     Boolean(bool),
     Dictionary(Dictionary),
     Error(Error),
-    Function(Arc<Fn(Arguments) -> Value>),
+    Function(Arc<Fn(Arguments) -> Value + Send + Sync>),
     List(List),
     Nil,
     Number(f64),
