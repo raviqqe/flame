@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use pest::{Error, Parser};
 use pest::iterators::Pair;
 
@@ -18,12 +20,10 @@ pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
     for p in p.into_inner() {
         ss.push(match p.as_rule() {
             Rule::statement => {
-                let p = p.into_inner().nth(0).unwrap();
+                let p = first(p);
 
                 match p.as_rule() {
-                    Rule::effect => {
-                        Statement::effect(expression(p.into_inner().nth(0).unwrap()), false)
-                    }
+                    Rule::effect => Statement::effect(expression(first(p)), false),
                     _ => unreachable!(),
                 }
             }
@@ -35,7 +35,16 @@ pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
 }
 
 fn expression<'a>(p: Pair<Rule>) -> Expression<'a> {
-    unimplemented!()
+    let p = first(p);
+
+    match p.as_rule() {
+        Rule::number => Expression::Number(FromStr::from_str(p.as_str()).unwrap()),
+        _ => unimplemented!(),
+    }
+}
+
+fn first(p: Pair<Rule>) -> Pair<Rule> {
+    p.into_inner().nth(0).unwrap()
 }
 
 #[cfg(test)]
@@ -81,7 +90,13 @@ mod test {
 
     #[test]
     fn main_module_function() {
-        for &(s, ref m) in &[("", Vec::new())] {
+        for &(s, ref m) in &[
+            ("", vec![]),
+            (
+                "123",
+                vec![Statement::effect(Expression::Number(123.0), false)],
+            ),
+        ] {
             println!("{:?}", s);
             println!("{:?}", m);
             assert_eq!(main_module(s), Ok(m.clone()));
