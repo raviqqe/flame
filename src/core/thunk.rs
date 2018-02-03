@@ -32,10 +32,9 @@ impl Thunk {
             // This block is basically:
             // await!(&self.inner_mut().black_hole)?;
             loop {
-                match self.inner_mut().black_hole.poll() {
-                    Ok(Async::Ready(())) => break,
-                    Ok(Async::NotReady) => yield Async::NotReady,
-                    Err(e) => return Err(e.into()),
+                match self.inner_mut().black_hole.poll()? {
+                    Async::Ready(()) => break,
+                    Async::NotReady => yield Async::NotReady,
                 }
             }
         }
