@@ -10,6 +10,7 @@ extern crate pest_derive;
 
 mod ast;
 mod core;
+mod desugar;
 mod parse;
 
 use core::*;
