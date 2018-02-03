@@ -75,6 +75,15 @@ mod test {
     }
 
     #[test]
+    fn string() {
+        for s in vec![
+            "\"\"", "\"a\"", "\"abc\"", "\"\\\"\"", "\"\\n\"", "\"\\r\"", "\"\\t\""
+        ] {
+            LanguageParser::parse(Rule::string, s).unwrap();
+        }
+    }
+
+    #[test]
     fn expression() {
         for s in EXPRESSIONS {
             println!("{}", s);
