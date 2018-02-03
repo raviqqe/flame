@@ -92,3 +92,16 @@ impl From<Normal> for Value {
         Value::Normal(n)
     }
 }
+
+impl Future for Value {
+    type Item = Normal;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        match *self {
+            Value::Invalid => unreachable!(),
+            Value::Normal(ref n) => Ok(Async::Ready(n.clone())),
+            Value::Thunk(ref mut t) => t.poll(),
+        }
+    }
+}

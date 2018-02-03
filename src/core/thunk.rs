@@ -7,6 +7,7 @@ use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
 use super::arguments::Arguments;
+use super::error::Error;
 use super::normal::Normal;
 use super::result::Result;
 use super::value::Value;
@@ -42,6 +43,16 @@ impl Thunk {
             Content::App(_, _) => unreachable!(),
             Content::Normal(v) => Ok(v),
         }
+    }
+}
+
+impl Future for Thunk {
+    type Item = Normal;
+    type Error = Error;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        // TODO: Remove *.clone() if possible.
+        self.clone().eval().poll()
     }
 }
 
