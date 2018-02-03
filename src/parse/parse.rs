@@ -96,6 +96,13 @@ mod test {
                 "123",
                 vec![Statement::effect(Expression::Number(123.0), false)],
             ),
+            (
+                " 123 ; foo \n456",
+                vec![
+                    Statement::effect(Expression::Number(123.0), false),
+                    Statement::effect(Expression::Number(456.0), false),
+                ],
+            ),
         ] {
             println!("{:?}", s);
             println!("{:?}", m);
