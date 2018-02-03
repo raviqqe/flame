@@ -45,6 +45,9 @@ impl Thunk {
     }
 }
 
+unsafe impl Send for Thunk {}
+unsafe impl Sync for Thunk {}
+
 #[derive(Debug, Eq, PartialEq)]
 #[repr(u8)]
 enum State {
@@ -94,10 +97,18 @@ impl Inner {
 
 #[cfg(test)]
 mod test {
+    use std::thread::spawn;
+
     use super::*;
 
     #[test]
     fn new() {
         Thunk::new(Value::from(0.0), Arguments::new(&[], &[], &[]));
+    }
+
+    #[test]
+    fn send_and_sync() {
+        let t = Thunk::new(Value::from(0.0), Arguments::new(&[], &[], &[]));
+        spawn(move || t);
     }
 }
