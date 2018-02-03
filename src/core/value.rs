@@ -93,15 +93,12 @@ impl From<Normal> for Value {
     }
 }
 
-impl Future for Value {
-    type Item = Normal;
-    type Error = Error;
+#[cfg(test)]
+mod test {
+    use super::*;
 
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        match *self {
-            Value::Invalid => unreachable!(),
-            Value::Normal(ref n) => Ok(Async::Ready(n.clone())),
-            Value::Thunk(ref mut t) => t.poll(),
-        }
+    #[test]
+    fn from_f64() {
+        Value::from(123.0);
     }
 }

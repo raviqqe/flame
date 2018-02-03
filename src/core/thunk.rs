@@ -46,16 +46,6 @@ impl Thunk {
     }
 }
 
-impl Future for Thunk {
-    type Item = Normal;
-    type Error = Error;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        // TODO: Remove *.clone() if possible.
-        self.clone().eval().poll()
-    }
-}
-
 unsafe impl Send for Thunk {}
 unsafe impl Sync for Thunk {}
 
@@ -115,11 +105,5 @@ mod test {
     #[test]
     fn new() {
         Thunk::new(Value::from(0.0), Arguments::new(&[], &[], &[]));
-    }
-
-    #[test]
-    fn send_and_sync() {
-        let t = Thunk::new(Value::from(0.0), Arguments::new(&[], &[], &[]));
-        spawn(move || t);
     }
 }
