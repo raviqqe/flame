@@ -109,8 +109,6 @@ impl Inner {
 
 #[cfg(test)]
 mod test {
-    use std::thread::spawn;
-
     use super::*;
 
     #[test]
