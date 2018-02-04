@@ -51,8 +51,6 @@ fn main() {
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
 
-    println!("{:?}", args);
-
     println!("{}", read_source(args.arg_filename));
 
     // run(vec![]);
