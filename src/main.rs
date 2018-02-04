@@ -24,7 +24,7 @@ mod run;
 
 use std::error::Error;
 use std::fs::File;
-use std::io::Read;
+use std::io::{stdin, Read};
 use std::process::exit;
 
 use docopt::Docopt;
@@ -43,7 +43,7 @@ Options:
 
 #[derive(Debug, Deserialize)]
 struct Args {
-    arg_filename: Vec<String>,
+    arg_filename: Option<String>,
 }
 
 fn main() {
@@ -53,14 +53,22 @@ fn main() {
 
     println!("{:?}", args);
 
+    println!("{}", read_source(args.arg_filename));
+
     // run(vec![]);
 }
 
-fn read_file(n: &str) -> String {
-    let mut f = File::open(n).unwrap_or_else(fail);
+fn read_source(s: Option<String>) -> String {
+    match s {
+        Some(n) => read_file(&mut File::open(n).unwrap_or_else(fail)),
+        None => read_file(&mut stdin()),
+    }
+}
+
+fn read_file<R: Read>(r: &mut R) -> String {
     let mut s = String::new();
 
-    f.read_to_string(&mut s).unwrap_or_else(fail);
+    r.read_to_string(&mut s).unwrap_or_else(fail);
 
     s
 }
