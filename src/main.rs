@@ -60,12 +60,12 @@ fn main() {
 
 fn read_source(s: Option<String>) -> String {
     match s {
-        Some(n) => read_file(&mut File::open(n).unwrap_or_else(fail)),
-        None => read_file(&mut stdin()),
+        Some(n) => read_file(File::open(n).unwrap_or_else(fail)),
+        None => read_file(stdin()),
     }
 }
 
-fn read_file<R: Read>(r: &mut R) -> String {
+fn read_file<R: Read>(mut r: R) -> String {
     let mut s = String::new();
 
     r.read_to_string(&mut s).unwrap_or_else(fail);
