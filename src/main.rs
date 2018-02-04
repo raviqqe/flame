@@ -22,7 +22,13 @@ mod desugar;
 mod parse;
 mod run;
 
+use std::error::Error;
+use std::fs::File;
+use std::io::Read;
+use std::process::exit;
+
 use docopt::Docopt;
+use run::run;
 
 const USAGE: &'static str = "
 The interpreter of Flame programming language.
@@ -46,4 +52,20 @@ fn main() {
         .unwrap_or_else(|e| e.exit());
 
     println!("{:?}", args);
+
+    // run(vec![]);
+}
+
+fn read_file(n: &str) -> String {
+    let mut f = File::open(n).unwrap_or_else(fail);
+    let mut s = String::new();
+
+    f.read_to_string(&mut s).unwrap_or_else(fail);
+
+    s
+}
+
+fn fail<E: Error, R>(e: E) -> R {
+    eprintln!("{}", e);
+    exit(1);
 }
