@@ -1,6 +1,3 @@
-use std::fmt;
-use std::fmt::{Display, Formatter};
-
 use futures::prelude::*;
 
 use super::dictionary::Dictionary;
@@ -66,12 +63,6 @@ impl Value {
 impl Default for Value {
     fn default() -> Self {
         Value::Invalid
-    }
-}
-
-impl Display for Value {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
     }
 }
 
