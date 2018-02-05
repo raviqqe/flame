@@ -34,7 +34,7 @@ const USAGE: &'static str = "
 The interpreter of Flame programming language.
 
 Usage:
-  flame [-h] [-v] [<filename>]
+  flame [-h] [<filename>]
 
 Options:
   -h --help     Show this help.
