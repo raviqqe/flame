@@ -11,7 +11,7 @@ jobs:
           name: Setup
           command: |
             apt update --fix-missing
-            apt install -y cmake
+            apt install -y binutils-dev cmake libdw-dev libelf-dev libiberty-dev
       - run:
           name: Build
           command: |
