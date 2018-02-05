@@ -51,7 +51,8 @@ fn main() {
         .and_then(|d| d.deserialize())
         .unwrap_or_else(fail);
 
-    desugar(parse::main_module(&read_source(args.arg_filename)));
+    desugar(parse::main_module(&read_source(args.arg_filename)).unwrap_or_else(fail))
+        .unwrap_or_else(fail);
 
     run(vec![]);
 }

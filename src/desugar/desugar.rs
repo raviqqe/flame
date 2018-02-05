@@ -1,5 +1,7 @@
 use super::super::ast::Statement;
 
-pub fn desugar(ss: Vec<Statement>) -> Vec<Statement> {
-    ss
+use super::error::DesugarError;
+
+pub fn desugar(ss: Vec<Statement>) -> Result<Vec<Statement>, DesugarError> {
+    Ok(ss)
 }
