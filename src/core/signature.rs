@@ -40,3 +40,20 @@ impl Signature {
         self.positionals.arity() + self.keywords.arity()
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn new() {
+        Signature::new(
+            vec![],
+            vec![],
+            "".to_string(),
+            vec![],
+            vec![],
+            "".to_string(),
+        );
+    }
+}
