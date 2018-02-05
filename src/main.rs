@@ -52,12 +52,10 @@ fn main() {
         .and_then(|d| d.deserialize())
         .unwrap_or_else(fail);
 
-    compile(
+    run(compile(
         desugar(parse::main_module(&read_source(args.arg_filename)).unwrap_or_else(fail))
             .unwrap_or_else(fail),
-    );
-
-    run(vec![]);
+    ).unwrap_or_else(fail));
 }
 
 fn read_source(s: Option<String>) -> String {
