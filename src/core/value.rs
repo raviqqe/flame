@@ -10,7 +10,6 @@ use super::normal::Normal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
-    Invalid,
     Normal(Result<BlurNormal>),
     Thunk(thunk::Thunk),
 }
@@ -19,7 +18,6 @@ impl Value {
     #[async]
     pub fn blur(self) -> Result<BlurNormal> {
         match self {
-            Value::Invalid => unreachable!(),
             Value::Normal(p) => p,
             Value::Thunk(t) => await!(t.eval()),
         }
@@ -80,12 +78,6 @@ impl Value {
     #[async]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
-    }
-}
-
-impl Default for Value {
-    fn default() -> Self {
-        Value::Invalid
     }
 }
 

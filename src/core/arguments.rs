@@ -11,37 +11,37 @@ use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
 pub struct Arguments {
-    positionals: ArrayQueue<[Value; 4]>,
-    expanded_list: Value,
-    keywords: ArrayQueue<[KeywordArgument; 4]>,
-    expanded_dict: Value,
+    positionals: ArrayQueue<[Option<Value>; 4]>,
+    expanded_list: Option<Value>,
+    keywords: ArrayQueue<[Option<KeywordArgument>; 4]>,
+    expanded_dict: Option<Value>,
 }
 
 impl Arguments {
     pub fn new(ps: &[PositionalArgument], ks: &[KeywordArgument], ds: &[Value]) -> Arguments {
-        let mut l = Value::Invalid;
+        let mut l = None;
         let mut pq = ArrayQueue::new();
 
         for (i, p) in ps.iter().enumerate() {
-            if p.expanded || !p.expanded && pq.push_back(&p.value).is_err() {
-                l = Self::merge_positional_arguments(&ps[i..]);
+            if p.expanded || !p.expanded && pq.push_back(&Some(p.value.clone())).is_err() {
+                l = Some(Self::merge_positional_arguments(&ps[i..]));
                 break;
             }
         }
 
         let mut kq = ArrayQueue::new();
-        let mut d = Value::Invalid;
+        let mut d = None;
 
         for (i, k) in ks.iter().enumerate() {
-            if kq.push_back(k).is_err() {
-                d = Self::merge_keyword_arguments(&ks[i..]);
+            if kq.push_back(&Some(k.clone())).is_err() {
+                d = Some(Self::merge_keyword_arguments(&ks[i..]));
                 break;
             }
         }
 
         if !ds.is_empty() {
-            if let Value::Invalid = d {
-                d = Value::from(Dictionary::new());
+            if let None = d {
+                d = Some(Value::from(Dictionary::new()));
             }
 
             for dd in ds {
@@ -67,9 +67,11 @@ impl Arguments {
     }
 
     pub fn search_keyword(&mut self, s: &str) -> Result<Value> {
-        for k in &mut self.keywords {
-            if s == k.name {
-                return Ok(replace(k, Default::default()).value);
+        for o in &mut self.keywords {
+            let n = o.clone().unwrap().name;
+
+            if s == n {
+                return Ok(replace(o, None).unwrap().value);
             }
         }
 
@@ -91,13 +93,15 @@ impl Arguments {
             )));
         }
 
-        let n = self.keywords.len() + await!(self.expanded_dict.dictionary())?.size();
+        if let Some(v) = self.expanded_dict {
+            let n = self.keywords.len() + await!(v.dictionary())?.size();
 
-        if n > 0 {
-            return Err(Error::argument(&format!(
-                "{} keyword arguments are left.",
-                n
-            )));
+            if n > 0 {
+                return Err(Error::argument(&format!(
+                    "{} keyword arguments are left.",
+                    n
+                )));
+            }
         }
 
         Ok(())
@@ -154,15 +158,6 @@ pub struct KeywordArgument {
 impl KeywordArgument {
     pub fn new(s: String, v: Value) -> Self {
         KeywordArgument { name: s, value: v }
-    }
-}
-
-impl Default for KeywordArgument {
-    fn default() -> Self {
-        KeywordArgument {
-            name: String::from(""),
-            value: Value::Invalid,
-        }
     }
 }
 
