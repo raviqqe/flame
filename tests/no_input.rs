@@ -2,10 +2,14 @@ use std::process::Command;
 
 #[test]
 fn no_input() {
-    let output = Command::new("./target/debug/flame")
-        .arg("-h")
-        .output()
-        .unwrap();
+    let s = String::from_utf8(
+        Command::new("./target/debug/flame")
+            .arg("-h")
+            .output()
+            .unwrap()
+            .stderr,
+    ).unwrap();
 
-    assert!(String::from_utf8_lossy(&output.stderr).contains("Flame programming language"));
+    assert!(s.contains("Flame programming language"));
+    assert!(s.contains("Options"));
 }
