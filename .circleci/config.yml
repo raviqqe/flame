@@ -29,7 +29,7 @@ jobs:
             wget https://github.com/SimonKagstrom/kcov/archive/master.tar.gz
             tar xf master.tar.gz
             mkdir kcov-master/build
-            cd build
+            cd $_
             cmake ..
             make
             make install
