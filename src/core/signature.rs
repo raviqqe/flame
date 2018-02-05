@@ -6,7 +6,7 @@ use super::optional_argument::OptionalArgument;
 use super::result::Result;
 use super::value::Value;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Signature {
     positionals: HalfSignature,
     keywords: HalfSignature,
@@ -55,5 +55,12 @@ mod test {
             vec![],
             "".to_string(),
         );
+    }
+
+    #[test]
+    fn bind() {
+        for (s, a) in vec![(Signature::default(), Arguments::default())] {
+            s.bind(a).wait().unwrap();
+        }
     }
 }

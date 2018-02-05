@@ -8,7 +8,7 @@ use super::list::List;
 use super::result::Result;
 use super::value::Value;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Arguments {
     positionals: ArrayQueue<[Value; 4]>,
     expanded_list: Value,

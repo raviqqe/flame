@@ -3,7 +3,7 @@ use super::optional_argument::OptionalArgument;
 use super::result::Result;
 use super::value::Value;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct HalfSignature {
     requireds: Vec<String>,
     optionals: Vec<OptionalArgument>,
