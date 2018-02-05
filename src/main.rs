@@ -39,7 +39,7 @@ Usage:
   flame [-h] [<filename>]
 
 Options:
-  -h --help     Show this help.
+  -h, --help  Show this help.
 ";
 
 #[derive(Debug, Deserialize)]
