@@ -91,15 +91,12 @@ impl Arguments {
             )));
         }
 
-        let mut n = 0;
+        let n = self.keywords.len() + await!(self.expanded_dict.dictionary())?.size();
 
-        // let d = await!(v.clone().dictionary())?;
-        unimplemented!();
-
-        if n != 0 || self.keywords.len() > 0 {
+        if n > 0 {
             return Err(Error::argument(&format!(
                 "{} keyword arguments are left.",
-                self.keywords.len() + n
+                n
             )));
         }
 
