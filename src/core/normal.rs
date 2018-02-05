@@ -6,7 +6,6 @@ use futures::prelude::*;
 
 use super::arguments::Arguments;
 use super::dictionary::Dictionary;
-use super::error::Error;
 use super::list::List;
 use super::result::Result;
 use super::value::Value;
@@ -15,7 +14,6 @@ use super::value::Value;
 pub enum Normal {
     Boolean(bool),
     Dictionary(Dictionary),
-    Error(Error),
     Function(Arc<Fn(Arguments) -> Value + Send + Sync>),
     List(List),
     Nil,
@@ -29,7 +27,6 @@ impl Normal {
         Ok(match self {
             Normal::Boolean(b) => (if b { "true" } else { "false" }).to_string(),
             Normal::Dictionary(d) => await!(d.to_string())?,
-            Normal::Error(e) => return Err(e),
             Normal::Function(_) => "<function>".to_string(),
             Normal::List(l) => await!(l.to_string())?,
             Normal::Number(n) => n.to_string(),

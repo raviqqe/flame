@@ -10,18 +10,18 @@ use super::normal::Normal;
 #[derive(Clone, Debug)]
 pub enum Value {
     Invalid,
-    Normal(Normal),
+    Normal(Result<Normal>),
     Thunk(thunk::Thunk),
 }
 
 impl Value {
     #[async]
     pub fn normal(self) -> Result<Normal> {
-        Ok(match self {
+        match self {
             Value::Invalid => unreachable!(),
-            Value::Normal(n) => n,
-            Value::Thunk(t) => await!(t.eval())?,
-        })
+            Value::Normal(r) => r,
+            Value::Thunk(t) => await!(t.eval()),
+        }
     }
 
     #[async]
@@ -80,7 +80,7 @@ impl From<List> for Value {
 
 impl From<Normal> for Value {
     fn from(n: Normal) -> Self {
-        Value::Normal(n)
+        Value::Normal(Ok(n))
     }
 }
 
