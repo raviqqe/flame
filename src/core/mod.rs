@@ -5,6 +5,7 @@ mod half_signature;
 mod list;
 mod normal;
 mod optional_argument;
+mod purity;
 mod result;
 mod signature;
 mod thunk;
