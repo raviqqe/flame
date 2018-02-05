@@ -11,5 +11,6 @@ fn no_input() {
     ).unwrap();
 
     assert!(s.contains("Flame programming language"));
+    assert!(s.contains("Usage"));
     assert!(s.contains("Options"));
 }
