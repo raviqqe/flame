@@ -1,7 +1,5 @@
-#![feature(proc_macro, conservative_impl_trait, generators)]
-
 use futures::prelude::*;
-use futures_cpupool::*;
+use futures_cpupool::CpuPool;
 
 use super::super::compile::Effect;
 
