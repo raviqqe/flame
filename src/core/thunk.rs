@@ -7,7 +7,7 @@ use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
 use super::arguments::Arguments;
-use super::normal::Normal;
+use super::blur_normal::BlurNormal;
 use super::result::Result;
 use super::value::Value;
 
@@ -20,7 +20,7 @@ impl Thunk {
     }
 
     #[async]
-    pub fn eval(self) -> Result<Normal> {
+    pub fn eval(self) -> Result<BlurNormal> {
         if self.inner_mut().lock() {
             self.inner_mut().content = Content::Normal(match self.inner().content.clone() {
                 Content::App(_, _) => unimplemented!(),
@@ -41,7 +41,7 @@ impl Thunk {
 
         match self.inner().content {
             Content::App(_, _) => unreachable!(),
-            Content::Normal(ref n) => Ok(n.clone()),
+            Content::Normal(r) => r.clone(),
         }
     }
 
@@ -77,7 +77,7 @@ impl From<u8> for State {
 #[derive(Clone, Debug)]
 enum Content {
     App(Value, Arguments),
-    Normal(Normal),
+    Normal(Result<BlurNormal>),
 }
 
 #[derive(Debug)]

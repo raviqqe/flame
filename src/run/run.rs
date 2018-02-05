@@ -13,7 +13,7 @@ pub fn run(es: Vec<Effect>) -> Result<(), ()> {
         if e.expanded {
             unimplemented!()
         } else {
-            POOL.spawn(e.value.normal());
+            POOL.spawn(e.value.impure());
         }
     }
 
