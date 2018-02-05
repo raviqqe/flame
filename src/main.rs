@@ -34,11 +34,10 @@ const USAGE: &'static str = "
 The interpreter of Flame programming language.
 
 Usage:
-  flame [<filename>]
+  flame [-h] [-v] [<filename>]
 
 Options:
   -h --help     Show this help.
-  --version     Show version.
 ";
 
 #[derive(Debug, Deserialize)]
