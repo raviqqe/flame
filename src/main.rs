@@ -48,7 +48,7 @@ struct Args {
 fn main() {
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
-        .unwrap_or_else(|e| e.exit());
+        .unwrap_or_else(fail);
 
     println!("{}", read_source(args.arg_filename));
 
