@@ -58,6 +58,14 @@ impl Arguments {
         }
     }
 
+    pub fn next_positional(&mut self) -> Option<Value> {
+        unimplemented!()
+    }
+
+    pub fn rest_positionals(&mut self) -> Value {
+        unimplemented!()
+    }
+
     pub fn search_keyword(&mut self, s: &str) -> Result<Value> {
         for k in &mut self.keywords {
             if s == k.name {
