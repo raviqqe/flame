@@ -23,7 +23,7 @@ impl Thunk {
     pub fn eval(self) -> Result<Normal> {
         if self.inner_mut().lock() {
             self.inner_mut().content = Content::Normal(match self.inner().content.clone() {
-                Content::App(v, _) => await!(v.normal())?,
+                Content::App(_, _) => unimplemented!(),
                 Content::Normal(_) => unreachable!(),
             });
 
