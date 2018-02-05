@@ -41,7 +41,7 @@ impl Thunk {
 
         match self.inner().content {
             Content::App(_, _) => unreachable!(),
-            Content::Normal(r) => r.clone(),
+            Content::Normal(ref r) => r.clone(),
         }
     }
 

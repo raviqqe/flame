@@ -103,7 +103,7 @@ impl From<List> for Value {
 
 impl From<Normal> for Value {
     fn from(n: Normal) -> Self {
-        Value::Normal(Ok(n))
+        Value::Normal(Ok(BlurNormal::Pure(n)))
     }
 }
 
