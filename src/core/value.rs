@@ -3,6 +3,7 @@ use futures::prelude::*;
 use super::dictionary::Dictionary;
 use super::error::Error;
 use super::list::List;
+use super::blur_normal::BlurNormal;
 use super::result::Result;
 use super::thunk;
 use super::normal::Normal;
@@ -10,23 +11,45 @@ use super::normal::Normal;
 #[derive(Clone, Debug)]
 pub enum Value {
     Invalid,
-    Normal(Result<Normal>),
+    Normal(Result<BlurNormal>),
     Thunk(thunk::Thunk),
 }
 
 impl Value {
     #[async]
-    pub fn normal(self) -> Result<Normal> {
+    pub fn blur(self) -> Result<BlurNormal> {
         match self {
             Value::Invalid => unreachable!(),
-            Value::Normal(r) => r,
+            Value::Normal(p) => p,
             Value::Thunk(t) => await!(t.eval()),
         }
     }
 
     #[async]
+    pub fn pured(self) -> Result<Normal> {
+        match await!(self.blur())? {
+            BlurNormal::Pure(n) => Ok(n),
+            BlurNormal::Impure(_) => Err(Error::new(
+                "ImpureError",
+                "impure value detected in pure context",
+            )),
+        }
+    }
+
+    #[async]
+    pub fn impure(self) -> Result<Normal> {
+        match await!(self.blur())? {
+            BlurNormal::Pure(_) => Err(Error::new(
+                "PureError",
+                "pure value detected in impure context",
+            )),
+            BlurNormal::Impure(n) => Ok(n),
+        }
+    }
+
+    #[async]
     pub fn boolean(self) -> Result<bool> {
-        let n = await!(self.normal())?;
+        let n = await!(self.pured())?;
 
         match n {
             Normal::Boolean(b) => Ok(b),
@@ -36,7 +59,7 @@ impl Value {
 
     #[async]
     pub fn dictionary(self) -> Result<Dictionary> {
-        let n = await!(self.normal())?;
+        let n = await!(self.pured())?;
 
         match n {
             Normal::Dictionary(d) => Ok(d),
@@ -46,7 +69,7 @@ impl Value {
 
     #[async]
     pub fn list(self) -> Result<List> {
-        let n = await!(self.normal())?;
+        let n = await!(self.pured())?;
 
         match n {
             Normal::List(l) => Ok(l),
@@ -56,7 +79,7 @@ impl Value {
 
     #[async]
     pub fn to_string(self) -> Result<String> {
-        await!(await!(self.normal())?.to_string())
+        await!(await!(self.pured())?.to_string())
     }
 }
 
