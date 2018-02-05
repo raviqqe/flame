@@ -52,7 +52,7 @@ fn main() {
 
     println!("{}", read_source(args.arg_filename));
 
-    // run(vec![]);
+    run(vec![]);
 }
 
 fn read_source(s: Option<String>) -> String {
