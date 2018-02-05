@@ -4,6 +4,7 @@ use array_queue::ArrayQueue;
 use futures::prelude::*;
 
 use super::error::Error;
+use super::dictionary::Dictionary;
 use super::list::List;
 use super::result::Result;
 use super::value::Value;
@@ -33,13 +34,20 @@ impl Arguments {
 
         for (i, k) in ks.iter().enumerate() {
             if kq.push_back(k).is_err() {
-                d = Self::merge_keyword_arguments(&ks[i..], ds);
+                d = Self::merge_keyword_arguments(&ks[i..]);
                 break;
             }
         }
 
-        for d in ds {
-            unimplemented!()
+        if !ds.is_empty() {
+            if let Value::Invalid = d {
+                d = Value::from(Dictionary::new());
+            }
+
+            for dd in ds {
+                // d = d.merge(dd)
+                unimplemented!()
+            }
         }
 
         Arguments {
@@ -112,7 +120,7 @@ impl Arguments {
         l
     }
 
-    fn merge_keyword_arguments(ks: &[KeywordArgument], ds: &[Value]) -> Value {
+    fn merge_keyword_arguments(ks: &[KeywordArgument]) -> Value {
         unimplemented!()
     }
 }

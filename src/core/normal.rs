@@ -45,6 +45,12 @@ impl Debug for Normal {
     }
 }
 
+impl From<Dictionary> for Normal {
+    fn from(d: Dictionary) -> Self {
+        Normal::Dictionary(d)
+    }
+}
+
 impl From<f64> for Normal {
     fn from(n: f64) -> Self {
         Normal::Number(n)

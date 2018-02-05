@@ -89,6 +89,12 @@ impl Default for Value {
     }
 }
 
+impl From<Dictionary> for Value {
+    fn from(d: Dictionary) -> Self {
+        Value::from(Normal::from(d))
+    }
+}
+
 impl From<f64> for Value {
     fn from(n: f64) -> Self {
         Value::from(Normal::from(n))
