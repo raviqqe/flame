@@ -1,16 +1,12 @@
-use std::fmt;
-use std::fmt::{Debug, Formatter};
+use std::fmt::{self, Debug, Formatter};
 use std::sync::Arc;
 
 use futures::prelude::*;
 
-use super::arguments::Arguments;
 use super::dictionary::Dictionary;
-use super::error::Error;
-use super::function::{Callable, Function};
+use super::function::Function;
 use super::list::List;
 use super::result::Result;
-use super::value::Value;
 
 #[derive(Clone)]
 pub enum Normal {
