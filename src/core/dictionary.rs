@@ -70,12 +70,10 @@ impl Dictionary {
         self.0.size()
     }
 
-    // impl Collection {
     #[async]
     pub fn merge(self, d: Self) -> Result<Self> {
         unimplemented!()
     }
-    // }
 }
 
 #[cfg(test)]
