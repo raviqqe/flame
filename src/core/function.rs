@@ -6,23 +6,24 @@ use super::result::Result;
 use super::signature::Signature;
 use super::value::Value;
 
-pub type Function = Box<Callable>;
-
-pub type FunctionResult = Box<Future<Item = Value, Error = Error>>;
-
-pub trait Callable: Send + Sync {
-    fn call(self, a: Arguments) -> FunctionResult;
-}
+type RawFunction = fn(vs: Vec<Value>) -> Box<Future<Item = Value, Error = Error>>;
 
 #[derive(Clone, Debug)]
-pub struct PureFunction {
+pub struct Function {
     signature: Signature,
-    function: fn(vs: Vec<Value>) -> FunctionResult,
+    function: RawFunction,
 }
 
-impl Callable for PureFunction {
+impl Function {
+    pub fn new(s: Signature, f: RawFunction) -> Self {
+        Function {
+            signature: s,
+            function: f,
+        }
+    }
+
     #[async(boxed)]
-    fn call(self, a: Arguments) -> Result<Value> {
+    pub fn call(self, a: Arguments) -> Result<Value> {
         Ok(await!((self.function)(await!(self.signature.bind(a))?))?)
     }
 }

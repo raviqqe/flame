@@ -1,5 +1,4 @@
 use std::fmt::{self, Debug, Formatter};
-use std::sync::Arc;
 
 use futures::prelude::*;
 
@@ -12,7 +11,7 @@ use super::result::Result;
 pub enum Normal {
     Boolean(bool),
     Dictionary(Dictionary),
-    Function(Arc<Function>),
+    Function(Function),
     List(List),
     Nil,
     Number(f64),
@@ -58,7 +57,7 @@ impl From<f64> for Normal {
 
 impl From<Function> for Normal {
     fn from(f: Function) -> Self {
-        Normal::Function(Arc::new(f))
+        Normal::Function(f)
     }
 }
 
