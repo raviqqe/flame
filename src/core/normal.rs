@@ -1,11 +1,13 @@
 use std::fmt;
 use std::fmt::{Debug, Formatter};
-use std::sync::*;
+use std::sync::Arc;
 
 use futures::prelude::*;
 
 use super::arguments::Arguments;
 use super::dictionary::Dictionary;
+use super::error::Error;
+use super::function::{Callable, Function};
 use super::list::List;
 use super::result::Result;
 use super::value::Value;
@@ -14,7 +16,7 @@ use super::value::Value;
 pub enum Normal {
     Boolean(bool),
     Dictionary(Dictionary),
-    Function(Arc<Fn(Arguments) -> Value + Send + Sync>),
+    Function(Arc<Function>),
     List(List),
     Nil,
     Number(f64),
@@ -55,6 +57,12 @@ impl From<Dictionary> for Normal {
 impl From<f64> for Normal {
     fn from(n: f64) -> Self {
         Normal::Number(n)
+    }
+}
+
+impl From<Function> for Normal {
+    fn from(f: Function) -> Self {
+        Normal::Function(Arc::new(f))
     }
 }
 

@@ -4,6 +4,7 @@ use super::arguments::{Arguments, PositionalArgument};
 use super::collection::MERGE;
 use super::dictionary::Dictionary;
 use super::error::Error;
+use super::function::Function;
 use super::list::List;
 use super::blur_normal::BlurNormal;
 use super::result::Result;
@@ -88,7 +89,7 @@ impl Value {
 
     pub fn merge(self, v: Self) -> Self {
         Self::app(
-            MERGE,
+            MERGE.clone(),
             Arguments::new(
                 &[
                     PositionalArgument::new(self, false),
@@ -110,6 +111,12 @@ impl From<Dictionary> for Value {
 impl From<f64> for Value {
     fn from(n: f64) -> Self {
         Value::from(Normal::from(n))
+    }
+}
+
+impl From<Function> for Value {
+    fn from(f: Function) -> Self {
+        Value::from(Normal::from(f))
     }
 }
 

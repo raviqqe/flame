@@ -2,6 +2,7 @@ mod arguments;
 mod collection;
 mod dictionary;
 mod error;
+mod function;
 mod half_signature;
 mod list;
 mod normal;
