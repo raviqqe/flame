@@ -21,17 +21,14 @@ impl HalfSignature {
 
     pub fn bind_positionals(&self, args: &mut Arguments, vs: &mut Vec<Value>) -> Result<()> {
         for s in &self.requireds {
-            vs.push(match args.next_positional() {
-                Some(v) => v,
-                None => args.search_keyword(&s)?,
-            });
+            vs.push(args.next_positional().unwrap_or(args.search_keyword(&s)?));
         }
 
         for o in &self.optionals {
-            vs.push(match args.next_positional() {
-                Some(v) => v,
-                None => args.search_keyword(&o.name).unwrap_or(o.value.clone()),
-            });
+            vs.push(
+                args.next_positional()
+                    .unwrap_or(args.search_keyword(&o.name).unwrap_or(o.value.clone())),
+            );
         }
 
         if self.rest != "" {
