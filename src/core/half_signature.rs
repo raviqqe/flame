@@ -58,6 +58,6 @@ impl HalfSignature {
     }
 
     pub fn arity(&self) -> usize {
-        self.requireds.len() + self.optionals.len() + if self.rest == "" { 0 } else { 1 }
+        self.requireds.len() + self.optionals.len() + (self.rest == "") as usize
     }
 }
