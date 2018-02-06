@@ -1,20 +1,26 @@
 use futures::prelude::*;
 
+use super::arguments::{Arguments, PositionalArgument};
+use super::collection::MERGE;
 use super::dictionary::Dictionary;
 use super::error::Error;
 use super::list::List;
 use super::blur_normal::BlurNormal;
 use super::result::Result;
-use super::thunk;
+use super::thunk::Thunk;
 use super::normal::Normal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
     Normal(Result<BlurNormal>),
-    Thunk(thunk::Thunk),
+    Thunk(Thunk),
 }
 
 impl Value {
+    fn app(f: Self, a: Arguments) -> Self {
+        Value::Thunk(Thunk::new(f, a))
+    }
+
     #[async]
     pub fn blur(self) -> Result<BlurNormal> {
         match self {
@@ -78,6 +84,20 @@ impl Value {
     #[async]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
+    }
+
+    pub fn merge(self, v: Self) -> Self {
+        Self::app(
+            MERGE,
+            Arguments::new(
+                &[
+                    PositionalArgument::new(self, false),
+                    PositionalArgument::new(v, false),
+                ],
+                &[],
+                &[],
+            ),
+        )
     }
 }
 

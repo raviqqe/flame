@@ -40,14 +40,15 @@ impl Arguments {
         }
 
         if !ds.is_empty() {
-            if let None = d {
-                d = Some(Value::from(Dictionary::new()));
-            }
+            d = {
+                let mut v = d.unwrap_or(Value::from(Dictionary::new()));
 
-            for dd in ds {
-                // d = d.merge(dd)
-                unimplemented!()
-            }
+                for d in ds {
+                    v = v.merge(d.clone());
+                }
+
+                Some(v)
+            };
         }
 
         Arguments {
@@ -141,7 +142,7 @@ pub struct PositionalArgument {
 }
 
 impl PositionalArgument {
-    pub fn new(s: String, v: Value, e: bool) -> Self {
+    pub fn new(v: Value, e: bool) -> Self {
         PositionalArgument {
             value: v,
             expanded: e,

@@ -1,4 +1,5 @@
 mod arguments;
+mod collection;
 mod dictionary;
 mod error;
 mod half_signature;
