@@ -73,6 +73,16 @@ impl Value {
     }
 
     #[async]
+    pub fn function(self) -> Result<Function> {
+        let n = await!(self.pured())?;
+
+        match n {
+            Normal::Function(f) => Ok(f),
+            _ => Err(await!(Error::not_function(n))?),
+        }
+    }
+
+    #[async]
     pub fn list(self) -> Result<List> {
         let n = await!(self.pured())?;
 

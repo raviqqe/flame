@@ -19,11 +19,11 @@ impl Thunk {
         Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
-    #[async]
+    #[async(boxed)]
     pub fn eval(self) -> Result<BlurNormal> {
         if self.inner_mut().lock() {
             self.inner_mut().content = Content::Normal(match self.inner().content.clone() {
-                Content::App(_, _) => unimplemented!(),
+                Content::App(v, a) => await!(await!(await!(v.function())?.call(a))?.blur()),
                 Content::Normal(_) => unreachable!(),
             });
 
