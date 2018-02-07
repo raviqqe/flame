@@ -30,6 +30,14 @@ impl Function {
     }
 }
 
+macro_rules! pure_function {
+    ($i:ident,  $e:expr, $f:ident) => {
+        lazy_static! {
+            pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f));
+        }
+    }
+}
+
 macro_rules! impure_function {
     ($i:ident, $f:ident, $e:expr, $r:ident) => {
         #[async(boxed)]
@@ -48,9 +56,15 @@ macro_rules! impure_function {
 mod test {
     use super::*;
 
-    impure_function!(TEST_FUNC, test_func_impure, Default::default(), test_func);
+    pure_function!(TEST_FUNC, Default::default(), test_func);
+    impure_function!(
+        TEST_FUNC_IMPURE,
+        test_func_impure,
+        Default::default(),
+        test_func
+    );
 
-    #[async]
+    #[async(boxed)]
     fn test_func(vs: Vec<Value>) -> Result {
         unimplemented!()
     }
