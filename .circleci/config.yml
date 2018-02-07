@@ -12,6 +12,7 @@ jobs:
           command: |
             apt update --fix-missing
             apt install -y binutils-dev cmake libdw-dev libelf-dev libiberty-dev
+            rustup default nightly-2018-02-06
       - run:
           name: Build
           command: |
