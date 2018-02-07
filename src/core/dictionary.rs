@@ -46,7 +46,8 @@ impl Dictionary {
 
     #[async]
     pub fn to_string(self) -> Result<String> {
-        let mut ss = vec!["{".into()];
+        let mut ss = vec![];
+
         let kvs: Vec<(Key, Value)> = self.0
             .into_iter()
             .map(|(k, v)| (k.clone(), v.clone()))
@@ -61,9 +62,7 @@ impl Dictionary {
             ss.push(v);
         }
 
-        ss.push(" ".into());
-
-        Ok(ss.join(" ".into()))
+        Ok(["{", &ss.join(" ".into()), "}"].join("").to_string())
     }
 
     pub fn size(&self) -> usize {

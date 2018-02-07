@@ -31,7 +31,7 @@ impl List {
 
     #[async]
     pub fn to_string(mut self) -> Result<String> {
-        let mut ss = vec!["[".into()];
+        let mut ss = vec![];
 
         while let List::Cons(a) = self {
             let Cons(v, l) = (*a).clone();
@@ -40,8 +40,6 @@ impl List {
             self = await!(l.clone().list())?;
         }
 
-        ss.push("]".into());
-
-        Ok(ss.join(" ".into()))
+        Ok(["[", &ss.join(" ".into()), "]"].join("").to_string())
     }
 }
