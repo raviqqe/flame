@@ -1,6 +1,5 @@
 #[macro_use]
 mod function;
-
 mod arguments;
 mod blur_normal;
 mod collection;
