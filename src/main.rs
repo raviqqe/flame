@@ -15,9 +15,11 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 
-mod ast;
-mod compile;
+#[macro_use]
 mod core;
+mod ast;
+mod builtin;
+mod compile;
 mod desugar;
 mod parse;
 mod run;

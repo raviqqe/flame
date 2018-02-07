@@ -3,11 +3,13 @@ use futures::prelude::*;
 use super::arguments::Arguments;
 use super::blur_normal::BlurNormal;
 use super::error::Error;
-use super::result::Result;
+use super::result;
 use super::signature::Signature;
 use super::value::Value;
 
 type RawFunction = fn(vs: Vec<Value>) -> Box<Future<Item = Value, Error = Error>>;
+
+pub type Result = result::Result<Value>;
 
 #[derive(Clone, Debug)]
 pub struct Function {
@@ -24,7 +26,7 @@ impl Function {
     }
 
     #[async(boxed)]
-    pub fn call(self, a: Arguments) -> Result<Value> {
+    pub fn call(self, a: Arguments) -> Result {
         Ok(await!((self.function)(await!(self.signature.bind(a))?))?)
     }
 }
@@ -32,13 +34,13 @@ impl Function {
 macro_rules! impure_function {
     ($i:ident, $f:ident, $e:expr, $r:ident) => {
         #[async(boxed)]
-        fn $f(vs: Vec<Value>) -> Result<Value> {
+        fn $f(vs: Vec<Value>) -> ::core::Result {
             let n = await!(await!($r(vs))?.pured())?;
-            Ok(Value::from(BlurNormal::Impure(n)))
+            Ok(::core::Value::from(::core::BlurNormal::Impure(n)))
         }
 
         lazy_static! {
-            pub static ref $i: Function = Function::new($e, $f);
+            pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f));
         }
     }
 }
@@ -50,7 +52,7 @@ mod test {
     impure_function!(TEST_FUNC, test_func_impure, Default::default(), test_func);
 
     #[async]
-    fn test_func(vs: Vec<Value>) -> Result<Value> {
+    fn test_func(vs: Vec<Value>) -> Result {
         unimplemented!()
     }
 }
