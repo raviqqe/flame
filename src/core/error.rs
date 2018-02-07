@@ -1,7 +1,6 @@
-use std::error::Error as ErrorTrait;
+use std::error;
 
 use futures::prelude::*;
-use futures_black_hole::BlackHoleError;
 
 use super::normal::Normal;
 use super::result::Result;
@@ -83,8 +82,8 @@ impl Error {
     }
 }
 
-impl From<BlackHoleError> for Error {
-    fn from(e: BlackHoleError) -> Self {
+impl<E: error::Error> From<E> for Error {
+    fn from(e: E) -> Self {
         Error::runtime(e.description())
     }
 }

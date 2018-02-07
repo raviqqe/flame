@@ -1,7 +1,6 @@
 use futures::prelude::*;
 
 use super::arguments::Arguments;
-use super::blur_normal::BlurNormal;
 use super::error::Error;
 use super::result;
 use super::signature::Signature;

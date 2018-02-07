@@ -15,11 +15,10 @@ pub enum Normal {
     List(List),
     Nil,
     Number(f64),
-    String(String),
+    String(Vec<u8>),
 }
 
 impl Normal {
-    // TODO: Use just #[async].
     #[async(boxed)]
     pub fn to_string(self) -> Result<String> {
         Ok(match self {
@@ -29,7 +28,7 @@ impl Normal {
             Normal::List(l) => await!(l.to_string())?,
             Normal::Number(n) => n.to_string(),
             Normal::Nil => "nil".to_string(),
-            Normal::String(s) => s,
+            Normal::String(s) => String::from_utf8(s)?,
         })
     }
 }
@@ -69,6 +68,6 @@ impl From<List> for Normal {
 
 impl From<String> for Normal {
     fn from(s: String) -> Self {
-        Normal::String(s)
+        Normal::String(s.as_bytes().to_vec())
     }
 }

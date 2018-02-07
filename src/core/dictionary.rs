@@ -13,7 +13,7 @@ use super::value::Value;
 pub enum Key {
     Nil,
     Number(f64),
-    String(String),
+    String(Vec<u8>),
 }
 
 impl Hash for Key {
@@ -21,7 +21,7 @@ impl Hash for Key {
         match *self {
             Key::Nil => state.write_u8(0),
             Key::Number(n) => state.write_u64(unsafe { transmute(n) }),
-            Key::String(ref s) => state.write(s.as_bytes()),
+            Key::String(ref s) => state.write(&s),
         }
     }
 }
@@ -46,7 +46,7 @@ impl Dictionary {
 
     #[async]
     pub fn to_string(self) -> Result<String> {
-        let mut ss = vec!["{".to_string()];
+        let mut ss = vec!["{".into()];
         let kvs: Vec<(Key, Value)> = self.0
             .into_iter()
             .map(|(k, v)| (k.clone(), v.clone()))
@@ -61,9 +61,9 @@ impl Dictionary {
             ss.push(v);
         }
 
-        ss.push("}".to_string());
+        ss.push(" ".into());
 
-        Ok(ss.join(" "))
+        Ok(ss.join(" ".into()))
     }
 
     pub fn size(&self) -> usize {
