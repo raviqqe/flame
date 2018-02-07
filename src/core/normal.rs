@@ -28,7 +28,11 @@ impl Normal {
             Normal::List(l) => await!(l.to_string())?,
             Normal::Number(n) => n.to_string(),
             Normal::Nil => "nil".to_string(),
-            Normal::String(s) => String::from_utf8(s)?,
+            Normal::String(s) => [
+                "\"".to_string(),
+                String::from_utf8(s)?.escape_default(),
+                "\"".to_string(),
+            ].join(""),
         })
     }
 }
