@@ -1,7 +1,7 @@
 use futures::prelude::*;
 
 use super::arguments::{Arguments, PositionalArgument};
-use super::collection::MERGE;
+use super::collection::{INSERT, MERGE};
 use super::dictionary::Dictionary;
 use super::error::Error;
 use super::function::Function;
@@ -87,12 +87,27 @@ impl Value {
         await!(await!(self.pured())?.to_string())
     }
 
-    pub fn merge(self, v: Self) -> Self {
+    pub fn insert(&self, k: Self, v: Self) -> Self {
+        Self::app(
+            INSERT.clone(),
+            Arguments::new(
+                &[
+                    PositionalArgument::new(self.clone(), false),
+                    PositionalArgument::new(k, false),
+                    PositionalArgument::new(v, false),
+                ],
+                &[],
+                &[],
+            ),
+        )
+    }
+
+    pub fn merge(&self, v: Self) -> Self {
         Self::app(
             MERGE.clone(),
             Arguments::new(
                 &[
-                    PositionalArgument::new(self, false),
+                    PositionalArgument::new(self.clone(), false),
                     PositionalArgument::new(v, false),
                 ],
                 &[],
@@ -129,6 +144,12 @@ impl From<List> for Value {
 impl From<Normal> for Value {
     fn from(n: Normal) -> Self {
         Value::Normal(Ok(BlurNormal::Pure(n)))
+    }
+}
+
+impl From<String> for Value {
+    fn from(s: String) -> Self {
+        Value::from(Normal::from(s))
     }
 }
 

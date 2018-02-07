@@ -82,7 +82,17 @@ impl Arguments {
     }
 
     pub fn rest_keywords(&mut self) -> Value {
-        unimplemented!()
+        let ks = replace(&mut self.keywords, ArrayQueue::new());
+        let mut d = replace(&mut self.expanded_dict, None);
+
+        let mut v = d.unwrap_or(Value::from(Dictionary::new()));
+
+        for k in &ks {
+            let k = k.clone().unwrap();
+            v = v.insert(Value::from(k.name), k.value);
+        }
+
+        v
     }
 
     #[async]

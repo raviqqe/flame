@@ -66,3 +66,9 @@ impl From<List> for Normal {
         Normal::List(l)
     }
 }
+
+impl From<String> for Normal {
+    fn from(s: String) -> Self {
+        Normal::String(s)
+    }
+}
