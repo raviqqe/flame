@@ -123,6 +123,12 @@ impl From<Dictionary> for Value {
     }
 }
 
+impl From<BlurNormal> for Value {
+    fn from(b: BlurNormal) -> Self {
+        Value::Normal(Ok(b))
+    }
+}
+
 impl From<f64> for Value {
     fn from(n: f64) -> Self {
         Value::from(Normal::from(n))
