@@ -13,5 +13,6 @@ mod signature;
 mod thunk;
 mod value;
 
+pub use self::function::Function;
 pub use self::normal::Normal;
 pub use self::value::Value;
