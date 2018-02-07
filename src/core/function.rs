@@ -6,7 +6,7 @@ use super::result;
 use super::signature::Signature;
 use super::value::Value;
 
-type RawFunction = fn(vs: Vec<Value>) -> Box<Future<Item = Value, Error = Error>>;
+type RawFunction = fn(vs: Vec<Value>) -> Box<Future<Item = Value, Error = Error> + Send + Sync>;
 
 pub type Result = result::Result<Value>;
 
