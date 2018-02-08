@@ -69,9 +69,14 @@ impl Dictionary {
         self.0.size()
     }
 
-    #[async]
-    pub fn merge(self, d: Self) -> Result<Self> {
-        unimplemented!()
+    pub fn merge(&self, d: &Self) -> Self {
+        let mut m = (*self.0).clone();
+
+        for (k, v) in &*d.0 {
+            m = m.insert(k.clone(), v.clone());
+        }
+
+        Dictionary(Arc::new(m))
     }
 }
 
@@ -90,5 +95,12 @@ mod test {
     fn send_and_sync() {
         let d = Dictionary::new();
         spawn(move || d);
+    }
+
+    #[test]
+    fn merge() {
+        // TODO: Test filled dictionaries.
+        let d = Dictionary::new();
+        d.merge(&d);
     }
 }
