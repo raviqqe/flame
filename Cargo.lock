@@ -34,7 +34,7 @@ version = "0.1.0"
 dependencies = [
  "array-queue 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "docopt 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "futures-await 0.1.0 (git+https://github.com/raviqqe/futures-await?branch=raviqqe)",
+ "futures-await 0.1.0 (git+https://github.com/alexcrichton/futures-await)",
  "futures-black-hole 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-cpupool 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "hamt-sync 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -67,11 +67,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "futures-await"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#f314086ed91d63fdad430da32b65a43c8b2b08f9"
+source = "git+https://github.com/alexcrichton/futures-await#c02cb0ab90ae3fa5a35af31bcad42e32c04ff054"
 dependencies = [
  "futures 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
- "futures-await-async-macro 0.1.1 (git+https://github.com/raviqqe/futures-await?branch=raviqqe)",
- "futures-await-await-macro 0.1.0 (git+https://github.com/raviqqe/futures-await?branch=raviqqe)",
+ "futures-await-async-macro 0.1.1 (git+https://github.com/alexcrichton/futures-await)",
+ "futures-await-await-macro 0.1.0 (git+https://github.com/alexcrichton/futures-await)",
 ]
 
 [[package]]
@@ -87,7 +87,7 @@ dependencies = [
 [[package]]
 name = "futures-await-async-macro"
 version = "0.1.1"
-source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#f314086ed91d63fdad430da32b65a43c8b2b08f9"
+source = "git+https://github.com/alexcrichton/futures-await#c02cb0ab90ae3fa5a35af31bcad42e32c04ff054"
 dependencies = [
  "proc-macro2 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -108,7 +108,7 @@ dependencies = [
 [[package]]
 name = "futures-await-await-macro"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#f314086ed91d63fdad430da32b65a43c8b2b08f9"
+source = "git+https://github.com/alexcrichton/futures-await#c02cb0ab90ae3fa5a35af31bcad42e32c04ff054"
 
 [[package]]
 name = "futures-await-await-macro"
@@ -387,11 +387,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum fuchsia-zircon 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "2e9763c69ebaae630ba35f74888db465e49e259ba1bc0eda7d06f4a067615d82"
 "checksum fuchsia-zircon-sys 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)" = "3dcaa9ae7725d12cdb85b3ad99a434db70b468c09ded17e012d86b5c1010f7a7"
 "checksum futures 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)" = "0bab5b5e94f5c31fc764ba5dd9ad16568aae5d4825538c01d6bca680c9bf94a7"
-"checksum futures-await 0.1.0 (git+https://github.com/raviqqe/futures-await?branch=raviqqe)" = "<none>"
+"checksum futures-await 0.1.0 (git+https://github.com/alexcrichton/futures-await)" = "<none>"
 "checksum futures-await 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "84431acb0f168d02bd7727ad9fa385ff877e46d6018efad17ca509ae3bf5457c"
-"checksum futures-await-async-macro 0.1.1 (git+https://github.com/raviqqe/futures-await?branch=raviqqe)" = "<none>"
+"checksum futures-await-async-macro 0.1.1 (git+https://github.com/alexcrichton/futures-await)" = "<none>"
 "checksum futures-await-async-macro 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2868c9550459b113f8a656bd8f665bcdcfffb794e3fe5fbeaf5734325d18c2b5"
-"checksum futures-await-await-macro 0.1.0 (git+https://github.com/raviqqe/futures-await?branch=raviqqe)" = "<none>"
+"checksum futures-await-await-macro 0.1.0 (git+https://github.com/alexcrichton/futures-await)" = "<none>"
 "checksum futures-await-await-macro 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "b7adba18b51fd888a24f6bd41c85e4f544a7089b15f84242350c014f9fdbf895"
 "checksum futures-await-quote 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "f310765f0efc9c12ffb4887ca48d87a71c44ba531d9ba23055681a879f98ab75"
 "checksum futures-await-syn 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)" = "90dcf027151897fe50205762efdec791be0e1e2a018d0ae077f72aa0abbf947f"
