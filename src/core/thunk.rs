@@ -23,7 +23,13 @@ impl Thunk {
     pub fn eval(self) -> Result<BlurNormal> {
         if self.inner_mut().lock() {
             self.inner_mut().content = Content::Normal(match self.inner().content.clone() {
-                Content::App(v, a) => await!(await!(await!(v.function())?.call(a))?.blur()),
+                Content::App(v, a) => match await!(v.function()) {
+                    Err(e) => Err(e),
+                    Ok(f) => match await!(f.call(a)) {
+                        Err(e) => Err(e),
+                        Ok(v) => await!(v.blur()),
+                    },
+                },
                 Content::Normal(_) => unreachable!(),
             });
 
