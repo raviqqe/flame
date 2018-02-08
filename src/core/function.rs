@@ -67,6 +67,6 @@ mod test {
 
     #[async(boxed_send)]
     fn test_func(vs: Vec<Value>) -> Result {
-        unimplemented!()
+        Ok(Value::from(42.0))
     }
 }
