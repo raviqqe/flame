@@ -32,6 +32,10 @@ impl Error {
         Self::new("ValueError", m)
     }
 
+    pub fn empty_list() -> Error {
+        Self::value("list is empty")
+    }
+
     #[async]
     pub fn typ(n: Normal, t: String) -> Result<Error> {
         let s = await!(n.to_string())?;

@@ -18,7 +18,7 @@ pub enum Value {
 }
 
 impl Value {
-    fn app(f: Self, a: Arguments) -> Self {
+    pub fn app(f: Self, a: Arguments) -> Self {
         Value::Thunk(Thunk::new(f, a))
     }
 

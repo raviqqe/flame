@@ -2,6 +2,9 @@ use std::sync::Arc;
 
 use futures::prelude::*;
 
+use super::arguments::{Arguments, PositionalArgument};
+use super::collection::MERGE;
+use super::error::Error;
 use super::result::Result;
 use super::value::Value;
 
@@ -27,6 +30,53 @@ impl List {
 
     pub fn cons(v: Value, l: Value) -> Value {
         Value::from(List::Cons(Arc::new(Cons(v, l))))
+    }
+
+    pub fn first(self) -> Result<Value> {
+        match self {
+            List::Cons(c) => Ok(c.0.clone()),
+            List::Empty => Err(Error::empty_list()),
+        }
+    }
+
+    pub fn rest(self) -> Result<Value> {
+        match self {
+            List::Cons(c) => Ok(c.1.clone()),
+            List::Empty => Err(Error::empty_list()),
+        }
+    }
+
+    #[async]
+    pub fn merge(self, v: Value) -> Result<Value> {
+        match self {
+            List::Empty => Ok(v),
+            List::Cons(c) => {
+                let Cons(f, r) = (*c).clone();
+
+                Ok(Value::from(Self::cons(
+                    f,
+                    Value::app(
+                        MERGE.clone(),
+                        Arguments::new(
+                            &[
+                                PositionalArgument::new(r, false),
+                                PositionalArgument::new(v, false),
+                            ],
+                            &[],
+                            &[],
+                        ),
+                    ),
+                )))
+            }
+        }
+    }
+
+    pub fn is_empty(self) -> bool {
+        if let List::Empty = self {
+            true
+        } else {
+            false
+        }
     }
 
     #[async]
