@@ -7,7 +7,7 @@ use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
 use super::arguments::Arguments;
-use super::blur_normal::BlurNormal;
+use super::vague_normal::VagueNormal;
 use super::result::Result;
 use super::value::Value;
 
@@ -20,14 +20,14 @@ impl Thunk {
     }
 
     #[async(boxed_send)]
-    pub fn eval(self) -> Result<BlurNormal> {
+    pub fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock() {
             self.inner_mut().content = Content::Normal(match self.inner().content.clone() {
                 Content::App(v, a) => match await!(v.function()) {
                     Err(e) => Err(e),
                     Ok(f) => match await!(f.call(a)) {
                         Err(e) => Err(e),
-                        Ok(v) => await!(v.blur()),
+                        Ok(v) => await!(v.vague()),
                     },
                 },
                 Content::Normal(_) => unreachable!(),
@@ -83,7 +83,7 @@ impl From<u8> for State {
 #[derive(Clone, Debug)]
 enum Content {
     App(Value, Arguments),
-    Normal(Result<BlurNormal>),
+    Normal(Result<VagueNormal>),
 }
 
 #[derive(Debug)]

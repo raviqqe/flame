@@ -1,7 +1,7 @@
 #[macro_use]
 mod function;
 mod arguments;
-mod blur_normal;
+mod vague_normal;
 mod collection;
 mod dictionary;
 mod error;
@@ -14,7 +14,7 @@ mod signature;
 mod thunk;
 mod value;
 
-pub use self::blur_normal::BlurNormal;
+pub use self::vague_normal::VagueNormal;
 pub use self::function::{Function, Result};
 pub use self::normal::Normal;
 pub use self::signature::Signature;

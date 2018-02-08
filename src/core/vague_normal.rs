@@ -1,7 +1,7 @@
 use super::normal::Normal;
 
 #[derive(Clone, Debug)]
-pub enum BlurNormal {
+pub enum VagueNormal {
     Pure(Normal),
     Impure(Normal),
 }

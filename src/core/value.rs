@@ -6,14 +6,14 @@ use super::dictionary::Dictionary;
 use super::error::Error;
 use super::function::Function;
 use super::list::List;
-use super::blur_normal::BlurNormal;
+use super::vague_normal::VagueNormal;
 use super::result::Result;
 use super::thunk::Thunk;
 use super::normal::Normal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
-    Normal(Result<BlurNormal>),
+    Normal(Result<VagueNormal>),
     Thunk(Thunk),
 }
 
@@ -23,7 +23,7 @@ impl Value {
     }
 
     #[async]
-    pub fn blur(self) -> Result<BlurNormal> {
+    pub fn vague(self) -> Result<VagueNormal> {
         match self {
             Value::Normal(p) => p,
             Value::Thunk(t) => await!(t.eval()),
@@ -32,9 +32,9 @@ impl Value {
 
     #[async]
     pub fn pured(self) -> Result<Normal> {
-        match await!(self.blur())? {
-            BlurNormal::Pure(n) => Ok(n),
-            BlurNormal::Impure(_) => Err(Error::new(
+        match await!(self.vague())? {
+            VagueNormal::Pure(n) => Ok(n),
+            VagueNormal::Impure(_) => Err(Error::new(
                 "ImpureError",
                 "impure value detected in pure context",
             )),
@@ -43,12 +43,12 @@ impl Value {
 
     #[async]
     pub fn impure(self) -> Result<Normal> {
-        match await!(self.blur())? {
-            BlurNormal::Pure(_) => Err(Error::new(
+        match await!(self.vague())? {
+            VagueNormal::Pure(_) => Err(Error::new(
                 "PureError",
                 "pure value detected in impure context",
             )),
-            BlurNormal::Impure(n) => Ok(n),
+            VagueNormal::Impure(n) => Ok(n),
         }
     }
 
@@ -133,8 +133,8 @@ impl From<Dictionary> for Value {
     }
 }
 
-impl From<BlurNormal> for Value {
-    fn from(b: BlurNormal) -> Self {
+impl From<VagueNormal> for Value {
+    fn from(b: VagueNormal) -> Self {
         Value::Normal(Ok(b))
     }
 }
@@ -159,7 +159,7 @@ impl From<List> for Value {
 
 impl From<Normal> for Value {
     fn from(n: Normal) -> Self {
-        Value::Normal(Ok(BlurNormal::Pure(n)))
+        Value::Normal(Ok(VagueNormal::Pure(n)))
     }
 }
 

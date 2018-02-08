@@ -44,7 +44,7 @@ macro_rules! impure_function {
         #[async(boxed_send)]
         fn $f(vs: Vec<Value>) -> ::core::Result {
             let n = await!(await!($r(vs))?.pured())?;
-            Ok(::core::Value::from(::core::BlurNormal::Impure(n)))
+            Ok(::core::Value::from(::core::VagueNormal::Impure(n)))
         }
 
         lazy_static! {
