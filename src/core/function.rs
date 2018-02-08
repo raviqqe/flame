@@ -26,7 +26,8 @@ impl Function {
 
     #[async(boxed)]
     pub fn call(self, a: Arguments) -> Result {
-        Ok(await!((self.function)(await!(self.signature.bind(a))?))?)
+        let f = self.function; // rust-lang/rust#48048
+        Ok(await!(f(await!(self.signature.bind(a))?))?)
     }
 }
 
