@@ -7,8 +7,8 @@ use super::result::Result;
 
 #[derive(Clone, Debug)]
 pub struct Error {
-    name: String,
-    message: String,
+    pub name: String,
+    pub message: String,
     // callTrace: Vec<T>,
 }
 
@@ -35,7 +35,7 @@ impl Error {
     #[async]
     pub fn typ(n: Normal, t: String) -> Result<Error> {
         let s = await!(n.to_string())?;
-        Ok(Self::new("TypeError", &format!("{} is not a {}.", s, t)))
+        Ok(Self::new("TypeError", &format!("{} is not a {}", s, t)))
     }
 
     #[async]
@@ -71,14 +71,6 @@ impl Error {
     #[async]
     pub fn not_string(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "string".to_string()))
-    }
-
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn message(&self) -> &str {
-        &self.message
     }
 }
 

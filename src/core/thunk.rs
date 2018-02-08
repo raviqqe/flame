@@ -100,16 +100,28 @@ impl Inner {
         State::from(
             self.state
                 .compare_and_swap(State::App as u8, State::Normal as u8, SeqCst),
-        ) != State::App
+        ) == State::App
     }
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use super::super::error::Error;
 
     #[test]
     fn new() {
         Thunk::new(Value::from(0.0), Arguments::new(&[], &[], &[]));
+    }
+
+    #[test]
+    fn eval_error() {
+        let e: Error = Thunk::new(Value::from(42.0), Arguments::new(&[], &[], &[]))
+            .eval()
+            .wait()
+            .unwrap_err();
+
+        assert_eq!(e.name, "TypeError");
+        assert_eq!(e.message, "42 is not a function");
     }
 }
