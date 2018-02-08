@@ -1,25 +1,37 @@
 use futures::prelude::*;
 
 use super::error::Error;
-use super::function::Function;
 use super::normal::Normal;
 use super::result::Result;
 use super::signature::Signature;
 use super::value::Value;
 
-lazy_static! {
-    pub static ref INSERT: Value = Value::from(Function::new(Default::default(), insert));
-}
+pure_function!(
+    INSERT,
+    Signature::new(
+        vec![
+            "collection".to_string(),
+            "key".to_string(),
+            "value".to_string(),
+        ],
+        vec![],
+        "".to_string(),
+        vec![],
+        vec![],
+        "".to_string()
+    ),
+    insert
+);
 
 #[async(boxed_send)]
-fn insert(vs: Vec<Value>) -> Result<Value> {
+fn insert(_: Vec<Value>) -> Result<Value> {
     unimplemented!()
 }
 
 pure_function!(
     MERGE,
     Signature::new(
-        vec![],
+        vec!["collection".to_string(), "merged".to_string()],
         vec![],
         "".to_string(),
         vec![],
