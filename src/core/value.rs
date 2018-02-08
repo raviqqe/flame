@@ -93,6 +93,16 @@ impl Value {
     }
 
     #[async]
+    pub fn string(self) -> Result<Vec<u8>> {
+        let n = await!(self.pured())?;
+
+        match n {
+            Normal::String(s) => Ok(s),
+            _ => Err(await!(Error::not_string(n))?),
+        }
+    }
+
+    #[async]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
     }
@@ -166,6 +176,12 @@ impl From<Normal> for Value {
 impl From<String> for Value {
     fn from(s: String) -> Self {
         Value::from(Normal::from(s))
+    }
+}
+
+impl From<Vec<u8>> for Value {
+    fn from(v: Vec<u8>) -> Self {
+        Value::from(Normal::from(v))
     }
 }
 

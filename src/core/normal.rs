@@ -76,3 +76,9 @@ impl From<String> for Normal {
         Normal::String(s.as_bytes().to_vec())
     }
 }
+
+impl From<Vec<u8>> for Normal {
+    fn from(v: Vec<u8>) -> Self {
+        Normal::String(v)
+    }
+}

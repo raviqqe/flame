@@ -44,6 +44,11 @@ impl Error {
     }
 
     #[async]
+    pub fn not_collection(n: Normal) -> Result<Error> {
+        await!(Self::typ(n, "collection".to_string()))
+    }
+
+    #[async]
     pub fn not_dictionary(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "dictionary".to_string()))
     }
