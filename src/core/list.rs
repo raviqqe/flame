@@ -6,7 +6,7 @@ use super::result::Result;
 use super::value::Value;
 
 #[derive(Clone, Debug)]
-struct Cons(Value, Value);
+pub struct Cons(Value, Value);
 
 #[derive(Clone, Debug)]
 pub enum List {
