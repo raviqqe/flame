@@ -59,6 +59,13 @@ impl Arguments {
         }
     }
 
+    pub fn positionals(vs: &[Value]) -> Self {
+        let ps: Vec<PositionalArgument> = vs.iter()
+            .map(|v| PositionalArgument::new(v.clone(), false))
+            .collect();
+        Arguments::new(&ps, &[], &[])
+    }
+
     pub fn next_positional(&mut self) -> Option<Value> {
         unimplemented!()
     }

@@ -22,6 +22,10 @@ impl Value {
         Value::Thunk(Thunk::new(f, a))
     }
 
+    pub fn papp(f: Self, vs: &[Value]) -> Self {
+        Value::Thunk(Thunk::new(f, Arguments::positionals(vs)))
+    }
+
     #[async]
     pub fn vague(self) -> Result<VagueNormal> {
         match self {
