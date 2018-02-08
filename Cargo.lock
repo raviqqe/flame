@@ -67,7 +67,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "futures-await"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#fc62e67c859c39f0f779a17052ecd6c5568372a8"
+source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#f314086ed91d63fdad430da32b65a43c8b2b08f9"
 dependencies = [
  "futures 0.1.18 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-await-async-macro 0.1.1 (git+https://github.com/raviqqe/futures-await?branch=raviqqe)",
@@ -87,7 +87,7 @@ dependencies = [
 [[package]]
 name = "futures-await-async-macro"
 version = "0.1.1"
-source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#fc62e67c859c39f0f779a17052ecd6c5568372a8"
+source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#f314086ed91d63fdad430da32b65a43c8b2b08f9"
 dependencies = [
  "proc-macro2 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -108,7 +108,7 @@ dependencies = [
 [[package]]
 name = "futures-await-await-macro"
 version = "0.1.0"
-source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#fc62e67c859c39f0f779a17052ecd6c5568372a8"
+source = "git+https://github.com/raviqqe/futures-await?branch=raviqqe#f314086ed91d63fdad430da32b65a43c8b2b08f9"
 
 [[package]]
 name = "futures-await-await-macro"

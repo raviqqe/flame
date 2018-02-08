@@ -6,7 +6,7 @@ use super::result;
 use super::signature::Signature;
 use super::value::Value;
 
-type RawFunction = fn(vs: Vec<Value>) -> Box<Future<Item = Value, Error = Error> + Send + Sync>;
+type RawFunction = fn(vs: Vec<Value>) -> Box<Future<Item = Value, Error = Error> + Send>;
 
 pub type Result = result::Result<Value>;
 
@@ -24,7 +24,7 @@ impl Function {
         }
     }
 
-    #[async(boxed)]
+    #[async(boxed_send)]
     pub fn call(self, a: Arguments) -> Result {
         let f = self.function; // rust-lang/rust#48048
         Ok(await!(f(await!(self.signature.bind(a))?))?)
@@ -41,7 +41,7 @@ macro_rules! pure_function {
 
 macro_rules! impure_function {
     ($i:ident, $f:ident, $e:expr, $r:ident) => {
-        #[async(boxed)]
+        #[async(boxed_send)]
         fn $f(vs: Vec<Value>) -> ::core::Result {
             let n = await!(await!($r(vs))?.pured())?;
             Ok(::core::Value::from(::core::BlurNormal::Impure(n)))
@@ -65,7 +65,7 @@ mod test {
         test_func
     );
 
-    #[async(boxed)]
+    #[async(boxed_send)]
     fn test_func(vs: Vec<Value>) -> Result {
         unimplemented!()
     }
