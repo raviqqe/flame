@@ -92,12 +92,6 @@ mod test {
     }
 
     #[test]
-    fn send_and_sync() {
-        let d = Dictionary::new();
-        spawn(move || d);
-    }
-
-    #[test]
     fn merge() {
         // TODO: Test filled dictionaries.
         let d = Dictionary::new();
