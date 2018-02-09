@@ -38,9 +38,10 @@ impl List {
         }
     }
 
-    pub fn rest(&self) -> Result<Value> {
-        match *self {
-            List::Cons(ref c) => Ok(c.1.clone()),
+    #[async]
+    pub fn rest(self) -> Result<List> {
+        match self {
+            List::Cons(c) => Ok(await!(c.1.clone().list())?),
             List::Empty => Err(Error::empty_list()),
         }
     }

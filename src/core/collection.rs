@@ -27,9 +27,9 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
 
             while !l.is_empty() {
                 let k = l.first()?;
-                l = await!(l.rest()?.list())?;
+                l = await!(l.rest())?;
                 let v = l.first()?;
-                l = await!(l.rest()?.list())?;
+                l = await!(l.rest())?;
                 d = await!(d.insert(k, v))?;
             }
 
@@ -41,10 +41,10 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
 
             while !l.is_empty() {
                 let i = await!(l.first()?.index())? - 1;
-                l = await!(l.rest()?.list())?;
+                l = await!(l.rest())?;
 
                 let ss = await!(l.first()?.string())?;
-                l = await!(l.rest()?.list())?;
+                l = await!(l.rest())?;
 
                 let sss = s.split_off(i);
                 s.extend(ss);
