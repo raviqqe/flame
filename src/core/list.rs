@@ -55,17 +55,7 @@ impl List {
 
                 Ok(Value::from(Self::cons(
                     f,
-                    Value::app(
-                        MERGE.clone(),
-                        Arguments::new(
-                            &[
-                                PositionalArgument::new(r, false),
-                                PositionalArgument::new(v, false),
-                            ],
-                            &[],
-                            &[],
-                        ),
-                    ),
+                    Value::papp(MERGE.clone(), &[r, v]),
                 )))
             }
         }

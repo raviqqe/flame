@@ -112,32 +112,11 @@ impl Value {
     }
 
     pub fn insert(&self, k: Self, v: Self) -> Self {
-        Self::app(
-            INSERT.clone(),
-            Arguments::new(
-                &[
-                    PositionalArgument::new(self.clone(), false),
-                    PositionalArgument::new(k, false),
-                    PositionalArgument::new(v, false),
-                ],
-                &[],
-                &[],
-            ),
-        )
+        Self::papp(INSERT.clone(), &[self.clone(), k, v])
     }
 
     pub fn merge(&self, v: Self) -> Self {
-        Self::app(
-            MERGE.clone(),
-            Arguments::new(
-                &[
-                    PositionalArgument::new(self.clone(), false),
-                    PositionalArgument::new(v, false),
-                ],
-                &[],
-                &[],
-            ),
-        )
+        Self::papp(MERGE.clone(), &[self.clone(), v])
     }
 }
 
