@@ -109,8 +109,6 @@ impl From<Map<Key, Value>> for Dictionary {
 
 #[cfg(test)]
 mod test {
-    use std::thread::spawn;
-
     use super::*;
 
     #[test]
