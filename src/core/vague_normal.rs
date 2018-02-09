@@ -5,3 +5,9 @@ pub enum VagueNormal {
     Pure(Normal),
     Impure(Normal),
 }
+
+impl From<Normal> for VagueNormal {
+    fn from(n: Normal) -> Self {
+        VagueNormal::Pure(n)
+    }
+}

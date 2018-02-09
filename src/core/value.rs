@@ -122,7 +122,7 @@ impl Value {
 
 impl<T: Into<Normal>> From<T> for Value {
     fn from(x: T) -> Self {
-        Value::from(VagueNormal::Pure(x.into()))
+        Value::from(VagueNormal::from(x.into()))
     }
 }
 
