@@ -48,7 +48,7 @@ fn merge(vs: Vec<Value>) -> Result<Value> {
             let dd = await!(vs[1].clone().dictionary())?;
             Value::from(d.merge(&dd))
         }
-        Normal::List(_) => unimplemented!(),
+        Normal::List(l) => l.merge(vs[1].clone())?,
         Normal::String(mut s) => {
             let ss = await!(vs[1].clone().string())?;
             s.extend(ss);

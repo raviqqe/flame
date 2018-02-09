@@ -45,7 +45,6 @@ impl List {
         }
     }
 
-    #[async]
     pub fn merge(self, v: Value) -> Result<Value> {
         match self {
             List::Empty => Ok(v),
