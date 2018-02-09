@@ -113,7 +113,6 @@ impl Inner {
 #[cfg(test)]
 mod test {
     use super::*;
-    use super::super::error::Error;
 
     #[test]
     fn new() {
@@ -122,7 +121,7 @@ mod test {
 
     #[test]
     fn eval_error() {
-        let e: Error = Thunk::new(Value::from(42.0), Arguments::new(&[], &[], &[]))
+        let e = Thunk::new(Value::from(42.0), Arguments::new(&[], &[], &[]))
             .eval()
             .wait()
             .unwrap_err();
