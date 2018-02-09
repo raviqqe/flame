@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use futures::prelude::*;
 
-use super::arguments::{Arguments, PositionalArgument};
 use super::collection::MERGE;
 use super::error::Error;
 use super::result::Result;

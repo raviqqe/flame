@@ -1,6 +1,6 @@
 use futures::prelude::*;
 
-use super::arguments::{Arguments, PositionalArgument};
+use super::arguments::Arguments;
 use super::collection::{INSERT, MERGE};
 use super::dictionary::Dictionary;
 use super::error::Error;
@@ -120,51 +120,15 @@ impl Value {
     }
 }
 
-impl From<Dictionary> for Value {
-    fn from(d: Dictionary) -> Self {
-        Value::from(Normal::from(d))
+impl<T: Into<Normal>> From<T> for Value {
+    fn from(x: T) -> Self {
+        Value::from(VagueNormal::Pure(x.into()))
     }
 }
 
 impl From<VagueNormal> for Value {
     fn from(b: VagueNormal) -> Self {
         Value::Normal(Ok(b))
-    }
-}
-
-impl From<f64> for Value {
-    fn from(n: f64) -> Self {
-        Value::from(Normal::from(n))
-    }
-}
-
-impl From<Function> for Value {
-    fn from(f: Function) -> Self {
-        Value::from(Normal::from(f))
-    }
-}
-
-impl From<List> for Value {
-    fn from(l: List) -> Self {
-        Value::from(Normal::from(l))
-    }
-}
-
-impl From<Normal> for Value {
-    fn from(n: Normal) -> Self {
-        Value::Normal(Ok(VagueNormal::Pure(n)))
-    }
-}
-
-impl From<String> for Value {
-    fn from(s: String) -> Self {
-        Value::from(Normal::from(s))
-    }
-}
-
-impl From<Vec<u8>> for Value {
-    fn from(v: Vec<u8>) -> Self {
-        Value::from(Normal::from(v))
     }
 }
 
