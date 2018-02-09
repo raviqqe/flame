@@ -31,25 +31,25 @@ impl List {
         Value::from(List::Cons(Arc::new(Cons(v, l))))
     }
 
-    pub fn first(self) -> Result<Value> {
-        match self {
-            List::Cons(c) => Ok(c.0.clone()),
+    pub fn first(&self) -> Result<Value> {
+        match *self {
+            List::Cons(ref c) => Ok(c.0.clone()),
             List::Empty => Err(Error::empty_list()),
         }
     }
 
-    pub fn rest(self) -> Result<Value> {
-        match self {
-            List::Cons(c) => Ok(c.1.clone()),
+    pub fn rest(&self) -> Result<Value> {
+        match *self {
+            List::Cons(ref c) => Ok(c.1.clone()),
             List::Empty => Err(Error::empty_list()),
         }
     }
 
-    pub fn merge(self, v: Value) -> Result<Value> {
-        match self {
+    pub fn merge(&self, v: Value) -> Result<Value> {
+        match *self {
             List::Empty => Ok(v),
-            List::Cons(c) => {
-                let Cons(f, r) = (*c).clone();
+            List::Cons(ref c) => {
+                let Cons(f, r) = (**c).clone();
 
                 Ok(Value::from(Self::cons(
                     f,
@@ -59,8 +59,8 @@ impl List {
         }
     }
 
-    pub fn is_empty(self) -> bool {
-        if let List::Empty = self {
+    pub fn is_empty(&self) -> bool {
+        if let List::Empty = *self {
             true
         } else {
             false

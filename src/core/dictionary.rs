@@ -1,3 +1,4 @@
+use std::convert::TryFrom;
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
 use std::sync::Arc;
@@ -5,6 +6,7 @@ use std::sync::Arc;
 use futures::prelude::*;
 use hamt_sync::Map;
 
+use super::error::Error;
 use super::normal::Normal;
 use super::result::Result;
 use super::value::Value;
@@ -22,6 +24,19 @@ impl Hash for Key {
             Key::Nil => state.write_u8(0),
             Key::Number(n) => state.write_u64(unsafe { transmute(n) }),
             Key::String(ref s) => state.write(&s),
+        }
+    }
+}
+
+impl TryFrom<Normal> for Key {
+    type Error = Error;
+
+    fn try_from(n: Normal) -> Result<Self> {
+        match n {
+            Normal::Nil => Ok(Key::Nil),
+            Normal::Number(n) => Ok(Key::Number(n)),
+            Normal::String(s) => Ok(Key::String(s)),
+            _ => Err(Error::value("{} cannot be a key in dictionaries")),
         }
     }
 }
@@ -69,6 +84,12 @@ impl Dictionary {
         self.0.size()
     }
 
+    #[async]
+    pub fn insert(self, k: Value, v: Value) -> Result<Dictionary> {
+        let k = Key::try_from(await!(k.pured())?)?;
+        Ok(Dictionary::from(self.0.insert(k, v)))
+    }
+
     pub fn merge(&self, d: &Self) -> Self {
         let mut m = (*self.0).clone();
 
@@ -76,6 +97,12 @@ impl Dictionary {
             m = m.insert(k.clone(), v.clone());
         }
 
+        Dictionary::from(m)
+    }
+}
+
+impl From<Map<Key, Value>> for Dictionary {
+    fn from(m: Map<Key, Value>) -> Self {
         Dictionary(Arc::new(m))
     }
 }

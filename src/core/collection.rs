@@ -9,13 +9,9 @@ use super::value::Value;
 pure_function!(
     INSERT,
     Signature::new(
-        vec![
-            "collection".to_string(),
-            "key".to_string(),
-            "value".to_string(),
-        ],
+        vec!["collection".to_string()],
         vec![],
-        "".to_string(),
+        "keyValuePairs".to_string(),
         vec![],
         vec![],
         "".to_string()
@@ -24,16 +20,33 @@ pure_function!(
 );
 
 #[async(boxed_send)]
-fn insert(_: Vec<Value>) -> Result<Value> {
-    unimplemented!()
+fn insert(vs: Vec<Value>) -> Result<Value> {
+    Ok(match await!(vs[0].clone().pured())? {
+        Normal::Dictionary(mut d) => {
+            let mut l = await!(vs[1].clone().list())?;
+
+            while !l.is_empty() {
+                let k = l.first()?;
+                l = await!(l.rest()?.list())?;
+                let v = l.first()?;
+                l = await!(l.rest()?.list())?;
+                d = await!(d.insert(k, v))?;
+            }
+
+            Value::from(d)
+        }
+        Normal::List(l) => unimplemented!(),
+        Normal::String(mut s) => unimplemented!(),
+        n => return Err(await!(Error::not_collection(n))?),
+    })
 }
 
 pure_function!(
     MERGE,
     Signature::new(
-        vec!["collection".to_string(), "merged".to_string()],
+        vec!["collection".to_string()],
         vec![],
-        "".to_string(),
+        "collections".to_string(),
         vec![],
         vec![],
         "".to_string()
