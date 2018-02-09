@@ -1,4 +1,4 @@
-# 🔥 Flame programming language
+# 🔥 Flame programming language 🔥
 
 [![Circle CI](https://img.shields.io/circleci/project/github/raviqqe/flame.svg?style=flat-square)](https://circleci.com/gh/raviqqe/flame)
 [![Codecov](https://img.shields.io/codecov/c/github/raviqqe/flame.svg?style=flat-square)](https://codecov.io/gh/raviqqe/flame)
