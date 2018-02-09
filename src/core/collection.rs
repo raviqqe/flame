@@ -35,8 +35,24 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
 
             Value::from(d)
         }
-        Normal::List(l) => unimplemented!(),
-        Normal::String(mut s) => unimplemented!(),
+        Normal::List(_) => unimplemented!(),
+        Normal::String(mut s) => {
+            let mut l = await!(vs[1].clone().list())?;
+
+            while !l.is_empty() {
+                let i = await!(l.first()?.index())? - 1;
+                l = await!(l.rest()?.list())?;
+
+                let ss = await!(l.first()?.string())?;
+                l = await!(l.rest()?.list())?;
+
+                let sss = s.split_off(i);
+                s.extend(ss);
+                s.extend(sss);
+            }
+
+            Value::from(s)
+        }
         n => return Err(await!(Error::not_collection(n))?),
     })
 }

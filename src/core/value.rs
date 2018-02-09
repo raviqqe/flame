@@ -87,12 +87,33 @@ impl Value {
     }
 
     #[async]
+    pub fn index(self) -> Result<usize> {
+        let n = await!(self.number())?;
+
+        if n % 1.0 == 0.0 && n >= 1.0 {
+            Ok(n as usize)
+        } else {
+            Err(Error::value(&format!("{} is not an integer", n)))
+        }
+    }
+
+    #[async]
     pub fn list(self) -> Result<List> {
         let n = await!(self.pured())?;
 
         match n {
             Normal::List(l) => Ok(l),
             _ => Err(await!(Error::not_list(n))?),
+        }
+    }
+
+    #[async]
+    pub fn number(self) -> Result<f64> {
+        let n = await!(self.pured())?;
+
+        match n {
+            Normal::Number(n) => Ok(n),
+            _ => Err(await!(Error::not_number(n))?),
         }
     }
 
