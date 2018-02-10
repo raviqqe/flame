@@ -1,4 +1,4 @@
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
 use std::sync::Arc;
@@ -98,6 +98,17 @@ impl Dictionary {
         }
 
         Dictionary::from(m)
+    }
+
+    #[async]
+    pub fn find(self, k: Value) -> Result<Value> {
+        let n: Normal = await!(k.pured())?;
+        let k: Key = n.try_into()?;
+
+        match self.0.find(&k).map(|v| v.clone()) {
+            Some(v) => Ok(v),
+            None => Err(await!(Error::key_not_found(k.into()))?),
+        }
     }
 }
 

@@ -4,6 +4,7 @@ use futures::prelude::*;
 
 use super::normal::Normal;
 use super::result::Result;
+use super::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct Error {
@@ -34,6 +35,16 @@ impl Error {
 
     pub fn empty_list() -> Error {
         Self::value("list is empty")
+    }
+
+    #[async]
+    pub fn key_not_found(v: Value) -> Result<Error> {
+        let s = await!(v.to_string())?;
+
+        Ok(Self::new(
+            "KeyNotFoundError",
+            &format!("key, {} is not found key in dictionary", s),
+        ))
     }
 
     #[async]

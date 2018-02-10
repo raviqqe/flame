@@ -37,7 +37,7 @@ dependencies = [
  "futures-await 0.1.0 (git+https://github.com/alexcrichton/futures-await)",
  "futures-black-hole 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-cpupool 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "hamt-sync 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hamt-sync 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pest 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "pest_derive 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -163,7 +163,7 @@ dependencies = [
 
 [[package]]
 name = "hamt-sync"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "rand 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -398,7 +398,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum futures-await-synom 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a7c84de0ba04a67d7fc0fb4e3218ba539da65890549922d9d2bc874ba6240030"
 "checksum futures-black-hole 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "efca21996e0353148f9c1a00a4e9b870f5701f29572586f5f0130a865edf0c71"
 "checksum futures-cpupool 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "ab90cde24b3319636588d0c35fe03b1333857621051837ed769faefb4c2162e4"
-"checksum hamt-sync 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "ad449ca195882fd215519f812ceec117c69ef643ba3700e2aac3d0e46ffe9dc0"
+"checksum hamt-sync 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "1de03f18275fed11932ee638cc143e4487c1de803b1bd5d406d1a6388b2d1e9f"
 "checksum lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c8f31047daa365f19be14b47c29df4f7c3b581832407daabe6ae77397619237d"
 "checksum libc 0.2.36 (registry+https://github.com/rust-lang/crates.io-index)" = "1e5d97d6708edaa407429faa671b942dc0f2727222fb6b6539bf1db936e4b121"
 "checksum memchr 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "796fba70e76612589ed2ce7f45282f5af869e0fdd7cc6199fa1aa1f1d591ba9d"
