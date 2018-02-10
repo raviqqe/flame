@@ -28,14 +28,30 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
             while !l.is_empty() {
                 let k = l.first()?;
                 l = await!(l.rest())?;
+
                 let v = l.first()?;
                 l = await!(l.rest())?;
+
                 d = await!(d.insert(k, v))?;
             }
 
             Value::from(d)
         }
-        Normal::List(_) => unimplemented!(),
+        Normal::List(mut l) => {
+            let mut ivs = await!(vs[1].clone().list())?;
+
+            while !ivs.is_empty() {
+                let i = await!(ivs.first()?.index())? - 1;
+                ivs = await!(ivs.rest())?;
+
+                let v = ivs.first()?;
+                ivs = await!(ivs.rest())?;
+
+                l = l.insert(i, v)?;
+            }
+
+            Value::from(l)
+        }
         Normal::String(mut s) => {
             let mut l = await!(vs[1].clone().list())?;
 

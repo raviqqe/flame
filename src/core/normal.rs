@@ -77,6 +77,12 @@ impl From<String> for Normal {
     }
 }
 
+impl From<usize> for Normal {
+    fn from(u: usize) -> Self {
+        Normal::from(u as f64)
+    }
+}
+
 impl From<Vec<u8>> for Normal {
     fn from(v: Vec<u8>) -> Self {
         Normal::String(v)

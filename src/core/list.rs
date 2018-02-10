@@ -27,8 +27,8 @@ impl List {
         l
     }
 
-    pub fn cons(v: Value, l: Value) -> Value {
-        Value::from(List::Cons(Arc::new(Cons(v, l))))
+    pub fn cons(v: impl Into<Value>, l: impl Into<Value>) -> List {
+        List::Cons(Arc::new(Cons(v.into(), l.into())))
     }
 
     pub fn first(&self) -> Result<Value> {
@@ -42,6 +42,20 @@ impl List {
     pub fn rest(self) -> Result<List> {
         match self {
             List::Cons(c) => Ok(await!(c.1.clone().list())?),
+            List::Empty => Err(Error::empty_list()),
+        }
+    }
+
+    pub fn insert(&self, i: usize, v: Value) -> Result<List> {
+        if i == 1 {
+            return Ok(Self::cons(v, self.clone()));
+        }
+
+        match *self {
+            List::Cons(ref c) => {
+                let Cons(f, r) = (**c).clone();
+                Ok(Self::cons(f, r.insert(i - 1, v)))
+            }
             List::Empty => Err(Error::empty_list()),
         }
     }

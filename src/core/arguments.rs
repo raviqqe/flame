@@ -140,7 +140,7 @@ impl Arguments {
             if p.expanded {
                 l = unimplemented!();
             } else {
-                l = List::cons(p.value.clone(), l)
+                l = List::cons(p.value.clone(), l).into();
             }
         }
 

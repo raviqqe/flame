@@ -132,8 +132,8 @@ impl Value {
         await!(await!(self.pured())?.to_string())
     }
 
-    pub fn insert(&self, k: Self, v: Self) -> Self {
-        Self::papp(INSERT.clone(), &[self.clone(), k, v])
+    pub fn insert(&self, k: impl Into<Self>, v: impl Into<Self>) -> Self {
+        Self::papp(INSERT.clone(), &[self.clone(), k.into(), v.into()])
     }
 
     pub fn merge(&self, v: Self) -> Self {
