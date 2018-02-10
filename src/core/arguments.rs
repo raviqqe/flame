@@ -138,7 +138,7 @@ impl Arguments {
 
         for p in ps.iter().rev() {
             if p.expanded {
-                l = unimplemented!();
+                l = l.merge(p.value.clone());
             } else {
                 l = List::cons(p.value.clone(), l).into();
             }
