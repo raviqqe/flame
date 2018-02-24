@@ -1,10 +1,12 @@
 use std::str::FromStr;
 
-use pest::{Error, Parser};
+use pest::Parser;
 use pest::iterators::Pair;
 
 use super::super::ast::Expression;
 use super::super::ast::Statement;
+
+use super::error::ParsingError;
 
 const _GRAMMAR: &'static str = include_str!("grammer.pest");
 
@@ -12,7 +14,7 @@ const _GRAMMAR: &'static str = include_str!("grammer.pest");
 #[grammar = "parse/grammer.pest"]
 struct LanguageParser;
 
-pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
+pub fn main_module(s: &str) -> Result<Vec<Statement>, ParsingError> {
     let mut ss = vec![];
 
     let p = LanguageParser::parse(Rule::main_module, s)?.nth(0).unwrap();
