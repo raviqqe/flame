@@ -27,7 +27,7 @@ mod run;
 
 use std::error::Error;
 use std::fs::File;
-use std::io::{stdin, Read};
+use std::io::{self, stdin, Read};
 use std::process::exit;
 
 use compile::compile;
@@ -51,32 +51,33 @@ struct Args {
 }
 
 fn main() {
-    let args: Args = Docopt::new(USAGE)
-        .and_then(|d| d.deserialize())
-        .unwrap_or_else(fail);
-
-    run(compile(
-        desugar(parse::main_module(&read_source(args.arg_filename)).unwrap_or_else(fail))
-            .unwrap_or_else(fail),
-    ).unwrap_or_else(fail));
+    try_main().unwrap_or_else(|e| {
+        eprintln!("{}", e);
+        exit(1);
+    });
 }
 
-fn read_source(s: Option<String>) -> String {
+fn try_main() -> Result<(), Box<Error>> {
+    let args: Args = Docopt::new(USAGE).and_then(|d| d.deserialize())?;
+
+    run(compile(desugar(parse::main_module(&read_source(
+        args.arg_filename,
+    )?)?)?)?);
+
+    Ok(())
+}
+
+fn read_source(s: Option<String>) -> Result<String, io::Error> {
     match s {
-        Some(n) => read_file(File::open(n).unwrap_or_else(fail)),
+        Some(n) => read_file(File::open(n)?),
         None => read_file(stdin()),
     }
 }
 
-fn read_file<R: Read>(mut r: R) -> String {
+fn read_file<R: Read>(mut r: R) -> Result<String, io::Error> {
     let mut s = String::new();
 
-    r.read_to_string(&mut s).unwrap_or_else(fail);
+    r.read_to_string(&mut s)?;
 
-    s
-}
-
-fn fail<E: Error, R>(e: E) -> R {
-    eprintln!("{}", e);
-    exit(1);
+    Ok(s)
 }
