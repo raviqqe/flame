@@ -12,6 +12,7 @@ mod optional_argument;
 mod result;
 mod signature;
 mod thunk;
+mod unsafe_ref;
 mod value;
 
 pub use self::vague_normal::VagueNormal;
