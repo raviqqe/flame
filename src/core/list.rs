@@ -114,5 +114,54 @@ pure_function!(
 #[async(boxed_send)]
 fn first(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
-    Ok(l.first()?)
+    l.first()
+}
+
+pure_function!(
+    REST,
+    Signature::new(
+        vec!["list".into()],
+        vec![],
+        "".into(),
+        vec![],
+        vec![],
+        "".into()
+    ),
+    rest
+);
+
+#[async(boxed_send)]
+fn rest(vs: Vec<Value>) -> Result<Value> {
+    let l = await!(vs[0].clone().list())?;
+    Ok(await!(l.rest())?.into())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn new() {
+        List::new(&[]);
+        List::new(&[42.into()]);
+        List::new(&[42.into(), 42.into()]);
+    }
+
+    #[test]
+    fn first() {
+        let n = Value::papp(FIRST.clone(), &[List::new(&[42.into()]).into()])
+            .number()
+            .wait()
+            .unwrap();
+
+        assert_eq!(n, 42.0);
+    }
+
+    #[test]
+    fn rest() {
+        Value::papp(REST.clone(), &[List::new(&[42.into()]).into()])
+            .list()
+            .wait()
+            .unwrap();
+    }
 }
