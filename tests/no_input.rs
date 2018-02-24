@@ -1,7 +1,7 @@
 use std::process::Command;
 
 #[test]
-fn no_input() {
+fn show_help() {
     let s = String::from_utf8(
         Command::new("./target/debug/flame")
             .arg("-h")
