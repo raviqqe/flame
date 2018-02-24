@@ -5,6 +5,7 @@ use futures::prelude::*;
 use super::collection::MERGE;
 use super::error::Error;
 use super::result::Result;
+use super::signature::Signature;
 use super::value::Value;
 
 #[derive(Clone, Debug)]
@@ -95,4 +96,23 @@ impl List {
 
         Ok(["[", &ss.join(" ".into()), "]"].join("").to_string())
     }
+}
+
+pure_function!(
+    FIRST,
+    Signature::new(
+        vec!["list".into()],
+        vec![],
+        "".into(),
+        vec![],
+        vec![],
+        "".into()
+    ),
+    first
+);
+
+#[async(boxed_send)]
+fn first(vs: Vec<Value>) -> Result<Value> {
+    let l = await!(vs[0].clone().list())?;
+    Ok(l.first()?)
 }

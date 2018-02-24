@@ -5,7 +5,7 @@ use futures::prelude::*;
 
 use super::error::Error;
 use super::dictionary::Dictionary;
-use super::list::List;
+use super::list::{List, FIRST};
 use super::result::Result;
 use super::unsafe_ref::RefMut;
 use super::value::Value;
@@ -68,7 +68,13 @@ impl Arguments {
     }
 
     pub fn next_positional(&mut self) -> Option<Value> {
-        unimplemented!()
+        if let Some(v) = self.positionals.pop_front() {
+            v
+        } else if let Some(ref l) = self.expanded_list {
+            Some(Value::papp(FIRST.clone(), &[l.clone()]).into())
+        } else {
+            None
+        }
     }
 
     pub fn rest_positionals(&mut self) -> Value {

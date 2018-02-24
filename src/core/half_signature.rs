@@ -29,8 +29,12 @@ impl HalfSignature {
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
         for s in this.requireds.clone() {
-            let v = await!(Arguments::search_keyword(args.clone(), s.clone()))?;
-            vs.push(args.clone().next_positional().unwrap_or(v));
+            let v = match args.clone().next_positional() {
+                Some(v) => v,
+                None => await!(Arguments::search_keyword(args.clone(), s.clone()))?,
+            };
+
+            vs.push(v);
         }
 
         for o in this.optionals.clone() {
@@ -74,5 +78,76 @@ impl HalfSignature {
 
     pub fn arity(&self) -> usize {
         self.requireds.len() + self.optionals.len() + (self.rest == "") as usize
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn new() {
+        HalfSignature::new(vec![], vec![], "".to_string());
+    }
+
+    #[test]
+    fn bind_positionals() {
+        for (s, mut a, l) in vec![
+            (
+                HalfSignature::new(vec![], vec![], "".to_string()),
+                Arguments::positionals(&[]),
+                0,
+            ),
+            (
+                HalfSignature::new(vec!["x".into()], vec![], "".to_string()),
+                Arguments::positionals(&[42.into()]),
+                1,
+            ),
+            (
+                HalfSignature::new(vec!["x".into(), "y".into()], vec![], "".to_string()),
+                Arguments::positionals(&[42.into(), 42.into()]),
+                2,
+            ),
+            (
+                HalfSignature::new(
+                    vec![],
+                    vec![OptionalArgument::new("x".into(), 42.into())],
+                    "".to_string(),
+                ),
+                Arguments::positionals(&[]),
+                1,
+            ),
+            (
+                HalfSignature::new(
+                    vec![],
+                    vec![OptionalArgument::new("x".into(), 42.into())],
+                    "".to_string(),
+                ),
+                Arguments::positionals(&[42.into()]),
+                1,
+            ),
+        ] {
+            let mut v = vec![];
+
+            HalfSignature::bind_positionals((&s).into(), (&mut a).into(), (&mut v).into())
+                .wait()
+                .unwrap();
+
+            assert_eq!(v.len(), l);
+        }
+    }
+
+    #[test]
+    fn bind_positionals_error() {
+        for (s, mut a) in vec![
+            (
+                HalfSignature::new(vec!["x".into()], vec![], "".to_string()),
+                Arguments::positionals(&[]),
+            ),
+        ] {
+            HalfSignature::bind_positionals((&s).into(), (&mut a).into(), (&mut vec![]).into())
+                .wait()
+                .unwrap_err();
+        }
     }
 }
