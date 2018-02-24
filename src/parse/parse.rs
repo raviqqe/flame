@@ -34,7 +34,7 @@ pub fn main_module(s: &str) -> Result<Vec<Statement>, Error<Rule>> {
     Ok(ss)
 }
 
-fn expression<'a>(p: Pair<Rule>) -> Expression<'a> {
+fn expression(p: Pair<Rule>) -> Expression {
     let p = first(p);
 
     match p.as_rule() {

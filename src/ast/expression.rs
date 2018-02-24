@@ -1,13 +1,13 @@
 use super::arguments::Arguments;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Expression<'a> {
+pub enum Expression {
     App {
-        function: Box<Expression<'a>>,
-        arguments: Arguments<'a>,
+        function: Box<Expression>,
+        arguments: Arguments,
     },
     Boolean(bool),
-    Name(&'a str),
+    Name(String),
     Nil,
     Number(f64),
     String(String),

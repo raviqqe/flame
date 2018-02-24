@@ -3,8 +3,8 @@ use super::keyword_argument::KeywordArgument;
 use super::positional_argument::PositionalArgument;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Arguments<'a> {
-    positionals: Vec<PositionalArgument<'a>>,
-    keywords: Vec<KeywordArgument<'a>>,
-    expanded_dicts: Vec<Expression<'a>>,
+pub struct Arguments {
+    positionals: Vec<PositionalArgument>,
+    keywords: Vec<KeywordArgument>,
+    expanded_dicts: Vec<Expression>,
 }

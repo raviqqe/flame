@@ -1,15 +1,15 @@
 use super::expression::Expression;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Statement<'a> {
+pub enum Statement {
     Effect {
-        value: Expression<'a>,
+        value: Expression,
         expanded: bool,
     },
 }
 
-impl<'a> Statement<'a> {
-    pub fn effect(v: Expression<'a>, e: bool) -> Self {
+impl Statement {
+    pub fn effect(v: Expression, e: bool) -> Self {
         Statement::Effect {
             value: v,
             expanded: e,

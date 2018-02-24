@@ -1,7 +1,7 @@
 use super::expression::Expression;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct PositionalArgument<'a> {
-    value: Expression<'a>,
+pub struct PositionalArgument {
+    value: Expression,
     expanded: bool,
 }
