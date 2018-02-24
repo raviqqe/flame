@@ -7,6 +7,7 @@ use super::error::Error;
 use super::dictionary::Dictionary;
 use super::list::List;
 use super::result::Result;
+use super::unsafe_ref::RefMut;
 use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
@@ -74,8 +75,9 @@ impl Arguments {
         unimplemented!()
     }
 
-    pub fn search_keyword(&mut self, s: &str) -> Result<Value> {
-        for o in &mut self.keywords {
+    #[async]
+    pub fn search_keyword(mut this: RefMut<Self>, s: String) -> Result<Value> {
+        for o in &mut this.keywords {
             let n = o.clone().unwrap().name;
 
             if s == n {
@@ -83,14 +85,20 @@ impl Arguments {
             }
         }
 
-        unimplemented!(); // Search in self.expanded_dict.
+        let v = this.expanded_dict
+            .clone()
+            .ok_or_else(|| Error::argument("cannot find a keyword argument"))?;
+        let d = await!(v.dictionary())?;
+        let v = await!(d.clone().find(s.clone().into()))?;
 
-        Err(Error::argument("cannot find a keyword argument"))
+        this.expanded_dict = Some(await!(d.delete(s.into()))?.into());
+
+        Ok(v)
     }
 
     pub fn rest_keywords(&mut self) -> Value {
         let ks = replace(&mut self.keywords, ArrayQueue::new());
-        let mut d = replace(&mut self.expanded_dict, None);
+        let d = replace(&mut self.expanded_dict, None);
 
         let mut v = d.unwrap_or(Value::from(Dictionary::new()));
 

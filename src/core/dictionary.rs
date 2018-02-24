@@ -110,6 +110,16 @@ impl Dictionary {
             None => Err(await!(Error::key_not_found(k.into()))?),
         }
     }
+
+    #[async]
+    pub fn delete(self, k: Value) -> Result<Dictionary> {
+        let k: Key = await!(k.pured())?.try_into()?;
+
+        match self.0.delete(&k) {
+            Some(m) => Ok(m.into()),
+            None => Err(await!(Error::key_not_found(k.into()))?),
+        }
+    }
 }
 
 impl From<Map<Key, Value>> for Dictionary {

@@ -1,6 +1,9 @@
+use futures::prelude::*;
+
 use super::arguments::Arguments;
 use super::optional_argument::OptionalArgument;
 use super::result::Result;
+use super::unsafe_ref::{Ref, RefMut};
 use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
@@ -19,35 +22,50 @@ impl HalfSignature {
         }
     }
 
-    pub fn bind_positionals(&self, args: &mut Arguments, vs: &mut Vec<Value>) -> Result<()> {
-        for s in &self.requireds {
-            vs.push(args.next_positional().unwrap_or(args.search_keyword(&s)?));
+    #[async]
+    pub fn bind_positionals(
+        this: Ref<Self>,
+        mut args: RefMut<Arguments>,
+        mut vs: RefMut<Vec<Value>>,
+    ) -> Result<()> {
+        for s in this.requireds.clone() {
+            let v = await!(Arguments::search_keyword(args.clone(), s.clone()))?;
+            vs.push(args.clone().next_positional().unwrap_or(v));
         }
 
-        for o in &self.optionals {
+        for o in this.optionals.clone() {
+            let r = await!(Arguments::search_keyword(args.clone(), o.name));
             vs.push(
-                args.next_positional()
-                    .unwrap_or(args.search_keyword(&o.name).unwrap_or(o.value.clone())),
+                args.clone()
+                    .next_positional()
+                    .unwrap_or(r.unwrap_or(o.value.clone())),
             );
         }
 
-        if self.rest != "" {
+        if this.rest != "" {
             vs.push(args.rest_positionals());
         }
 
         Ok(())
     }
 
-    pub fn bind_keywords(&self, args: &mut Arguments, vs: &mut Vec<Value>) -> Result<()> {
-        for s in &self.requireds {
-            vs.push(args.search_keyword(&s)?);
+    #[async]
+    pub fn bind_keywords(
+        this: Ref<HalfSignature>,
+        mut args: RefMut<Arguments>,
+        mut vs: RefMut<Vec<Value>>,
+    ) -> Result<()> {
+        for s in this.requireds.clone() {
+            let v = await!(Arguments::search_keyword(args.clone(), s))?;
+            vs.push(v);
         }
 
-        for o in &self.optionals {
-            vs.push(args.search_keyword(&o.name).unwrap_or(o.value.clone()));
+        for o in this.optionals.clone() {
+            let r = await!(Arguments::search_keyword(args.clone(), o.name));
+            vs.push(r.unwrap_or(o.value.clone()));
         }
 
-        if self.rest != "" {
+        if this.rest != "" {
             vs.push(args.rest_keywords());
         }
 

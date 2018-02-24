@@ -4,6 +4,7 @@ use super::arguments::Arguments;
 use super::half_signature::HalfSignature;
 use super::optional_argument::OptionalArgument;
 use super::result::Result;
+use super::unsafe_ref::{Ref, RefMut};
 use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
@@ -30,8 +31,16 @@ impl Signature {
     #[async]
     pub fn bind(self, mut args: Arguments) -> Result<Vec<Value>> {
         let mut vs = vec![];
-        self.positionals.bind_positionals(&mut args, &mut vs)?;
-        self.keywords.bind_keywords(&mut args, &mut vs)?;
+        await!(HalfSignature::bind_positionals(
+            Ref(&self.positionals),
+            RefMut(&mut args),
+            RefMut(&mut vs),
+        ))?;
+        await!(HalfSignature::bind_keywords(
+            Ref(&self.keywords),
+            RefMut(&mut args),
+            RefMut(&mut vs),
+        ))?;
         await!(args.check_empty())?;
         Ok(vs)
     }
