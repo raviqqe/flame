@@ -8,6 +8,7 @@ use super::dictionary::Dictionary;
 use super::list::{List, FIRST};
 use super::result::Result;
 use super::unsafe_ref::RefMut;
+use super::utils::papp;
 use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
@@ -71,7 +72,7 @@ impl Arguments {
         if let Some(v) = self.positionals.pop_front() {
             v
         } else if let Some(ref l) = self.expanded_list {
-            Some(Value::papp(FIRST.clone(), &[l.clone()]).into())
+            Some(papp(FIRST.clone(), &[l.clone()]).into())
         } else {
             None
         }

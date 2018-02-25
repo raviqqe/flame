@@ -118,6 +118,7 @@ mod test {
 
     use super::super::normal::Normal;
     use super::super::signature::Signature;
+    use super::super::utils::papp;
     use super::*;
 
     #[test]
@@ -162,7 +163,7 @@ mod test {
     #[test]
     fn run_function_only_once() {
         let p = CpuPool::new_num_cpus();
-        let v = Value::papp(INCREMENT.clone(), &[]);
+        let v = papp(INCREMENT.clone(), &[]);
 
         let mut fs = vec![];
 

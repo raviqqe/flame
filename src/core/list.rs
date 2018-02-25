@@ -6,6 +6,7 @@ use super::collection::MERGE;
 use super::error::Error;
 use super::result::Result;
 use super::signature::Signature;
+use super::utils::papp;
 use super::value::Value;
 
 #[derive(Clone, Debug)]
@@ -67,10 +68,7 @@ impl List {
             List::Cons(ref c) => {
                 let Cons(f, r) = (**c).clone();
 
-                Ok(Value::from(Self::cons(
-                    f,
-                    Value::papp(MERGE.clone(), &[r, v]),
-                )))
+                Ok(Value::from(Self::cons(f, papp(MERGE.clone(), &[r, v]))))
             }
         }
     }
@@ -149,7 +147,7 @@ mod test {
 
     #[test]
     fn first() {
-        let n = Value::papp(FIRST.clone(), &[List::new(&[42.into()]).into()])
+        let n = papp(FIRST.clone(), &[List::new(&[42.into()]).into()])
             .number()
             .wait()
             .unwrap();
@@ -159,7 +157,7 @@ mod test {
 
     #[test]
     fn rest() {
-        Value::papp(REST.clone(), &[List::new(&[42.into()]).into()])
+        papp(REST.clone(), &[List::new(&[42.into()]).into()])
             .list()
             .wait()
             .unwrap();

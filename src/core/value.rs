@@ -1,15 +1,15 @@
 use futures::prelude::*;
 
-use super::arguments::Arguments;
 use super::collection::{INSERT, MERGE};
 use super::dictionary::Dictionary;
 use super::error::Error;
 use super::function::Function;
 use super::list::List;
-use super::vague_normal::VagueNormal;
+use super::normal::Normal;
 use super::result::Result;
 use super::thunk::Thunk;
-use super::normal::Normal;
+use super::utils::papp;
+use super::vague_normal::VagueNormal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
@@ -18,14 +18,6 @@ pub enum Value {
 }
 
 impl Value {
-    pub fn app(f: Self, a: Arguments) -> Self {
-        Value::Thunk(Thunk::new(f, a))
-    }
-
-    pub fn papp(f: Self, vs: &[Value]) -> Self {
-        Value::Thunk(Thunk::new(f, Arguments::positionals(vs)))
-    }
-
     #[async]
     pub fn vague(self) -> Result<VagueNormal> {
         match self {
@@ -133,11 +125,11 @@ impl Value {
     }
 
     pub fn insert(&self, k: impl Into<Self>, v: impl Into<Self>) -> Self {
-        Self::papp(INSERT.clone(), &[self.clone(), k.into(), v.into()])
+        papp(INSERT.clone(), &[self.clone(), k.into(), v.into()])
     }
 
     pub fn merge(&self, v: Self) -> Self {
-        Self::papp(MERGE.clone(), &[self.clone(), v])
+        papp(MERGE.clone(), &[self.clone(), v])
     }
 }
 
