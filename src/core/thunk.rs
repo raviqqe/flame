@@ -112,6 +112,12 @@ impl Inner {
 
 #[cfg(test)]
 mod test {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    use futures_cpupool::CpuPool;
+
+    use super::super::normal::Normal;
+    use super::super::signature::Signature;
     use super::*;
 
     #[test]
@@ -128,5 +134,44 @@ mod test {
 
         assert_eq!(e.name, "TypeError");
         assert_eq!(e.message, "42 is not a function");
+    }
+
+    lazy_static! {
+        static ref SUM: AtomicUsize = AtomicUsize::new(0);
+    }
+
+    pure_function!(
+        INCREMENT,
+        Signature::new(vec![], vec![], "".into(), vec![], vec![], "".into()),
+        increment
+    );
+
+    #[async(boxed_send)]
+    fn increment(_: Vec<Value>) -> Result<Value> {
+        loop {
+            let s = SUM.load(Ordering::SeqCst);
+
+            if SUM.compare_and_swap(s, s + 1, Ordering::SeqCst) == s {
+                break;
+            }
+        }
+
+        Ok(Normal::Number(SUM.load(Ordering::SeqCst) as f64).into())
+    }
+
+    #[test]
+    fn run_function_only_once() {
+        let p = CpuPool::new_num_cpus();
+        let v = Value::papp(INCREMENT.clone(), &[]);
+
+        let mut fs = vec![];
+
+        for _ in 0..1000 {
+            fs.push(p.spawn(v.clone().number()));
+        }
+
+        for f in fs {
+            assert_eq!(f.wait().unwrap(), 1.0);
+        }
     }
 }
