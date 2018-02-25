@@ -30,6 +30,8 @@ use std::fs::File;
 use std::io::{self, stdin, Read};
 use std::process::exit;
 
+use futures::Future;
+
 use compile::compile;
 use desugar::desugar;
 use docopt::Docopt;
@@ -60,11 +62,9 @@ fn main() {
 fn try_main() -> Result<(), Box<Error>> {
     let args: Args = Docopt::new(USAGE).and_then(|d| d.deserialize())?;
 
-    run(compile(desugar(parse::main_module(&read_source(
+    Ok(run(compile(desugar(parse::main_module(&read_source(
         args.arg_filename,
-    )?)?)?)?);
-
-    Ok(())
+    )?)?)?)?).wait()?)
 }
 
 fn read_source(s: Option<String>) -> Result<String, io::Error> {
