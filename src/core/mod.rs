@@ -11,6 +11,7 @@ mod normal;
 mod optional_argument;
 mod result;
 mod signature;
+mod string;
 mod thunk;
 mod unsafe_ref;
 mod utils;

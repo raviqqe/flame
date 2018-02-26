@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::fmt::{self, Debug, Formatter};
 
 use futures::prelude::*;
@@ -6,6 +7,7 @@ use super::dictionary::Dictionary;
 use super::function::Function;
 use super::list::List;
 use super::result::Result;
+use super::string::Str;
 
 #[derive(Clone)]
 pub enum Normal {
@@ -16,7 +18,7 @@ pub enum Normal {
     Nil,
     Number(f64),
     // TODO: Optimize String embedding small ones into Normal.
-    String(Vec<u8>),
+    String(Str),
 }
 
 impl Normal {
@@ -29,11 +31,7 @@ impl Normal {
             Normal::List(l) => await!(l.to_string())?,
             Normal::Number(n) => n.to_string(),
             Normal::Nil => "nil".to_string(),
-            Normal::String(s) => [
-                "\"".to_string(),
-                String::from_utf8(s)?.escape_default(),
-                "\"".to_string(),
-            ].join(""),
+            Normal::String(s) => ["\"".to_string(), s.try_into()?, "\"".to_string()].join(""),
         })
     }
 }
@@ -73,7 +71,7 @@ impl From<List> for Normal {
 
 impl From<String> for Normal {
     fn from(s: String) -> Self {
-        Normal::String(s.as_bytes().to_vec())
+        Normal::String(s.into())
     }
 }
 
@@ -83,8 +81,8 @@ impl From<usize> for Normal {
     }
 }
 
-impl From<Vec<u8>> for Normal {
-    fn from(v: Vec<u8>) -> Self {
+impl From<Str> for Normal {
+    fn from(v: Str) -> Self {
         Normal::String(v)
     }
 }

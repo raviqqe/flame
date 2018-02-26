@@ -9,13 +9,14 @@ use hamt_sync::Map;
 use super::error::Error;
 use super::normal::Normal;
 use super::result::Result;
+use super::string::Str;
 use super::value::Value;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Key {
     Nil,
     Number(f64),
-    String(Vec<u8>),
+    String(Str),
 }
 
 impl Hash for Key {
@@ -23,7 +24,7 @@ impl Hash for Key {
         match *self {
             Key::Nil => state.write_u8(0),
             Key::Number(n) => state.write_u64(unsafe { transmute(n) }),
-            Key::String(ref s) => state.write(&s),
+            Key::String(ref s) => state.write(s.as_slice()),
         }
     }
 }

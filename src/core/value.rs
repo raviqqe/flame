@@ -7,6 +7,7 @@ use super::function::Function;
 use super::list::List;
 use super::normal::Normal;
 use super::result::Result;
+use super::string::Str;
 use super::thunk::Thunk;
 use super::utils::papp;
 use super::vague_normal::VagueNormal;
@@ -110,7 +111,7 @@ impl Value {
     }
 
     #[async]
-    pub fn string(self) -> Result<Vec<u8>> {
+    pub fn string(self) -> Result<Str> {
         let n = await!(self.pured())?;
 
         match n {

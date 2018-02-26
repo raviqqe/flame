@@ -59,12 +59,11 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
                 let i = await!(l.first()?.index())? - 1;
                 l = await!(l.rest())?;
 
-                let ss = await!(l.first()?.string())?;
+                let m = await!(l.first()?.string())?;
                 l = await!(l.rest())?;
 
-                let sss = s.split_off(i);
-                s.extend(ss);
-                s.extend(sss);
+                let (f, l) = s.split(i);
+                s = f.extend(&m).extend(&l);
             }
 
             Value::from(s)
@@ -96,8 +95,7 @@ fn merge(vs: Vec<Value>) -> Result<Value> {
         Normal::List(l) => l.merge(vs[1].clone())?,
         Normal::String(mut s) => {
             let ss = await!(vs[1].clone().string())?;
-            s.extend(ss);
-            Value::from(s)
+            Value::from(s.extend(&ss))
         }
         n => return Err(await!(Error::not_collection(n))?),
     })
