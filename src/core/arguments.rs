@@ -43,15 +43,13 @@ impl Arguments {
         }
 
         if !ds.is_empty() {
-            d = {
-                let mut v = d.unwrap_or(Value::from(Dictionary::new()));
+            let mut v = d.unwrap_or(Value::from(Dictionary::new()));
 
-                for d in ds {
-                    v = v.merge(d.clone());
-                }
+            for d in ds {
+                v = v.merge(d.clone());
+            }
 
-                Some(v)
-            };
+            d = Some(v)
         }
 
         Arguments {
