@@ -80,7 +80,17 @@ impl Arguments {
     }
 
     pub fn rest_positionals(&mut self) -> Value {
-        unimplemented!()
+        let ps = replace(&mut self.positionals, ArrayQueue::new());
+        let l = replace(&mut self.expanded_list, None);
+
+        match l {
+            None => List::new(ps.into_iter()).into(),
+            Some(l) => if ps.is_empty() {
+                l
+            } else {
+                List::strict_prepend(ps.into_iter(), l).into()
+            },
+        }
     }
 
     #[async]

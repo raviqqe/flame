@@ -19,10 +19,10 @@ pub enum List {
 }
 
 impl List {
-    fn new(vs: &[Value]) -> List {
+    pub fn new<'a, I: IntoIterator<Item = &'a Value>>(vs: I) -> List {
         let mut l = List::Empty;
 
-        for v in vs.iter().rev() {
+        for v in vs {
             l = List::Cons(Arc::new(Cons(v.clone(), Value::from(l))));
         }
 
@@ -31,6 +31,19 @@ impl List {
 
     pub fn cons(v: impl Into<Value>, l: impl Into<Value>) -> List {
         List::Cons(Arc::new(Cons(v.into(), l.into())))
+    }
+
+    pub fn strict_prepend<'a, I: IntoIterator<Item = &'a Value>>(
+        vs: I,
+        l: impl Into<Value>,
+    ) -> Value {
+        let mut l = l.into();
+
+        for v in vs {
+            l = Self::cons(v.clone(), l).into();
+        }
+
+        l
     }
 
     pub fn first(&self) -> Result<Value> {
