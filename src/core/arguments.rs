@@ -6,6 +6,7 @@ use futures::prelude::*;
 use super::error::Error;
 use super::dictionary::Dictionary;
 use super::list::{List, FIRST};
+use super::normal::Normal;
 use super::result::Result;
 use super::unsafe_ref::RefMut;
 use super::utils::papp;
@@ -13,9 +14,9 @@ use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
 pub struct Arguments {
-    positionals: ArrayQueue<[Option<Value>; 4]>,
+    positionals: ArrayQueue<[Value; 4]>,
     expanded_list: Option<Value>,
-    keywords: ArrayQueue<[Option<KeywordArgument>; 4]>,
+    keywords: ArrayQueue<[KeywordArgument; 4]>,
     expanded_dict: Option<Value>,
 }
 
@@ -25,7 +26,7 @@ impl Arguments {
         let mut pq = ArrayQueue::new();
 
         for (i, p) in ps.iter().enumerate() {
-            if p.expanded || !p.expanded && pq.push_back(&Some(p.value.clone())).is_err() {
+            if p.expanded || !p.expanded && pq.push_back(&p.value.clone()).is_err() {
                 l = Some(Self::merge_positional_arguments(&ps[i..]));
                 break;
             }
@@ -35,7 +36,7 @@ impl Arguments {
         let mut d = None;
 
         for (i, k) in ks.iter().enumerate() {
-            if kq.push_back(&Some(k.clone())).is_err() {
+            if kq.push_back(&k.clone()).is_err() {
                 d = Some(Self::merge_keyword_arguments(&ks[i..]));
                 break;
             }
@@ -70,7 +71,7 @@ impl Arguments {
 
     pub fn next_positional(&mut self) -> Option<Value> {
         if let Some(v) = self.positionals.pop_front() {
-            v
+            Some(v)
         } else if let Some(ref l) = self.expanded_list {
             Some(papp(FIRST.clone(), &[l.clone()]).into())
         } else {
@@ -84,11 +85,11 @@ impl Arguments {
 
     #[async]
     pub fn search_keyword(mut this: RefMut<Self>, s: String) -> Result<Value> {
-        for o in &mut this.keywords {
-            let n = o.clone().unwrap().name;
-
-            if s == n {
-                return Ok(replace(o, None).unwrap().value);
+        for k in &mut this.keywords {
+            if s == k.name {
+                return Ok(
+                    replace(k, KeywordArgument::new("".to_string(), Normal::Nil.into())).value,
+                );
             }
         }
 
@@ -110,7 +111,7 @@ impl Arguments {
         let mut v = d.unwrap_or(Value::from(Dictionary::new()));
 
         for k in &ks {
-            let k = k.clone().unwrap();
+            let k = k.clone();
             v = v.insert(Value::from(k.name), k.value);
         }
 
