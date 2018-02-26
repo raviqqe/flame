@@ -3,7 +3,7 @@ use std::str::from_utf8;
 
 use super::error::Error;
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Str(Vec<u8>);
 
 impl Str {
@@ -27,6 +27,12 @@ impl Str {
 impl<'a> Into<&'a [u8]> for &'a Str {
     fn into(self) -> &'a [u8] {
         &self.0
+    }
+}
+
+impl<'a> From<&'a str> for Str {
+    fn from(s: &'a str) -> Self {
+        Str(s.as_bytes().to_vec())
     }
 }
 

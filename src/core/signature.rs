@@ -4,6 +4,7 @@ use super::arguments::Arguments;
 use super::half_signature::HalfSignature;
 use super::optional_argument::OptionalArgument;
 use super::result::Result;
+use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
 use super::value::Value;
 
@@ -15,12 +16,12 @@ pub struct Signature {
 
 impl Signature {
     pub fn new(
-        pr: Vec<String>,
+        pr: Vec<Str>,
         po: Vec<OptionalArgument>,
-        pp: String,
-        kr: Vec<String>,
+        pp: Str,
+        kr: Vec<Str>,
         ko: Vec<OptionalArgument>,
-        kk: String,
+        kk: Str,
     ) -> Self {
         Signature {
             positionals: HalfSignature::new(pr, po, pp),
@@ -56,14 +57,7 @@ mod test {
 
     #[test]
     fn new() {
-        Signature::new(
-            vec![],
-            vec![],
-            "".to_string(),
-            vec![],
-            vec![],
-            "".to_string(),
-        );
+        Signature::new(vec![], vec![], "".into(), vec![], vec![], "".into());
     }
 
     #[test]

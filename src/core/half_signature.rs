@@ -3,18 +3,19 @@ use futures::prelude::*;
 use super::arguments::Arguments;
 use super::optional_argument::OptionalArgument;
 use super::result::Result;
+use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
 use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
 pub struct HalfSignature {
-    requireds: Vec<String>,
+    requireds: Vec<Str>,
     optionals: Vec<OptionalArgument>,
-    rest: String,
+    rest: Str,
 }
 
 impl HalfSignature {
-    pub fn new(rs: Vec<String>, os: Vec<OptionalArgument>, r: String) -> Self {
+    pub fn new(rs: Vec<Str>, os: Vec<OptionalArgument>, r: Str) -> Self {
         HalfSignature {
             requireds: rs,
             optionals: os,
@@ -46,7 +47,7 @@ impl HalfSignature {
             );
         }
 
-        if this.rest != "" {
+        if this.rest != "".into() {
             vs.push(args.rest_positionals());
         }
 
@@ -69,7 +70,7 @@ impl HalfSignature {
             vs.push(r.unwrap_or(o.value.clone()));
         }
 
-        if this.rest != "" {
+        if this.rest != "".into() {
             vs.push(args.rest_keywords());
         }
 
@@ -77,7 +78,7 @@ impl HalfSignature {
     }
 
     pub fn arity(&self) -> usize {
-        self.requireds.len() + self.optionals.len() + (self.rest == "") as usize
+        self.requireds.len() + self.optionals.len() + (self.rest == "".into()) as usize
     }
 }
 
@@ -87,24 +88,24 @@ mod test {
 
     #[test]
     fn new() {
-        HalfSignature::new(vec![], vec![], "".to_string());
+        HalfSignature::new(vec![], vec![], "".into());
     }
 
     #[test]
     fn bind_positionals() {
         for (s, mut a, l) in vec![
             (
-                HalfSignature::new(vec![], vec![], "".to_string()),
+                HalfSignature::new(vec![], vec![], "".into()),
                 Arguments::positionals(&[]),
                 0,
             ),
             (
-                HalfSignature::new(vec!["x".into()], vec![], "".to_string()),
+                HalfSignature::new(vec!["x".into()], vec![], "".into()),
                 Arguments::positionals(&[42.into()]),
                 1,
             ),
             (
-                HalfSignature::new(vec!["x".into(), "y".into()], vec![], "".to_string()),
+                HalfSignature::new(vec!["x".into(), "y".into()], vec![], "".into()),
                 Arguments::positionals(&[42.into(), 42.into()]),
                 2,
             ),
@@ -112,7 +113,7 @@ mod test {
                 HalfSignature::new(
                     vec![],
                     vec![OptionalArgument::new("x".into(), 42.into())],
-                    "".to_string(),
+                    "".into(),
                 ),
                 Arguments::positionals(&[]),
                 1,
@@ -121,7 +122,7 @@ mod test {
                 HalfSignature::new(
                     vec![],
                     vec![OptionalArgument::new("x".into(), 42.into())],
-                    "".to_string(),
+                    "".into(),
                 ),
                 Arguments::positionals(&[42.into()]),
                 1,
@@ -141,7 +142,7 @@ mod test {
     fn bind_positionals_error() {
         for (s, mut a) in vec![
             (
-                HalfSignature::new(vec!["x".into()], vec![], "".to_string()),
+                HalfSignature::new(vec!["x".into()], vec![], "".into()),
                 Arguments::positionals(&[]),
             ),
         ] {

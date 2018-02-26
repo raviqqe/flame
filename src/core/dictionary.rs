@@ -42,6 +42,12 @@ impl TryFrom<Normal> for Key {
     }
 }
 
+impl From<Str> for Key {
+    fn from(s: Str) -> Self {
+        Key::String(s)
+    }
+}
+
 impl Into<Normal> for Key {
     fn into(self) -> Normal {
         match self {
@@ -89,6 +95,10 @@ impl Dictionary {
     pub fn insert(self, k: Value, v: Value) -> Result<Dictionary> {
         let k = Key::try_from(await!(k.pured())?)?;
         Ok(Dictionary::from(self.0.insert(k, v)))
+    }
+
+    pub fn strict_insert(self, k: Key, v: Value) -> Dictionary {
+        Dictionary::from(self.0.insert(k, v))
     }
 
     pub fn merge(&self, d: &Self) -> Self {

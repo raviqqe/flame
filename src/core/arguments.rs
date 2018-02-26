@@ -8,6 +8,7 @@ use super::dictionary::Dictionary;
 use super::list::{List, FIRST};
 use super::normal::Normal;
 use super::result::Result;
+use super::string::Str;
 use super::unsafe_ref::RefMut;
 use super::utils::papp;
 use super::value::Value;
@@ -37,13 +38,13 @@ impl Arguments {
 
         for (i, k) in ks.iter().enumerate() {
             if kq.push_back(&k.clone()).is_err() {
-                d = Some(Self::merge_keyword_arguments(&ks[i..]));
+                d = Some(Self::merge_keyword_arguments(&ks[i..]).into());
                 break;
             }
         }
 
         if !ds.is_empty() {
-            let mut v = d.unwrap_or(Value::from(Dictionary::new()));
+            let mut v: Value = d.unwrap_or(Dictionary::new().into());
 
             for d in ds {
                 v = v.merge(d.clone());
@@ -92,12 +93,10 @@ impl Arguments {
     }
 
     #[async]
-    pub fn search_keyword(mut this: RefMut<Self>, s: String) -> Result<Value> {
+    pub fn search_keyword(mut this: RefMut<Self>, s: Str) -> Result<Value> {
         for k in &mut this.keywords {
             if s == k.name {
-                return Ok(
-                    replace(k, KeywordArgument::new("".to_string(), Normal::Nil.into())).value,
-                );
+                return Ok(replace(k, KeywordArgument::new("".into(), Normal::Nil.into())).value);
             }
         }
 
@@ -171,8 +170,15 @@ impl Arguments {
         l
     }
 
-    fn merge_keyword_arguments(ks: &[KeywordArgument]) -> Value {
-        unimplemented!()
+    fn merge_keyword_arguments(ks: &[KeywordArgument]) -> Dictionary {
+        let mut d = Dictionary::new();
+
+        for k in ks {
+            let k = k.clone();
+            d = d.strict_insert(k.name.into(), k.value);
+        }
+
+        d
     }
 }
 
@@ -193,12 +199,12 @@ impl PositionalArgument {
 
 #[derive(Clone, Debug)]
 pub struct KeywordArgument {
-    pub name: String,
+    pub name: Str,
     pub value: Value,
 }
 
 impl KeywordArgument {
-    pub fn new(s: String, v: Value) -> Self {
+    pub fn new(s: Str, v: Value) -> Self {
         KeywordArgument { name: s, value: v }
     }
 }

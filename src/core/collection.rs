@@ -9,12 +9,12 @@ use super::value::Value;
 pure_function!(
     INSERT,
     Signature::new(
-        vec!["collection".to_string()],
+        vec!["collection".into()],
         vec![],
-        "keyValuePairs".to_string(),
+        "keyValuePairs".into(),
         vec![],
         vec![],
-        "".to_string()
+        "".into()
     ),
     insert
 );
@@ -75,12 +75,12 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
 pure_function!(
     MERGE,
     Signature::new(
-        vec!["collection".to_string()],
+        vec!["collection".into()],
         vec![],
-        "collections".to_string(),
+        "collections".into(),
         vec![],
         vec![],
-        "".to_string()
+        "".into()
     ),
     merge
 );
