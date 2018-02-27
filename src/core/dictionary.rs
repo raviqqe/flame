@@ -131,6 +131,29 @@ impl Dictionary {
             None => Err(await!(Error::key_not_found(k.into()))?),
         }
     }
+
+    #[async]
+    pub fn equal(self, d: Self) -> Result<bool> {
+        let kvs1: Vec<(Key, Value)> = self.0
+            .into_iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+
+        let kvs2: Vec<(Key, Value)> = d.0
+            .into_iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+
+        for ((k1, v1), (k2, v2)) in kvs1.into_iter().zip(kvs2.into_iter()) {
+            let k1: Value = k1.into();
+
+            if !await!(k1.equal(k2.into()))? || !await!(v1.equal(v2))? {
+                return Ok(false);
+            }
+        }
+
+        Ok(true)
+    }
 }
 
 impl From<Map<Key, Value>> for Dictionary {
