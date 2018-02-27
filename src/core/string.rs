@@ -7,7 +7,7 @@ use super::error::Error;
 pub struct Str(Vec<u8>);
 
 impl Str {
-    pub fn extend(&self, s: &Self) -> Self {
+    pub fn merge(&self, s: &Self) -> Self {
         let mut v = self.0.clone();
         v.extend(&s.0);
         Str(v)
