@@ -3,7 +3,7 @@ use std::str::from_utf8;
 
 use super::error::Error;
 
-#[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Str(Vec<u8>);
 
 impl Str {
