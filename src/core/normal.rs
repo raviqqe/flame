@@ -34,6 +34,18 @@ impl Normal {
             Normal::String(s) => ["\"".to_string(), s.try_into()?, "\"".to_string()].join(""),
         })
     }
+
+    pub fn type_name(&self) -> Str {
+        match *self {
+            Normal::Boolean(b) => "boolean",
+            Normal::Dictionary(d) => "dictionary",
+            Normal::Function(_) => "function",
+            Normal::List(l) => "list",
+            Normal::Number(n) => "number",
+            Normal::Nil => "nil",
+            Normal::String(s) => "string",
+        }.into()
+    }
 }
 
 impl Debug for Normal {

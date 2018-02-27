@@ -121,6 +121,11 @@ impl Value {
     }
 
     #[async]
+    fn type_name(self) -> Result<Str> {
+        Ok(await!(self.pured())?.type_name())
+    }
+
+    #[async]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
     }
