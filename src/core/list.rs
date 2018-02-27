@@ -2,11 +2,12 @@ use std::sync::Arc;
 
 use futures::prelude::*;
 
+use super::arguments::{Arguments, PositionalArgument};
 use super::collection::MERGE;
 use super::error::Error;
 use super::result::Result;
 use super::signature::Signature;
-use super::utils::papp;
+use super::utils::{app, papp};
 use super::value::Value;
 
 #[derive(Clone, Debug)]
@@ -147,6 +148,40 @@ fn rest(vs: Vec<Value>) -> Result<Value> {
     Ok(await!(l.rest())?.into())
 }
 
+pure_function!(
+    PREPEND,
+    Signature::new(
+        vec![],
+        vec![],
+        "elemsAndList".into(),
+        vec![],
+        vec![],
+        "".into()
+    ),
+    prepend
+);
+
+#[async(boxed_send)]
+fn prepend(vs: Vec<Value>) -> Result<Value> {
+    let l = await!(vs[0].clone().list())?;
+
+    if let List::Empty = l {
+        l.first()
+    } else {
+        Ok(List::cons(
+            l.first()?,
+            app(
+                PREPEND.clone(),
+                Arguments::new(
+                    &[PositionalArgument::new(await!(l.rest())?.into(), true)],
+                    &[],
+                    &[],
+                ),
+            ),
+        ).into())
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -172,6 +207,16 @@ mod test {
     fn rest() {
         papp(REST.clone(), &[List::new(&[42.into()]).into()])
             .list()
+            .wait()
+            .unwrap();
+    }
+
+    #[test]
+    fn prepend() {
+        papp(
+            PREPEND.clone(),
+            &[List::new(&[42.into(), List::Empty.into()]).into()],
+        ).list()
             .wait()
             .unwrap();
     }
