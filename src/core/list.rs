@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::sync::Arc;
 
 use futures::prelude::*;
@@ -107,6 +108,30 @@ impl List {
         }
 
         Ok(["[", &ss.join(" ".into()), "]"].join("").to_string())
+    }
+
+    #[async]
+    pub fn compare(mut self, mut l: Self) -> Result<Ordering> {
+        loop {
+            match (self, l) {
+                (List::Empty, List::Empty) => return Ok(Ordering::Equal),
+                (List::Empty, List::Cons(_)) => return Ok(Ordering::Less),
+                (List::Cons(_), List::Empty) => return Ok(Ordering::Greater),
+                _ => {
+                    let x = await!(self.first())?;
+                    let y = await!(l.first())?;
+
+                    let o = await!(x.compare(y))?;
+
+                    if o != Ordering::Equal {
+                        return Ok(o);
+                    }
+
+                    self = await!(self.rest())?;
+                    l = await!(l.rest())?;
+                }
+            }
+        }
     }
 }
 
