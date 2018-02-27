@@ -37,13 +37,13 @@ impl Normal {
 
     pub fn type_name(&self) -> Str {
         match *self {
-            Normal::Boolean(b) => "boolean",
-            Normal::Dictionary(d) => "dictionary",
+            Normal::Boolean(_) => "boolean",
+            Normal::Dictionary(_) => "dictionary",
             Normal::Function(_) => "function",
-            Normal::List(l) => "list",
-            Normal::Number(n) => "number",
+            Normal::List(_) => "list",
+            Normal::Number(_) => "number",
             Normal::Nil => "nil",
-            Normal::String(s) => "string",
+            Normal::String(_) => "string",
         }.into()
     }
 }
