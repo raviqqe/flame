@@ -47,7 +47,7 @@ impl HalfSignature {
             );
         }
 
-        if this.rest != "".into() {
+        if this.rest != "" {
             vs.push(args.rest_positionals());
         }
 
@@ -70,7 +70,7 @@ impl HalfSignature {
             vs.push(r.unwrap_or(o.value.clone()));
         }
 
-        if this.rest != "".into() {
+        if this.rest != "" {
             vs.push(args.rest_keywords());
         }
 
@@ -78,7 +78,7 @@ impl HalfSignature {
     }
 
     pub fn arity(&self) -> usize {
-        self.requireds.len() + self.optionals.len() + (self.rest == "".into()) as usize
+        self.requireds.len() + self.optionals.len() + (self.rest == "") as usize
     }
 }
 

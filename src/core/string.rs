@@ -49,3 +49,15 @@ impl TryInto<String> for Str {
         Ok(from_utf8(self.as_slice())?.into())
     }
 }
+
+impl<'a> PartialEq<&'a str> for Str {
+    fn eq(&self, x: &&'a str) -> bool {
+        self.as_slice() == x.as_bytes()
+    }
+}
+
+impl PartialEq<String> for Str {
+    fn eq(&self, x: &String) -> bool {
+        self.as_slice() == x.as_bytes()
+    }
+}
