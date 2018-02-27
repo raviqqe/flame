@@ -111,15 +111,20 @@ impl List {
     }
 
     #[async]
+    pub fn equal(self, l: Self) -> Result<bool> {
+        Ok(await!(self.compare(l))? == Ordering::Equal)
+    }
+
+    #[async]
     pub fn compare(mut self, mut l: Self) -> Result<Ordering> {
         loop {
-            match (self, l) {
+            match (self.clone(), l.clone()) {
                 (List::Empty, List::Empty) => return Ok(Ordering::Equal),
                 (List::Empty, List::Cons(_)) => return Ok(Ordering::Less),
                 (List::Cons(_), List::Empty) => return Ok(Ordering::Greater),
                 _ => {
-                    let x = await!(self.first())?;
-                    let y = await!(l.first())?;
+                    let x = self.first()?;
+                    let y = l.first()?;
 
                     let o = await!(x.compare(y))?;
 

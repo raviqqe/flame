@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use futures::prelude::*;
 
 use super::collection::{INSERT, MERGE};
@@ -128,6 +129,20 @@ impl Value {
     #[async]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
+    }
+
+    #[async]
+    pub fn equal(self, v: Self) -> Result<bool> {
+        let m = await!(self.pured())?;
+        let n = await!(v.pured())?;
+        await!(m.equal(n))
+    }
+
+    #[async]
+    pub fn compare(self, v: Self) -> Result<Ordering> {
+        let m = await!(self.pured())?;
+        let n = await!(v.pured())?;
+        await!(m.compare(n))
     }
 
     pub fn insert(&self, k: impl Into<Self>, v: impl Into<Self>) -> Self {

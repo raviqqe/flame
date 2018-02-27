@@ -1,9 +1,11 @@
+use std::cmp::Ordering;
 use std::convert::TryInto;
 use std::fmt::{self, Debug, Formatter};
 
 use futures::prelude::*;
 
 use super::dictionary::Dictionary;
+use super::error::Error;
 use super::function::Function;
 use super::list::List;
 use super::result::Result;
@@ -45,6 +47,33 @@ impl Normal {
             Normal::Nil => "nil",
             Normal::String(_) => "string",
         }.into()
+    }
+
+    #[async]
+    pub fn equal(self, n: Self) -> Result<bool> {
+        Ok(match (self, n) {
+            (Normal::Boolean(x), Normal::Boolean(y)) => x == y,
+            (Normal::Dictionary(x), Normal::Dictionary(y)) => await!(x.equal(y))?,
+            (Normal::List(x), Normal::List(y)) => await!(x.equal(y))?,
+            (Normal::Number(x), Normal::Number(y)) => x == y,
+            (Normal::Nil, Normal::Nil) => true,
+            (Normal::String(x), Normal::String(y)) => x == y,
+            _ => false,
+        })
+    }
+
+    #[async]
+    pub fn compare(self, n: Self) -> Result<Ordering> {
+        Ok(match (self.clone(), n) {
+            (Normal::List(x), Normal::List(y)) => await!(x.compare(y))?,
+            (Normal::Number(x), Normal::Number(y)) => if let Some(o) = x.partial_cmp(&y) {
+                o
+            } else {
+                return Err(await!(Error::not_comparable(self))?);
+            },
+            (Normal::String(x), Normal::String(y)) => x.cmp(&y),
+            _ => return Err(await!(Error::not_comparable(self))?),
+        })
     }
 }
 
