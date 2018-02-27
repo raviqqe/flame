@@ -59,6 +59,11 @@ impl Error {
     }
 
     #[async]
+    pub fn not_comparable(n: Normal) -> Result<Self> {
+        await!(Self::typ(n, "comparable".into()))
+    }
+
+    #[async]
     pub fn not_collection(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "collection".to_string()))
     }
