@@ -86,6 +86,12 @@ impl Debug for Normal {
     }
 }
 
+impl From<bool> for Normal {
+    fn from(b: bool) -> Self {
+        Normal::Boolean(b)
+    }
+}
+
 impl From<Dictionary> for Normal {
     fn from(d: Dictionary) -> Self {
         Normal::Dictionary(d)
@@ -110,20 +116,14 @@ impl From<List> for Normal {
     }
 }
 
-impl From<String> for Normal {
-    fn from(s: String) -> Self {
-        Normal::String(s.into())
-    }
-}
-
 impl From<usize> for Normal {
     fn from(u: usize) -> Self {
         Normal::from(u as f64)
     }
 }
 
-impl From<Str> for Normal {
-    fn from(v: Str) -> Self {
-        Normal::String(v)
+impl<S: Into<Str>> From<S> for Normal {
+    fn from(s: S) -> Self {
+        Normal::String(s.into())
     }
 }

@@ -42,6 +42,12 @@ impl TryFrom<Normal> for Key {
     }
 }
 
+impl<'a> From<&'a str> for Key {
+    fn from(s: &'a str) -> Self {
+        Key::String(s.into())
+    }
+}
+
 impl From<Str> for Key {
     fn from(s: Str) -> Self {
         Key::String(s)

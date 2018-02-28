@@ -170,6 +170,8 @@ impl From<VagueNormal> for Value {
 mod test {
     use super::*;
 
+    use super::super::utils::TEST_FUNCTION;
+
     #[test]
     fn from_f64() {
         Value::from(123.0);
@@ -178,10 +180,30 @@ mod test {
     #[test]
     fn to_string() {
         for (v, s) in vec![
-            (42.into(), "42"),
+            (true.into(), "true"),
+            (false.into(), "false"),
+            (Dictionary::new().into(), "{}"),
+            (
+                Dictionary::new()
+                    .strict_insert("foo".into(), 42.into())
+                    .into(),
+                "{\"foo\" 42}",
+            ),
+            (
+                Dictionary::new()
+                    .strict_insert("foo".into(), 1.into())
+                    .strict_insert("bar".into(), 2.into())
+                    .into(),
+                "{\"bar\" 2 \"foo\" 1}",
+            ),
+            (TEST_FUNCTION.clone(), "<function>"),
             (List::Empty.into(), "[]"),
             (List::new(&[42.into()]).into(), "[42]"),
             (List::new(&[0.into(), 42.into()]).into(), "[0 42]"),
+            (Normal::Nil.into(), "nil"),
+            (42.into(), "42"),
+            (1.5.into(), "1.5"),
+            ("foo".into(), "\"foo\""),
         ]: Vec<(Value, &str)>
         {
             assert_eq!(&v.clone().to_string().wait().unwrap(), s);
