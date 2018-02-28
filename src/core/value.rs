@@ -131,14 +131,14 @@ impl Value {
         await!(await!(self.pured())?.to_string())
     }
 
-    #[async]
+    #[async(boxed_send)]
     pub fn equal(self, v: Self) -> Result<bool> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;
         await!(m.equal(n))
     }
 
-    #[async]
+    #[async(boxed_send)]
     pub fn compare(self, v: Self) -> Result<Ordering> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;

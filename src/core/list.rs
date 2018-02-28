@@ -235,19 +235,23 @@ mod test {
 
     #[test]
     fn rest() {
-        papp(REST.clone(), &[List::new(&[42.into()]).into()])
-            .list()
-            .wait()
-            .unwrap();
+        assert!(
+            papp(REST.clone(), &[List::new(&[42.into()]).into()])
+                .equal(List::Empty.into())
+                .wait()
+                .unwrap()
+        );
     }
 
     #[test]
     fn prepend() {
-        papp(
-            PREPEND.clone(),
-            &[List::new(&[42.into(), List::Empty.into()]).into()],
-        ).list()
-            .wait()
-            .unwrap();
+        assert!(
+            papp(
+                PREPEND.clone(),
+                &[List::new(&[42.into(), List::Empty.into()]).into()],
+            ).equal(List::new(&[42.into()]).into())
+                .wait()
+                .unwrap()
+        );
     }
 }
