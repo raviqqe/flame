@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::iter::DoubleEndedIterator;
 use std::sync::Arc;
 
 use futures::prelude::*;
@@ -21,11 +22,14 @@ pub enum List {
 }
 
 impl List {
-    pub fn new<'a, I: IntoIterator<Item = &'a Value>>(vs: I) -> List {
+    pub fn new<'a, I: IntoIterator<Item = &'a Value>>(vs: I) -> List
+    where
+        <I as IntoIterator>::IntoIter: DoubleEndedIterator,
+    {
         let mut l = List::Empty;
 
-        for v in vs {
-            l = List::Cons(Arc::new(Cons(v.clone(), Value::from(l))));
+        for v in vs.into_iter().rev() {
+            l = Self::cons(v.clone(), l);
         }
 
         l
@@ -194,22 +198,20 @@ pure_function!(
 #[async(boxed_send)]
 fn prepend(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
+    let f = l.first()?;
+    let r = await!(l.rest())?;
 
-    if let List::Empty = l {
-        l.first()
-    } else {
-        Ok(List::cons(
-            l.first()?,
-            app(
-                PREPEND.clone(),
-                Arguments::new(
-                    &[PositionalArgument::new(await!(l.rest())?.into(), true)],
-                    &[],
-                    &[],
-                ),
-            ),
-        ).into())
+    if let List::Empty = r {
+        return Ok(f);
     }
+
+    Ok(List::cons(
+        f,
+        app(
+            PREPEND.clone(),
+            Arguments::new(&[PositionalArgument::new(r.into(), true)], &[], &[]),
+        ),
+    ).into())
 }
 
 #[cfg(test)]
@@ -246,10 +248,8 @@ mod test {
     #[test]
     fn prepend() {
         assert!(
-            papp(
-                PREPEND.clone(),
-                &[List::new(&[42.into(), List::Empty.into()]).into()],
-            ).equal(List::new(&[42.into()]).into())
+            papp(PREPEND.clone(), &[42.into(), List::Empty.into()])
+                .equal(List::new(&[42.into()]).into())
                 .wait()
                 .unwrap()
         );

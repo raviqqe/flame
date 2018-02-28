@@ -1,5 +1,5 @@
 #![feature(conservative_impl_trait, generators, integer_atomics, proc_macro, str_escape, try_from,
-           universal_impl_trait)]
+           type_ascription, universal_impl_trait)]
 
 extern crate array_queue;
 extern crate docopt;

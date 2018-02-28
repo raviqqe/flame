@@ -27,7 +27,7 @@ impl Arguments {
         let mut pq = ArrayQueue::new();
 
         for (i, p) in ps.iter().enumerate() {
-            if p.expanded || !p.expanded && pq.push_back(&p.value.clone()).is_err() {
+            if p.expanded || pq.push_back(&p.value.clone()).is_err() {
                 l = Some(Self::merge_positional_arguments(&ps[i..]));
                 break;
             }
@@ -148,7 +148,7 @@ impl Arguments {
         Ok(())
     }
 
-    fn merge_positional_arguments(ps: &[PositionalArgument]) -> Value {
+    fn merge_positional_arguments(mut ps: &[PositionalArgument]) -> Value {
         let mut l = Value::from(List::Empty);
 
         if let Some(&PositionalArgument {
@@ -156,7 +156,8 @@ impl Arguments {
             expanded: true,
         }) = ps.last()
         {
-            l = v.clone()
+            l = v.clone();
+            ps = &ps[0..(ps.len() - 1)];
         }
 
         for p in ps.iter().rev() {
@@ -216,5 +217,27 @@ mod test {
     #[test]
     fn new() {
         Arguments::new(&[], &[], &[]);
+    }
+
+    #[test]
+    fn rest_positionals() {
+        for (mut a, l) in vec![
+            (Arguments::positionals(&[]), List::Empty),
+            (
+                Arguments::positionals(&[42.into()]),
+                List::new(&[42.into()]),
+            ),
+            (
+                Arguments::new(
+                    &[PositionalArgument::new(List::Empty.into(), true)],
+                    &[],
+                    &[],
+                ),
+                List::Empty,
+            ),
+        ]: Vec<(Arguments, List)>
+        {
+            assert!(a.rest_positionals().equal(l.into()).wait().unwrap());
+        }
     }
 }

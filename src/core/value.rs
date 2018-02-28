@@ -174,4 +174,17 @@ mod test {
     fn from_f64() {
         Value::from(123.0);
     }
+
+    #[test]
+    fn to_string() {
+        for (v, s) in vec![
+            (42.into(), "42"),
+            (List::Empty.into(), "[]"),
+            (List::new(&[42.into()]).into(), "[42]"),
+            (List::new(&[0.into(), 42.into()]).into(), "[0 42]"),
+        ] {
+            let v: Value = v;
+            assert_eq!(&v.clone().to_string().wait().unwrap(), s);
+        }
+    }
 }
