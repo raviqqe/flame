@@ -47,10 +47,14 @@ impl Error {
         ))
     }
 
+    pub fn typ_raw(s: &str) -> Self {
+        Self::new("TypeError", s)
+    }
+
     #[async]
     pub fn typ(n: Normal, t: String) -> Result<Error> {
         let s = await!(n.to_string())?;
-        Ok(Self::new("TypeError", &format!("{} is not a {}", s, t)))
+        Ok(Self::typ_raw(&format!("{} is not a {}", s, t)))
     }
 
     #[async]
@@ -59,8 +63,10 @@ impl Error {
     }
 
     #[async]
-    pub fn not_comparable(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "comparable".into()))
+    pub fn not_comparable(m: Normal, n: Normal) -> Result<Self> {
+        let s = await!(m.to_string())?;
+        let t = await!(n.to_string())?;
+        Ok(Self::typ_raw(&format!("{} and {} is not comparable", s, t)))
     }
 
     #[async]
