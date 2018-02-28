@@ -182,8 +182,8 @@ mod test {
             (List::Empty.into(), "[]"),
             (List::new(&[42.into()]).into(), "[42]"),
             (List::new(&[0.into(), 42.into()]).into(), "[0 42]"),
-        ] {
-            let v: Value = v;
+        ]: Vec<(Value, &str)>
+        {
             assert_eq!(&v.clone().to_string().wait().unwrap(), s);
         }
     }
