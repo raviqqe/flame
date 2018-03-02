@@ -92,11 +92,49 @@ fn merge(vs: Vec<Value>) -> Result<Value> {
             let dd = await!(vs[1].clone().dictionary())?;
             Value::from(d.merge(&dd))
         }
-        Normal::List(l) => l.merge(vs[1].clone())?,
+        Normal::List(l) => await!(l.merge(vs[1].clone()))?,
         Normal::String(mut s) => {
             let ss = await!(vs[1].clone().string())?;
             Value::from(s.merge(&ss))
         }
         n => return Err(await!(Error::not_collection(n))?),
     })
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    use super::super::list::List;
+    use super::super::utils::papp;
+
+    #[test]
+    fn merge() {
+        for (vs, x) in vec![
+            (&[List::default().into()], List::default().into()),
+            (
+                &[List::default().into(), List::new(&[0.into()]).into()],
+                List::new(&[0.into()]).into(),
+            ),
+            (
+                &[List::new(&[0.into()]).into(), List::default().into()],
+                List::new(&[0.into()]).into(),
+            ),
+            (
+                &[List::new(&[0.into()]).into(), List::new(&[1.into()]).into()],
+                List::new(&[0.into(), 1.into()]).into(),
+            ),
+            (
+                &[
+                    List::new(&[0.into()]).into(),
+                    List::new(&[1.into()]).into(),
+                    List::new(&[2.into()]).into(),
+                ],
+                List::new(&[0.into(), 1.into(), 2.into()]).into(),
+            ),
+        ]: Vec<(&[Value], Value)>
+        {
+            assert!(papp(MERGE.clone(), vs).equal(x).wait().unwrap());
+        }
+    }
 }

@@ -9,7 +9,7 @@ use super::collection::MERGE;
 use super::error::Error;
 use super::result::Result;
 use super::signature::Signature;
-use super::utils::{app, papp};
+use super::utils::app;
 use super::value::Value;
 
 #[derive(Clone, Debug)]
@@ -81,15 +81,36 @@ impl List {
         }
     }
 
-    pub fn merge(&self, v: Value) -> Result<Value> {
-        match *self {
-            List::Empty => Ok(v),
+    #[async]
+    pub fn merge(self, v: Value) -> Result<Value> {
+        if await!(v.clone().list())?.is_empty() {
+            return Ok(self.clone().into());
+        }
+
+        Ok(match self {
+            List::Empty => app(
+                MERGE.clone(),
+                Arguments::new(&[PositionalArgument::new(v, true)], &[], &[]),
+            ).into(),
             List::Cons(ref c) => {
                 let Cons(f, r) = (**c).clone();
 
-                Ok(Value::from(Self::cons(f, papp(MERGE.clone(), &[r, v]))))
+                Self::cons(
+                    f,
+                    app(
+                        MERGE.clone(),
+                        Arguments::new(
+                            &[
+                                PositionalArgument::new(r, false),
+                                PositionalArgument::new(v, true),
+                            ],
+                            &[],
+                            &[],
+                        ),
+                    ),
+                ).into()
             }
-        }
+        })
     }
 
     pub fn is_empty(&self) -> bool {
@@ -229,6 +250,8 @@ fn prepend(vs: Vec<Value>) -> Result<Value> {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    use super::super::utils::papp;
 
     #[test]
     fn new() {
