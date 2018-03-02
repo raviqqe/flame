@@ -51,13 +51,15 @@ impl Normal {
 
     #[async]
     pub fn equal(self, n: Self) -> Result<bool> {
-        Ok(match (self, n) {
+        Ok(match (self.clone(), n.clone()) {
             (Normal::Boolean(x), Normal::Boolean(y)) => x == y,
             (Normal::Dictionary(x), Normal::Dictionary(y)) => await!(x.equal(y))?,
             (Normal::List(x), Normal::List(y)) => await!(x.equal(y))?,
             (Normal::Number(x), Normal::Number(y)) => x == y,
             (Normal::Nil, Normal::Nil) => true,
             (Normal::String(x), Normal::String(y)) => x == y,
+            (Normal::Function(_), _) => return Err(await!(Error::not_equalable(self))?),
+            (_, Normal::Function(_)) => return Err(await!(Error::not_equalable(n))?),
             _ => false,
         })
     }

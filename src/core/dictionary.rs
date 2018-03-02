@@ -150,6 +150,10 @@ impl Dictionary {
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
 
+        if kvs1.len() != kvs2.len() {
+            return Ok(false);
+        }
+
         for ((k1, v1), (k2, v2)) in kvs1.into_iter().zip(kvs2.into_iter()) {
             let k1: Value = k1.into();
 

@@ -212,6 +212,76 @@ mod test {
     }
 
     #[test]
+    fn equal() {
+        for (v, w, b) in vec![
+            (true.into(), true.into(), true),
+            (false.into(), false.into(), true),
+            (true.into(), false.into(), false),
+            (true.into(), false.into(), false),
+            (Dictionary::new().into(), Dictionary::new().into(), true),
+            (
+                Dictionary::new()
+                    .strict_insert("foo".into(), 42.into())
+                    .into(),
+                Dictionary::new()
+                    .strict_insert("foo".into(), 42.into())
+                    .into(),
+                true,
+            ),
+            (
+                Dictionary::new().into(),
+                Dictionary::new()
+                    .strict_insert("foo".into(), 42.into())
+                    .into(),
+                false,
+            ),
+            (
+                Dictionary::new()
+                    .strict_insert("foo".into(), 42.into())
+                    .into(),
+                Dictionary::new()
+                    .strict_insert("foo".into(), 42.into())
+                    .strict_insert("bar".into(), 42.into())
+                    .into(),
+                false,
+            ),
+            (List::default().into(), List::default().into(), true),
+            (
+                List::new(&[0.into()]).into(),
+                List::new(&[0.into()]).into(),
+                true,
+            ),
+            (List::default().into(), List::new(&[0.into()]).into(), false),
+            (
+                List::new(&[0.into()]).into(),
+                List::new(&[1.into()]).into(),
+                false,
+            ),
+            (Normal::Nil.into(), Normal::Nil.into(), true),
+            (Normal::Nil.into(), 0.into(), false),
+            (0.into(), 0.into(), true),
+            (0.into(), 1.into(), false),
+            ("a".into(), "a".into(), true),
+            ("a".into(), "b".into(), false),
+        ]: Vec<(Value, Value, bool)>
+        {
+            assert_eq!(v.clone().equal(w).wait().unwrap(), b);
+        }
+    }
+
+    #[test]
+    fn equal_error() {
+        for (v, w) in vec![
+            (TEST_FUNCTION.clone(), TEST_FUNCTION.clone()),
+            (0.into(), TEST_FUNCTION.clone()),
+            (TEST_FUNCTION.clone(), 0.into()),
+        ]: Vec<(Value, Value)>
+        {
+            assert!(v.clone().equal(w).wait().is_err());
+        }
+    }
+
+    #[test]
     fn compare() {
         for (v, w, o) in vec![
             (0.into(), 0.into(), Ordering::Equal),

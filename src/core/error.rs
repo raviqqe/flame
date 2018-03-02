@@ -70,6 +70,14 @@ impl Error {
     }
 
     #[async]
+    pub fn not_equalable(n: Normal) -> Result<Self> {
+        Ok(Self::typ_raw(&format!(
+            "{} is not equalable",
+            await!(n.to_string())?
+        )))
+    }
+
+    #[async]
     pub fn not_collection(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "collection".to_string()))
     }
