@@ -170,6 +170,7 @@ impl From<VagueNormal> for Value {
 mod test {
     use super::*;
 
+    use super::super::list::List;
     use super::super::utils::TEST_FUNCTION;
 
     #[test]
@@ -207,6 +208,65 @@ mod test {
         ]: Vec<(Value, &str)>
         {
             assert_eq!(&v.clone().to_string().wait().unwrap(), s);
+        }
+    }
+
+    #[test]
+    fn compare() {
+        for (v, w, o) in vec![
+            (0.into(), 0.into(), Ordering::Equal),
+            (0.into(), 1.into(), Ordering::Less),
+            (1.into(), 0.into(), Ordering::Greater),
+            ("a".into(), "a".into(), Ordering::Equal),
+            ("a".into(), "b".into(), Ordering::Less),
+            ("b".into(), "a".into(), Ordering::Greater),
+            (
+                List::default().into(),
+                List::default().into(),
+                Ordering::Equal,
+            ),
+            (
+                List::new(&[0.into()]).into(),
+                List::new(&[0.into()]).into(),
+                Ordering::Equal,
+            ),
+            (
+                List::default().into(),
+                List::new(&[0.into()]).into(),
+                Ordering::Less,
+            ),
+            (
+                List::new(&[0.into()]).into(),
+                List::new(&[1.into()]).into(),
+                Ordering::Less,
+            ),
+            (
+                List::new(&[0.into()]).into(),
+                List::default().into(),
+                Ordering::Greater,
+            ),
+            (
+                List::new(&[1.into()]).into(),
+                List::new(&[0.into()]).into(),
+                Ordering::Greater,
+            ),
+        ]: Vec<(Value, Value, Ordering)>
+        {
+            assert_eq!(v.clone().compare(w).wait().unwrap(), o);
+        }
+    }
+
+    #[test]
+    fn compare_error() {
+        for (v, w) in vec![
+            (0.into(), "a".into()),
+            (0.into(), List::default().into()),
+            (true.into(), true.into()),
+            (TEST_FUNCTION.clone(), TEST_FUNCTION.clone()),
+            (Normal::Nil.into(), Normal::Nil.into()),
+        ]: Vec<(Value, Value)>
+        {
+            assert!(v.clone().compare(w).wait().is_err());
         }
     }
 }

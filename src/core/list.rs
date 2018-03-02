@@ -144,6 +144,12 @@ impl List {
     }
 }
 
+impl Default for List {
+    fn default() -> Self {
+        List::Empty
+    }
+}
+
 impl<'a> From<&'a [Value]> for List {
     fn from(vs: &'a [Value]) -> Self {
         Self::new(&(vs.into_iter().map(|v| v.clone()).collect(): Vec<Value>))
