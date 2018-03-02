@@ -1,26 +1,33 @@
 use std::convert::TryInto;
 use std::str::from_utf8;
+use std::sync::Arc;
 
 use super::error::Error;
 
-#[derive(Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Str(Vec<u8>);
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct Str(Arc<[u8]>);
 
 impl Str {
     pub fn merge(&self, s: &Self) -> Self {
-        let mut v = self.0.clone();
-        v.extend(&s.0);
-        Str(v)
+        let mut v = Vec::with_capacity(self.0.len() + s.0.len());
+        v.extend_from_slice(&self.0);
+        v.extend_from_slice(&s.0);
+        Str(v.into())
     }
 
     pub fn split(&self, i: usize) -> (Self, Self) {
-        let mut v = self.0.clone();
-        let w = v.split_off(i);
-        (Str(v), Str(w))
+        let (f, l) = self.0.split_at(i);
+        (Str(f.into()), Str(l.into()))
     }
 
-    pub fn as_slice(&self) -> &[u8] {
+    fn as_slice(&self) -> &[u8] {
         &self.0
+    }
+}
+
+impl Default for Str {
+    fn default() -> Self {
+        Str((&[] as &[u8]).into())
     }
 }
 
@@ -32,13 +39,13 @@ impl<'a> Into<&'a [u8]> for &'a Str {
 
 impl<'a> From<&'a str> for Str {
     fn from(s: &'a str) -> Self {
-        Str(s.as_bytes().to_vec())
+        Str(s.as_bytes().into())
     }
 }
 
 impl From<String> for Str {
     fn from(s: String) -> Self {
-        Str(s.as_bytes().to_vec())
+        Str(s.as_bytes().into())
     }
 }
 

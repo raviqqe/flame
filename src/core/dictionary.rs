@@ -24,7 +24,7 @@ impl Hash for Key {
         match *self {
             Key::Nil => state.write_u8(0),
             Key::Number(n) => state.write_u64(unsafe { transmute(n) }),
-            Key::String(ref s) => state.write(s.as_slice()),
+            Key::String(ref s) => state.write(s.into()),
         }
     }
 }
