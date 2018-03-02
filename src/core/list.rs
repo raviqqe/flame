@@ -144,6 +144,12 @@ impl List {
     }
 }
 
+impl<'a> From<&'a [Value]> for List {
+    fn from(vs: &'a [Value]) -> Self {
+        Self::new(&(vs.into_iter().map(|v| v.clone()).collect(): Vec<Value>))
+    }
+}
+
 pure_function!(
     FIRST,
     Signature::new(
@@ -253,5 +259,10 @@ mod test {
                 .wait()
                 .unwrap()
         );
+    }
+
+    #[test]
+    fn from_slice() {
+        List::from(&[42.0.into()] as &[Value]);
     }
 }
