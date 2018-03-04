@@ -3,8 +3,9 @@ use std::mem::replace;
 use array_queue::ArrayQueue;
 use futures::prelude::*;
 
-use super::error::Error;
+use super::collection::MERGE;
 use super::dictionary::Dictionary;
+use super::error::Error;
 use super::list::{List, FIRST, REST};
 use super::normal::Normal;
 use super::result::Result;
@@ -178,14 +179,75 @@ impl Arguments {
 
         for k in ks {
             let k = k.clone();
-            d = d.strict_insert(k.name.into(), k.value);
+            d = d.strict_insert(k.name, k.value);
         }
 
         d
     }
 
     pub fn merge(&self, a: &Self) -> Self {
-        unimplemented!()
+        let mut ps = self.positionals.clone();
+        let mut l = self.expanded_list.clone();
+        let mut ks = self.keywords.clone();
+        let mut d = self.expanded_dict.clone();
+
+        match l {
+            Some(ref mut l) => {
+                *l = papp(
+                    MERGE.clone(),
+                    &[l.clone(), List::new(a.positionals.into_iter()).into()],
+                );
+            }
+            None => for v in a.positionals.into_iter() {
+                if ps.push_back(v).is_err() {
+                    l = Some(List::strict_prepend(&[v.clone()], List::Empty));
+                }
+            },
+        }
+
+        match l {
+            Some(ref mut l) => {
+                if let Some(ll) = a.expanded_list.clone() {
+                    *l = papp(MERGE.clone(), &[l.clone(), ll]);
+                }
+            }
+            None => l = a.expanded_list.clone(),
+        }
+
+        match d {
+            Some(ref mut d) => for k in a.keywords.into_iter() {
+                *d = d.insert(k.name.clone(), k.value.clone());
+            },
+            None => {
+                let mut dd = Dictionary::new();
+
+                for k in a.keywords.into_iter() {
+                    if ks.push_back(k).is_err() {
+                        dd = dd.strict_insert(k.name.clone(), k.value.clone());
+                    }
+                }
+
+                if dd.size() != 0 {
+                    d = Some(dd.into());
+                }
+            }
+        }
+
+        match d {
+            Some(ref mut d) => {
+                if let Some(dd) = a.expanded_dict.clone() {
+                    *d = papp(MERGE.clone(), &[d.clone(), dd]);
+                }
+            }
+            None => d = a.expanded_dict.clone(),
+        }
+
+        Arguments {
+            positionals: ps,
+            expanded_list: l,
+            keywords: ks,
+            expanded_dict: d,
+        }
     }
 }
 
