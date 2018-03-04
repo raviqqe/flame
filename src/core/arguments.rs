@@ -183,6 +183,10 @@ impl Arguments {
 
         d
     }
+
+    pub fn merge(&self, a: &Self) -> Self {
+        unimplemented!()
+    }
 }
 
 #[derive(Clone, Debug)]

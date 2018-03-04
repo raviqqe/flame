@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use futures::prelude::*;
 
 use super::arguments::Arguments;
@@ -13,6 +15,7 @@ pub type Result = result::Result<Value>;
 
 #[derive(Clone, Debug)]
 pub enum Function {
+    Closure(Arc<(Value, Arguments)>),
     Raw(fn(Arguments) -> ResultFuture),
     Signatured(Signature, SubFunction),
 }
@@ -26,11 +29,27 @@ impl Function {
         Function::Raw(f)
     }
 
+    pub fn closure(f: Value, a: Arguments) -> Self {
+        Function::Closure(Arc::new((f, a)))
+    }
+
     #[async(boxed_send)]
     pub fn call(self, a: Arguments) -> Result {
-        match self {
-            Function::Raw(f) => Ok(await!(f(a))?),
-            Function::Signatured(s, f) => Ok(await!(f(await!(s.bind(a))?))?),
+        Ok(match self {
+            Function::Closure(r) => {
+                let (f, vs) = (*r).clone();
+                await!(await!(f.function())?.call(vs.merge(&a)))?
+            }
+            Function::Raw(f) => await!(f(a))?,
+            Function::Signatured(s, f) => await!(f(await!(s.bind(a))?))?,
+        })
+    }
+}
+
+macro_rules! raw_function {
+    ($i:ident, $f:ident) => {
+        lazy_static! {
+            pub static ref $i: Value = ::core::Function::raw($f).into();
         }
     }
 }
@@ -91,5 +110,33 @@ mod test {
                 .wait()
                 .unwrap()
         );
+    }
+
+    pure_function!(
+        TEST_IDENTITY_FUNC,
+        Signature::new(
+            vec!["x".into()],
+            vec![],
+            "".into(),
+            vec![],
+            vec![],
+            "".into()
+        ),
+        test_identity_func
+    );
+
+    #[async(boxed_send)]
+    fn test_identity_func(vs: Vec<Value>) -> Result {
+        Ok(vs[0].clone())
+    }
+
+    #[test]
+    fn closure() {
+        let f = Function::closure(
+            TEST_IDENTITY_FUNC.clone(),
+            Arguments::positionals(&[42.into()]),
+        );
+
+        assert_eq!(papp(f.into(), &[]).number().wait().unwrap(), 42.0);
     }
 }

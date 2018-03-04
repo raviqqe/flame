@@ -17,9 +17,10 @@ mod unsafe_ref;
 mod utils;
 mod value;
 
-pub use self::vague_normal::VagueNormal;
+pub use self::arguments::Arguments;
 pub use self::function::{Function, Result};
 pub use self::normal::Normal;
 pub use self::signature::Signature;
-pub use self::value::Value;
 pub use self::utils::{app, papp};
+pub use self::value::Value;
+pub use self::vague_normal::VagueNormal;
