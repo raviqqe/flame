@@ -16,6 +16,24 @@ pub fn papp(f: Value, vs: &[Value]) -> Value {
 }
 
 pure_function!(
+    IDENTITY,
+    Signature::new(
+        vec!["x".into()],
+        vec![],
+        "".into(),
+        vec![],
+        vec![],
+        "".into()
+    ),
+    identity
+);
+
+#[async(boxed_send)]
+fn identity(vs: Vec<Value>) -> Result<Value> {
+    Ok(vs[0].clone())
+}
+
+pure_function!(
     TEST_FUNCTION,
     Signature::new(
         vec![],

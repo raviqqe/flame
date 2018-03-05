@@ -1,4 +1,5 @@
 use std::cell::UnsafeCell;
+use std::mem::replace;
 use std::sync::Arc;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
@@ -7,8 +8,10 @@ use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
 use super::arguments::Arguments;
+use super::normal::Normal;
 use super::vague_normal::VagueNormal;
 use super::result::Result;
+use super::utils::IDENTITY;
 use super::value::Value;
 
 #[derive(Clone, Debug)]
@@ -21,17 +24,31 @@ impl Thunk {
 
     #[async(boxed_send)]
     pub fn eval(self) -> Result<VagueNormal> {
-        if self.inner_mut().lock() {
-            self.inner_mut().content = Content::Normal(match self.inner().content.clone() {
-                Content::App(v, a) => match await!(v.function()) {
-                    Err(e) => Err(e),
+        if self.inner_mut().lock(State::Normal) {
+            loop {
+                let (v, a) = self.app();
+
+                match await!(v.function()) {
+                    Err(e) => {
+                        self.inner_mut().content = Content::Normal(Err(e));
+                        break;
+                    }
                     Ok(f) => match await!(f.call(a)) {
-                        Err(e) => Err(e),
-                        Ok(v) => await!(v.vague()),
+                        Err(e) => {
+                            self.inner_mut().content = Content::Normal(Err(e));
+                            break;
+                        }
+                        Ok(Value::Normal(n)) => {
+                            self.inner_mut().content = Content::Normal(n);
+                            break;
+                        }
+                        Ok(Value::Thunk(t)) => if !self.delegate_evaluation(&t) {
+                            self.inner_mut().content = Content::Normal(await!(t.eval()));
+                            break;
+                        },
                     },
-                },
-                Content::Normal(_) => unreachable!(),
-            });
+                }
+            }
 
             self.inner().black_hole.release()?;
         } else {
@@ -45,10 +62,7 @@ impl Thunk {
             }
         }
 
-        match self.inner().content {
-            Content::App(_, _) => unreachable!(),
-            Content::Normal(ref r) => r.clone(),
-        }
+        self.normal()
     }
 
     fn inner(&self) -> &Inner {
@@ -57,6 +71,41 @@ impl Thunk {
 
     fn inner_mut(&self) -> &mut Inner {
         unsafe { &mut *self.0.get() }
+    }
+
+    fn app(&self) -> (Value, Arguments) {
+        match self.inner_mut().content {
+            Content::App(ref mut f, ref mut a) => {
+                let f = replace(f, Normal::Nil.into());
+                let a = replace(a, Arguments::default());
+
+                (f, a)
+            }
+            Content::Normal(_) => unreachable!(),
+        }
+    }
+
+    fn normal(&self) -> Result<VagueNormal> {
+        match self.inner().content {
+            Content::App(_, _) => unreachable!(),
+            Content::Normal(ref r) => r.clone(),
+        }
+    }
+
+    fn delegate_evaluation(&self, t: &Thunk) -> bool {
+        if !self.inner_mut().lock(State::SpinLock) {
+            return false;
+        }
+
+        let (v, a) = self.app();
+
+        t.inner_mut().content = Content::App(v, a);
+        self.inner_mut().content = Content::App(
+            IDENTITY.clone(),
+            Arguments::positionals(&[t.clone().into()]),
+        );
+
+        return true;
     }
 }
 
@@ -68,6 +117,7 @@ unsafe impl Sync for Thunk {}
 enum State {
     App = 0,
     Normal = 1,
+    SpinLock = 2,
 }
 
 impl From<u8> for State {
@@ -75,6 +125,7 @@ impl From<u8> for State {
         match u {
             0 => State::App,
             1 => State::Normal,
+            2 => State::SpinLock,
             _ => unreachable!(),
         }
     }
@@ -102,11 +153,20 @@ impl Inner {
         }
     }
 
-    fn lock(&mut self) -> bool {
-        State::from(
-            self.state
-                .compare_and_swap(State::App as u8, State::Normal as u8, SeqCst),
-        ) == State::App
+    fn lock(&mut self, s: State) -> bool {
+        loop {
+            match State::from(self.state.load(SeqCst)) {
+                State::Normal => break false,
+                State::App => {
+                    break State::from(self.state.compare_and_swap(
+                        State::App as u8,
+                        s as u8,
+                        SeqCst,
+                    )) == State::App
+                }
+                State::SpinLock => continue,
+            }
+        }
     }
 }
 

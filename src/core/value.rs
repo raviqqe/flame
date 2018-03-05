@@ -166,6 +166,12 @@ impl From<VagueNormal> for Value {
     }
 }
 
+impl From<Thunk> for Value {
+    fn from(t: Thunk) -> Self {
+        Value::Thunk(t)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
