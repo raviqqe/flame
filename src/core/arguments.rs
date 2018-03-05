@@ -314,6 +314,6 @@ mod test {
     #[test]
     fn size() {
         let s = size_of::<Arguments>();
-        assert!(s < 512, "size of Arguments: {}", s);
+        assert!(s < 800, "size of Arguments: {}", s);
     }
 }
