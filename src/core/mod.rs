@@ -1,6 +1,7 @@
 #[macro_use]
 mod function;
 mod arguments;
+mod boolean;
 mod vague_normal;
 mod collection;
 mod dictionary;

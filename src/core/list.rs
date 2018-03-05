@@ -42,10 +42,13 @@ impl List {
     pub fn strict_prepend<'a, I: IntoIterator<Item = &'a Value>>(
         vs: I,
         l: impl Into<Value>,
-    ) -> Value {
+    ) -> Value
+    where
+        <I as IntoIterator>::IntoIter: DoubleEndedIterator,
+    {
         let mut l = l.into();
 
-        for v in vs {
+        for v in vs.into_iter().rev() {
             l = Self::cons(v.clone(), l).into();
         }
 
