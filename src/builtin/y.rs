@@ -24,6 +24,11 @@ fn y(vs: Vec<Value>) -> Result {
 
 #[cfg(test)]
 mod test {
+    use std::thread::{sleep, spawn};
+    use std::time::Duration;
+
+    use futures_cpupool::CpuPool;
+
     use super::*;
 
     use super::super::super::core::functions::{EQUAL, IF, MULTIPLY, SUBTRACT};
@@ -89,5 +94,34 @@ mod test {
                 strict_factorial(x)
             );
         }
+    }
+
+    pure_function!(
+        INFINITY,
+        Signature::new(
+            vec!["me".into()],
+            vec![],
+            "".into(),
+            vec![],
+            vec![],
+            "".into()
+        ),
+        infinity
+    );
+
+    #[async(boxed_send)]
+    fn infinity(vs: Vec<Value>) -> Result {
+        Ok(papp(vs[0].clone(), &[]))
+    }
+
+    #[test]
+    fn infinite_recursion() {
+        let p = CpuPool::new_num_cpus();
+
+        let f = p.spawn(papp(papp(Y.clone(), &[INFINITY.clone()]), &[]).pured());
+
+        spawn(|| f.wait());
+
+        sleep(Duration::from_secs(10));
     }
 }
