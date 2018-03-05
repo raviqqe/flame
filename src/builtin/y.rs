@@ -85,7 +85,7 @@ mod test {
 
     #[test]
     fn y_factorial() {
-        for x in (0..32) {
+        for x in 0..32 {
             assert_eq!(
                 papp(papp(Y.clone(), &[FACTORIAL.clone()]), &[x.into()])
                     .number()
