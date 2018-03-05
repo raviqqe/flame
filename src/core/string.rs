@@ -1,10 +1,11 @@
 use std::convert::TryInto;
+use std::fmt::{self, Debug, Formatter};
 use std::str::from_utf8;
 use std::sync::Arc;
 
 use super::error::Error;
 
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Str(Arc<[u8]>);
 
 impl Str {
@@ -22,6 +23,12 @@ impl Str {
 
     fn as_slice(&self) -> &[u8] {
         &self.0
+    }
+}
+
+impl Debug for Str {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "{:?}", String::from_utf8_lossy(self.into()))
     }
 }
 
