@@ -42,10 +42,12 @@ impl Thunk {
                             self.inner_mut().content = Content::Normal(n);
                             break;
                         }
-                        Ok(Value::Thunk(t)) => if !self.delegate_evaluation(&t) {
-                            self.inner_mut().content = Content::Normal(await!(t.eval()));
-                            break;
-                        },
+                        Ok(Value::Thunk(t)) => {
+                            if !t.delegate_evaluation(&self) {
+                                self.inner_mut().content = Content::Normal(await!(t.eval()));
+                                break;
+                            }
+                        }
                     },
                 }
             }
