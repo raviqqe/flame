@@ -1,5 +1,4 @@
 use std::cell::UnsafeCell;
-use std::mem::replace;
 use std::sync::Arc;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
@@ -8,7 +7,6 @@ use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
 use super::arguments::Arguments;
-use super::normal::Normal;
 use super::vague_normal::VagueNormal;
 use super::result::Result;
 use super::unsafe_ref::RefMut;
@@ -26,32 +24,23 @@ impl Thunk {
     #[async(boxed_send)]
     pub fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock(State::Normal) {
-            loop {
-                let (v, mut a) = self.app();
+            self.inner_mut().content = Content::Normal(loop {
+                let (f, a) = match self.inner_mut().content {
+                    Content::App(ref f, ref mut a) => (f.clone(), RefMut(a)),
+                    Content::Normal(_) => unreachable!(),
+                };
 
-                match await!(v.function()) {
-                    Err(e) => {
-                        self.inner_mut().content = Content::Normal(Err(e));
-                        break;
-                    }
-                    Ok(f) => match await!(f.call(RefMut(&mut a))) {
-                        Err(e) => {
-                            self.inner_mut().content = Content::Normal(Err(e));
-                            break;
-                        }
-                        Ok(Value::Normal(n)) => {
-                            self.inner_mut().content = Content::Normal(n);
-                            break;
-                        }
-                        Ok(Value::Thunk(t)) => {
-                            if !t.delegate_evaluation(&self) {
-                                self.inner_mut().content = Content::Normal(await!(t.eval()));
-                                break;
-                            }
-                        }
+                match await!(f.function()) {
+                    Err(e) => break Err(e),
+                    Ok(f) => match await!(f.call(a)) {
+                        Err(e) => break Err(e),
+                        Ok(Value::Normal(n)) => break n,
+                        Ok(Value::Thunk(t)) => if !t.delegate_evaluation(&self) {
+                            break await!(t.eval());
+                        },
                     },
                 }
-            }
+            });
 
             self.inner().black_hole.release()?;
         } else {
@@ -65,7 +54,10 @@ impl Thunk {
             }
         }
 
-        self.normal()
+        match self.inner().content {
+            Content::App(_, _) => unreachable!(),
+            Content::Normal(ref r) => r.clone(),
+        }
     }
 
     fn inner(&self) -> &Inner {
@@ -76,37 +68,20 @@ impl Thunk {
         unsafe { &mut *self.0.get() }
     }
 
-    fn app(&self) -> (Value, Arguments) {
-        match self.inner_mut().content {
-            Content::App(ref mut f, ref mut a) => {
-                let f = replace(f, Normal::Nil.into());
-                let a = replace(a, Arguments::default());
-
-                (f, a)
-            }
-            Content::Normal(_) => unreachable!(),
-        }
-    }
-
-    fn normal(&self) -> Result<VagueNormal> {
-        match self.inner().content {
-            Content::App(_, _) => unreachable!(),
-            Content::Normal(ref r) => r.clone(),
-        }
-    }
-
     fn delegate_evaluation(&self, t: &Thunk) -> bool {
         if !self.inner_mut().lock(State::SpinLock) {
             return false;
         }
 
-        let (v, a) = self.app();
+        let (f, a) = match self.inner_mut().content {
+            Content::App(ref mut f, ref mut a) => (f, a),
+            Content::Normal(_) => unreachable!(),
+        };
 
-        t.inner_mut().content = Content::App(v, a);
-        self.inner_mut().content = Content::App(
-            IDENTITY.clone(),
-            Arguments::positionals(&[t.clone().into()]),
-        );
+        t.inner_mut().content = Content::App(f.clone(), a.clone());
+
+        *f = IDENTITY.clone();
+        *a = Arguments::positionals(&[t.clone().into()]);
 
         return true;
     }
