@@ -139,8 +139,25 @@ impl List {
     }
 
     #[async]
-    pub fn equal(self, l: Self) -> Result<bool> {
-        Ok(await!(self.compare(l))? == Ordering::Equal)
+    pub fn equal(mut self, mut l: Self) -> Result<bool> {
+        loop {
+            match (self.clone(), l.clone()) {
+                (List::Empty, List::Empty) => return Ok(true.into()),
+                (List::Empty, List::Cons(_)) => return Ok(false.into()),
+                (List::Cons(_), List::Empty) => return Ok(false.into()),
+                _ => {
+                    let x = self.first()?;
+                    let y = l.first()?;
+
+                    if !await!(x.equal(y))? {
+                        return Ok(false.into());
+                    }
+
+                    self = await!(self.rest())?;
+                    l = await!(l.rest())?;
+                }
+            }
+        }
     }
 
     #[async]
