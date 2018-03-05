@@ -11,6 +11,7 @@ use super::arguments::Arguments;
 use super::normal::Normal;
 use super::vague_normal::VagueNormal;
 use super::result::Result;
+use super::unsafe_ref::RefMut;
 use super::utils::IDENTITY;
 use super::value::Value;
 
@@ -26,14 +27,14 @@ impl Thunk {
     pub fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock(State::Normal) {
             loop {
-                let (v, a) = self.app();
+                let (v, mut a) = self.app();
 
                 match await!(v.function()) {
                     Err(e) => {
                         self.inner_mut().content = Content::Normal(Err(e));
                         break;
                     }
-                    Ok(f) => match await!(f.call(a)) {
+                    Ok(f) => match await!(f.call(RefMut(&mut a))) {
                         Err(e) => {
                             self.inner_mut().content = Content::Normal(Err(e));
                             break;

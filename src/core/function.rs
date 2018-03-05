@@ -6,7 +6,7 @@ use super::arguments::Arguments;
 use super::error::Error;
 use super::result;
 use super::signature::Signature;
-use super::unsafe_ref::Ref;
+use super::unsafe_ref::{Ref, RefMut};
 use super::utils::app;
 use super::value::Value;
 
@@ -18,7 +18,6 @@ pub type Result = result::Result<Value>;
 #[derive(Clone, Debug)]
 pub enum Function {
     Closure(Arc<(Value, Arguments)>),
-    Raw(fn(Arguments) -> ResultFuture),
     Signatured(Arc<(Signature, SubFunction)>),
 }
 
@@ -27,32 +26,19 @@ impl Function {
         Function::Signatured(Arc::new((s, f)))
     }
 
-    pub fn raw(f: fn(Arguments) -> ResultFuture) -> Self {
-        Function::Raw(f)
-    }
-
     pub fn closure(f: Value, a: Arguments) -> Self {
         Function::Closure(Arc::new((f, a)))
     }
 
     #[async(boxed_send)]
-    pub fn call(self, a: Arguments) -> Result {
+    pub fn call(self, a: RefMut<Arguments>) -> Result {
         Ok(match self {
             Function::Closure(r) => {
                 let (f, vs) = (*r).clone();
                 app(f, vs.merge(&a))
             }
-            Function::Raw(f) => await!(f(a))?,
             Function::Signatured(r) => await!(r.1(await!(Signature::bind(Ref(&r.0), a))?))?,
         })
-    }
-}
-
-macro_rules! raw_function {
-    ($i:ident, $f:ident) => {
-        lazy_static! {
-            pub static ref $i: Value = ::core::Function::raw($f).into();
-        }
     }
 }
 
@@ -97,23 +83,6 @@ mod test {
     #[async(boxed_send)]
     fn test_func(vs: Vec<Value>) -> Result {
         Ok(Value::from(42.0))
-    }
-
-    #[async(boxed_send)]
-    fn test_raw_function(mut a: Arguments) -> Result {
-        Ok(a.next_positional().unwrap())
-    }
-
-    #[test]
-    fn raw() {
-        let f = Function::raw(test_raw_function);
-
-        assert!(
-            papp(f.into(), &[42.into()])
-                .equal(42.into())
-                .wait()
-                .unwrap()
-        );
     }
 
     pure_function!(

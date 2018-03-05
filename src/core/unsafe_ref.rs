@@ -17,6 +17,12 @@ impl<'a, T> From<&'a T> for Ref<T> {
     }
 }
 
+impl<T> From<RefMut<T>> for Ref<T> {
+    fn from(x: RefMut<T>) -> Self {
+        Ref(&*x)
+    }
+}
+
 unsafe impl<T> Send for Ref<T> {}
 unsafe impl<T> Sync for Ref<T> {}
 

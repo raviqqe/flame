@@ -10,7 +10,7 @@ use super::list::{List, FIRST, REST};
 use super::normal::Normal;
 use super::result::Result;
 use super::string::Str;
-use super::unsafe_ref::RefMut;
+use super::unsafe_ref::{Ref, RefMut};
 use super::utils::papp;
 use super::value::Value;
 
@@ -129,16 +129,16 @@ impl Arguments {
     }
 
     #[async]
-    pub fn check_empty(self) -> Result<()> {
-        if !self.positionals.is_empty() {
+    pub fn check_empty(this: Ref<Self>) -> Result<()> {
+        if !this.positionals.is_empty() {
             return Err(Error::argument(&format!(
                 "{} positional arguments are left.",
-                self.positionals.len()
+                this.positionals.len()
             )));
         }
 
-        if let Some(v) = self.expanded_dict {
-            let n = self.keywords.len() + await!(v.dictionary())?.size();
+        if let Some(v) = this.expanded_dict.clone() {
+            let n = this.keywords.len() + await!(v.dictionary())?.size();
 
             if n > 0 {
                 return Err(Error::argument(&format!(

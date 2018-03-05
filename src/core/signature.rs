@@ -30,22 +30,22 @@ impl Signature {
     }
 
     #[async]
-    pub fn bind(this: Ref<Self>, mut args: Arguments) -> Result<Vec<Value>> {
+    pub fn bind(this: Ref<Self>, a: RefMut<Arguments>) -> Result<Vec<Value>> {
         let mut vs = vec![];
 
         await!(HalfSignature::bind_positionals(
             Ref(&this.positionals),
-            RefMut(&mut args),
+            a.clone(),
             RefMut(&mut vs),
         ))?;
 
         await!(HalfSignature::bind_keywords(
             Ref(&this.keywords),
-            RefMut(&mut args),
+            a.clone(),
             RefMut(&mut vs),
         ))?;
 
-        await!(args.check_empty())?;
+        await!(Arguments::check_empty(a.into()))?;
 
         Ok(vs)
     }
@@ -66,8 +66,8 @@ mod test {
 
     #[test]
     fn bind() {
-        for (s, a) in vec![(Signature::default(), Arguments::default())] {
-            Signature::bind(Ref(&s), a).wait().unwrap();
+        for (s, mut a) in vec![(Signature::default(), Arguments::default())] {
+            Signature::bind(Ref(&s), RefMut(&mut a)).wait().unwrap();
         }
     }
 }
