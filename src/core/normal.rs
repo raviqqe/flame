@@ -129,3 +129,28 @@ impl<S: Into<Str>> From<S> for Normal {
         Normal::String(s.into())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::mem::size_of;
+
+    use super::*;
+
+    #[test]
+    fn size() {
+        for s in vec![
+            size_of::<bool>(),
+            size_of::<Dictionary>(),
+            size_of::<Function>(),
+            size_of::<List>(),
+            size_of::<f64>(),
+            size_of::<Str>(),
+        ] {
+            assert!(s <= 2 * size_of::<usize>());
+        }
+
+        let s = size_of::<Normal>();
+        // TODO: Why not 3 times?
+        assert!(s <= 4 * size_of::<usize>(), "size of Normal: {}", s);
+    }
+}

@@ -6,6 +6,7 @@ use super::arguments::Arguments;
 use super::error::Error;
 use super::result;
 use super::signature::Signature;
+use super::unsafe_ref::Ref;
 use super::utils::app;
 use super::value::Value;
 
@@ -18,12 +19,12 @@ pub type Result = result::Result<Value>;
 pub enum Function {
     Closure(Arc<(Value, Arguments)>),
     Raw(fn(Arguments) -> ResultFuture),
-    Signatured(Signature, SubFunction),
+    Signatured(Arc<(Signature, SubFunction)>),
 }
 
 impl Function {
     pub fn new(s: Signature, f: SubFunction) -> Self {
-        Function::Signatured(s, f)
+        Function::Signatured(Arc::new((s, f)))
     }
 
     pub fn raw(f: fn(Arguments) -> ResultFuture) -> Self {
@@ -42,7 +43,7 @@ impl Function {
                 app(f, vs.merge(&a))
             }
             Function::Raw(f) => await!(f(a))?,
-            Function::Signatured(s, f) => await!(f(await!(s.bind(a))?))?,
+            Function::Signatured(r) => await!(r.1(await!(Signature::bind(Ref(&r.0), a))?))?,
         })
     }
 }
@@ -79,6 +80,8 @@ macro_rules! impure_function {
 
 #[cfg(test)]
 mod test {
+    use std::mem::size_of;
+
     use super::*;
 
     use super::super::utils::papp;
@@ -139,5 +142,11 @@ mod test {
         );
 
         assert_eq!(papp(f.into(), &[]).number().wait().unwrap(), 42.0);
+    }
+
+    #[test]
+    fn size() {
+        let s = size_of::<Function>();
+        assert!(s <= 2 * size_of::<usize>(), "size of Function: {}", s);
     }
 }

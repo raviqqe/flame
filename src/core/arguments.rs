@@ -280,6 +280,8 @@ impl KeywordArgument {
 
 #[cfg(test)]
 mod test {
+    use std::mem::size_of;
+
     use super::*;
 
     #[test]
@@ -307,5 +309,11 @@ mod test {
         {
             assert!(a.rest_positionals().equal(l.into()).wait().unwrap());
         }
+    }
+
+    #[test]
+    fn size() {
+        let s = size_of::<Arguments>();
+        assert!(s < 512, "size of Arguments: {}", s);
     }
 }
