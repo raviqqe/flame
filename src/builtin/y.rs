@@ -85,13 +85,13 @@ mod test {
 
     #[test]
     fn y_factorial() {
-        for x in vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 64.0, 256.0] {
+        for x in (0..32) {
             assert_eq!(
                 papp(papp(Y.clone(), &[FACTORIAL.clone()]), &[x.into()])
                     .number()
                     .wait()
                     .unwrap(),
-                strict_factorial(x)
+                strict_factorial(x as f64)
             );
         }
     }
