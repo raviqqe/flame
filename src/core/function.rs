@@ -6,6 +6,7 @@ use super::arguments::Arguments;
 use super::error::Error;
 use super::result;
 use super::signature::Signature;
+use super::utils::app;
 use super::value::Value;
 
 type ResultFuture = Box<Future<Item = Value, Error = Error> + Send>;
@@ -38,7 +39,7 @@ impl Function {
         Ok(match self {
             Function::Closure(r) => {
                 let (f, vs) = (*r).clone();
-                await!(await!(f.function())?.call(vs.merge(&a)))?
+                app(f, vs.merge(&a))
             }
             Function::Raw(f) => await!(f(a))?,
             Function::Signatured(s, f) => await!(f(await!(s.bind(a))?))?,
