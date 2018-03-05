@@ -5,6 +5,27 @@ use super::signature::Signature;
 use super::value::Value;
 
 pure_function!(
+    SUBTRACT,
+    Signature::new(vec![], vec![], "ns".into(), vec![], vec![], "".into()),
+    subtract
+);
+
+#[async(boxed_send)]
+fn subtract(vs: Vec<Value>) -> Result<Value> {
+    let mut l = await!(vs[0].clone().list())?;
+    let mut n = await!(l.first()?.number())?;
+    l = await!(l.rest())?;
+
+    while !l.is_empty() {
+        let m = await!(l.first()?.number())?;
+        n -= m;
+        l = await!(l.rest())?;
+    }
+
+    Ok(n.into())
+}
+
+pure_function!(
     MULTIPLY,
     Signature::new(vec![], vec![], "ns".into(), vec![], vec![], "".into()),
     multiply
@@ -31,7 +52,24 @@ mod test {
     use super::super::utils::papp;
 
     #[test]
-    fn merge() {
+    fn subtract() {
+        for (xs, y) in vec![
+            (&[0.into()], 0.0),
+            (&[42.into(), 1.into()], 41.0),
+            (&[1.into(), 2.into(), 3.into()], -4.0),
+        ]: Vec<(&[Value], f64)>
+        {
+            assert_eq!(papp(SUBTRACT.clone(), xs).number().wait().unwrap(), y);
+        }
+    }
+
+    #[test]
+    fn subtract_error() {
+        assert!(papp(SUBTRACT.clone(), &[]).number().wait().is_err());
+    }
+
+    #[test]
+    fn multiply() {
         for (xs, y) in vec![
             (&[], 1.0),
             (&[42.into()], 42.0),
