@@ -18,7 +18,7 @@ use super::value::Value;
 pub struct Thunk(Arc<UnsafeCell<Inner>>);
 
 impl Thunk {
-    pub fn new(f: Value, a: Arguments) -> Thunk {
+    pub fn new(f: Value, a: Arguments) -> Self {
         Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
