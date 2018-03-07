@@ -98,6 +98,21 @@ mod test {
         }
     }
 
+    #[bench]
+    fn bench_y_factorial(b: &mut Bencher) {
+        let f = papp(Y.clone(), &[FACTORIAL.clone()])
+            .function()
+            .wait()
+            .unwrap();
+
+        b.iter(|| {
+            papp(f.clone().into(), &[100.into()])
+                .number()
+                .wait()
+                .unwrap()
+        });
+    }
+
     pure_function!(
         INFINITY,
         Signature::new(
