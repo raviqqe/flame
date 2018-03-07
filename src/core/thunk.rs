@@ -153,10 +153,11 @@ mod test {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
     use futures_cpupool::CpuPool;
+    use test::Bencher;
 
     use super::super::normal::Normal;
     use super::super::signature::Signature;
-    use super::super::utils::papp;
+    use super::super::utils::{papp, IDENTITY};
     use super::*;
 
     #[test]
@@ -212,5 +213,20 @@ mod test {
         for f in fs {
             assert_eq!(f.wait().unwrap(), 1.0);
         }
+    }
+
+    #[bench]
+    fn bench_thunk_new(b: &mut Bencher) {
+        b.iter(|| Thunk::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()])));
+    }
+
+    #[bench]
+    fn bench_thunk_eval(b: &mut Bencher) {
+        b.iter(|| {
+            Thunk::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()]))
+                .eval()
+                .wait()
+                .unwrap()
+        });
     }
 }
