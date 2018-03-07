@@ -28,9 +28,11 @@ mod test {
     use std::time::Duration;
 
     use futures_cpupool::CpuPool;
+    use test::Bencher;
 
     use super::*;
 
+    use super::super::super::core::Normal;
     use super::super::super::core::functions::{EQUAL, IF, MULTIPLY, SUBTRACT};
 
     pure_function!(
@@ -123,5 +125,38 @@ mod test {
         spawn(|| f.wait());
 
         sleep(Duration::from_secs(10));
+    }
+
+    pure_function!(
+        DECREMENT_TO_0,
+        Signature::new(
+            vec!["me".into(), "n".into()],
+            vec![],
+            "".into(),
+            vec![],
+            vec![],
+            "".into()
+        ),
+        decrement_to_0
+    );
+
+    #[async(boxed_send)]
+    fn decrement_to_0(vs: Vec<Value>) -> Result {
+        let n = await!(vs[1].clone().number())?;
+
+        if n == 0.0 {
+            return Ok(Normal::Nil.into());
+        }
+
+        Ok(papp(vs[0].clone(), &[(n - 1.0).into()]))
+    }
+
+    #[bench]
+    fn bench_y_decrements(b: &mut Bencher) {
+        let f = papp(Y.clone(), &[DECREMENT_TO_0.clone()]);
+
+        b.iter(|| {
+            papp(f.clone(), &[1000.into()]).pured().wait().unwrap();
+        });
     }
 }
