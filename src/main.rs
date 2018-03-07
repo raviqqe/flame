@@ -26,6 +26,7 @@ mod compile;
 mod desugar;
 mod parse;
 mod run;
+mod third;
 
 use std::error::Error;
 use std::fs::File;
