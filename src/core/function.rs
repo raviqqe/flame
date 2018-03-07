@@ -68,9 +68,11 @@ macro_rules! impure_function {
 mod test {
     use std::mem::size_of;
 
+    use test::Bencher;
+
     use super::*;
 
-    use super::super::utils::papp;
+    use super::super::utils::{papp, IDENTITY};
 
     pure_function!(TEST_FUNC, Default::default(), test_func);
     impure_function!(
@@ -85,30 +87,9 @@ mod test {
         Ok(Value::from(42.0))
     }
 
-    pure_function!(
-        TEST_IDENTITY_FUNC,
-        Signature::new(
-            vec!["x".into()],
-            vec![],
-            "".into(),
-            vec![],
-            vec![],
-            "".into()
-        ),
-        test_identity_func
-    );
-
-    #[async(boxed_send)]
-    fn test_identity_func(vs: Vec<Value>) -> Result {
-        Ok(vs[0].clone())
-    }
-
     #[test]
     fn closure() {
-        let f = Function::closure(
-            TEST_IDENTITY_FUNC.clone(),
-            Arguments::positionals(&[42.into()]),
-        );
+        let f = Function::closure(IDENTITY.clone(), Arguments::positionals(&[42.into()]));
 
         assert_eq!(papp(f.into(), &[]).number().wait().unwrap(), 42.0);
     }
@@ -117,5 +98,15 @@ mod test {
     fn size() {
         let s = size_of::<Function>();
         assert!(s <= 2 * size_of::<usize>(), "size of Function: {}", s);
+    }
+
+    #[bench]
+    fn function_call(b: &mut Bencher) {
+        b.iter(|| {
+            papp(IDENTITY.clone(), &[1000.into()])
+                .pured()
+                .wait()
+                .unwrap();
+        });
     }
 }
