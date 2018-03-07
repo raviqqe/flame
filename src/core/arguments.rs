@@ -23,7 +23,7 @@ pub struct Arguments {
 }
 
 impl Arguments {
-    pub fn new(ps: &[PositionalArgument], ks: &[KeywordArgument], ds: &[Value]) -> Arguments {
+    pub fn new(ps: &[PositionalArgument], ks: &[KeywordArgument], ds: &[Value]) -> Self {
         let mut l = None;
         let mut pq = ArrayQueue::new();
 
@@ -66,7 +66,7 @@ impl Arguments {
         let ps: Vec<PositionalArgument> = vs.iter()
             .map(|v| PositionalArgument::new(v.clone(), false))
             .collect();
-        Arguments::new(&ps, &[], &[])
+        Self::new(&ps, &[], &[])
     }
 
     pub fn next_positional(&mut self) -> Option<Value> {
@@ -282,6 +282,8 @@ impl KeywordArgument {
 mod test {
     use std::mem::size_of;
 
+    use test::{black_box, Bencher};
+
     use super::*;
 
     #[test]
@@ -315,5 +317,10 @@ mod test {
     fn size() {
         let s = size_of::<Arguments>();
         assert!(s < 800, "size of Arguments: {}", s);
+    }
+
+    #[bench]
+    fn bench_arguments_new(b: &mut Bencher) {
+        b.iter(|| black_box(Arguments::new(&[], &[], &[])));
     }
 }
