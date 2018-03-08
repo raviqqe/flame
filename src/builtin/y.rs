@@ -99,7 +99,7 @@ mod test {
     fn bench_y_factorial(b: &mut Bencher) {
         let f = block_on(papp(Y.clone(), &[FACTORIAL.clone()]).function()).unwrap();
 
-        b.iter(|| block_on(papp(f.clone().into(), &[100.into()]).number()).unwrap());
+        b.iter(|| block_on(papp(f.clone().into(), &[50.into()]).number()).unwrap());
     }
 
     pure_function!(
