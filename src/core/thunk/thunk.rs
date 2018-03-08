@@ -4,7 +4,7 @@ use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
 
 use futures::prelude::*;
-use futures_black_hole::BlackHole;
+use super::black_hole::BlackHole;
 
 use core::arguments::Arguments;
 use core::vague_normal::VagueNormal;

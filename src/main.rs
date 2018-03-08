@@ -4,7 +4,6 @@
 extern crate array_queue;
 extern crate docopt;
 extern crate futures_await as futures;
-extern crate futures_black_hole;
 extern crate futures_cpupool;
 extern crate hamt_sync;
 #[macro_use]
