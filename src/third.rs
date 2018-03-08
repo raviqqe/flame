@@ -3,7 +3,7 @@ mod test {
     use std::ops::{Generator, GeneratorState};
     use std::sync::Arc;
 
-    use futures;
+    use futures::executor::block_on;
     use futures::prelude::*;
     use test::Bencher;
 
@@ -18,10 +18,10 @@ mod test {
         b.iter(|| normal_function().unwrap());
     }
 
-    fn generator_function() -> impl Generator<Yield = Async<futures::__rt::Mu>, Return = Result> {
+    fn generator_function() -> impl Generator<Yield = Async<Never>, Return = Result> {
         return || {
             if false {
-                yield Async::NotReady;
+                yield Async::Pending;
             }
 
             Ok(Normal::Nil.into()): Result
@@ -52,7 +52,7 @@ mod test {
 
     #[bench]
     fn bench_async_function(b: &mut Bencher) {
-        b.iter(|| async_function().wait().unwrap());
+        b.iter(|| block_on(async_function()).unwrap());
     }
 
     #[async_move(boxed_send)]
@@ -62,7 +62,7 @@ mod test {
 
     #[bench]
     fn bench_boxed_async_function(b: &mut Bencher) {
-        b.iter(|| boxed_async_function().wait().unwrap());
+        b.iter(|| block_on(boxed_async_function()).unwrap());
     }
 
     #[bench]

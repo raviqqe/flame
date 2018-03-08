@@ -47,6 +47,8 @@ fn multiply(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     use super::super::utils::papp;
@@ -59,13 +61,13 @@ mod test {
             (&[1.into(), 2.into(), 3.into()], -4.0),
         ]: Vec<(&[Value], f64)>
         {
-            assert_eq!(papp(SUBTRACT.clone(), xs).number().wait().unwrap(), y);
+            assert_eq!(block_on(papp(SUBTRACT.clone(), xs).number()).unwrap(), y);
         }
     }
 
     #[test]
     fn subtract_error() {
-        assert!(papp(SUBTRACT.clone(), &[]).number().wait().is_err());
+        assert!(block_on(papp(SUBTRACT.clone(), &[]).number()).is_err());
     }
 
     #[test]
@@ -76,7 +78,7 @@ mod test {
             (&[1.into(), 2.into(), 3.into()], 6.0),
         ]: Vec<(&[Value], f64)>
         {
-            assert_eq!(papp(MULTIPLY.clone(), xs).number().wait().unwrap(), y);
+            assert_eq!(block_on(papp(MULTIPLY.clone(), xs).number()).unwrap(), y);
         }
     }
 }

@@ -24,11 +24,13 @@ fn y(vs: Vec<Value>) -> Result {
 
 #[cfg(test)]
 mod test {
-    use std::thread::{sleep, spawn};
+    use std::thread::sleep;
     use std::time::Duration;
 
-    use futures_cpupool::CpuPool;
+    use futures::executor::{block_on, ThreadPool};
     use test::Bencher;
+
+    use run::evaluate;
 
     use super::*;
 
@@ -79,19 +81,14 @@ mod test {
 
     #[test]
     fn recursive_function() {
-        papp(Y.clone(), &[FACTORIAL.clone()])
-            .function()
-            .wait()
-            .unwrap();
+        block_on(papp(Y.clone(), &[FACTORIAL.clone()]).function()).unwrap();
     }
 
     #[test]
     fn y_factorial() {
         for x in 0..32 {
             assert_eq!(
-                papp(papp(Y.clone(), &[FACTORIAL.clone()]), &[x.into()])
-                    .number()
-                    .wait()
+                block_on(papp(papp(Y.clone(), &[FACTORIAL.clone()]), &[x.into()]).number())
                     .unwrap(),
                 strict_factorial(x as f64)
             );
@@ -100,17 +97,9 @@ mod test {
 
     #[bench]
     fn bench_y_factorial(b: &mut Bencher) {
-        let f = papp(Y.clone(), &[FACTORIAL.clone()])
-            .function()
-            .wait()
-            .unwrap();
+        let f = block_on(papp(Y.clone(), &[FACTORIAL.clone()]).function()).unwrap();
 
-        b.iter(|| {
-            papp(f.clone().into(), &[100.into()])
-                .number()
-                .wait()
-                .unwrap()
-        });
+        b.iter(|| block_on(papp(f.clone().into(), &[100.into()]).number()).unwrap());
     }
 
     pure_function!(
@@ -133,11 +122,9 @@ mod test {
 
     #[test]
     fn infinite_recursion() {
-        let p = CpuPool::new_num_cpus();
-
-        let f = p.spawn(papp(papp(Y.clone(), &[INFINITY.clone()]), &[]).pured());
-
-        spawn(|| f.wait());
+        ThreadPool::new()
+            .spawn(evaluate(papp(papp(Y.clone(), &[INFINITY.clone()]), &[])))
+            .unwrap();
 
         sleep(Duration::from_secs(10));
     }
@@ -171,7 +158,7 @@ mod test {
         let f = papp(Y.clone(), &[DECREMENT_TO_0.clone()]);
 
         b.iter(|| {
-            papp(f.clone(), &[1000.into()]).pured().wait().unwrap();
+            block_on(papp(f.clone(), &[1000.into()]).pured()).unwrap();
         });
     }
 }

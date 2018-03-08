@@ -145,7 +145,7 @@ impl Inner {
 mod test {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
-    use futures_cpupool::CpuPool;
+    use futures::executor::block_on;
     use test::Bencher;
 
     use core::normal::Normal;
@@ -161,9 +161,7 @@ mod test {
 
     #[test]
     fn eval_error() {
-        let e = Thunk::new(Value::from(42.0), Arguments::new(&[], &[], &[]))
-            .eval()
-            .wait()
+        let e = block_on(Thunk::new(Value::from(42.0), Arguments::new(&[], &[], &[])).eval())
             .unwrap_err();
 
         assert_eq!(e.name, "TypeError");
@@ -195,17 +193,10 @@ mod test {
 
     #[test]
     fn run_function_only_once() {
-        let p = CpuPool::new_num_cpus();
         let v = papp(INCREMENT.clone(), &[]);
 
-        let mut fs = vec![];
-
         for _ in 0..1000 {
-            fs.push(p.spawn(v.clone().number()));
-        }
-
-        for f in fs {
-            assert_eq!(f.wait().unwrap(), 1.0);
+            assert_eq!(block_on(v.clone().number()).unwrap(), 1.0);
         }
     }
 
@@ -217,9 +208,7 @@ mod test {
     #[bench]
     fn bench_thunk_eval(b: &mut Bencher) {
         b.iter(|| {
-            Thunk::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()]))
-                .eval()
-                .wait()
+            block_on(Thunk::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()])).eval())
                 .unwrap()
         });
     }

@@ -103,6 +103,8 @@ fn merge(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     use super::super::list::List;
@@ -134,7 +136,7 @@ mod test {
             ),
         ]: Vec<(&[Value], Value)>
         {
-            assert!(papp(MERGE.clone(), vs).equal(x).wait().unwrap());
+            assert!(block_on(papp(MERGE.clone(), vs).equal(x)).unwrap());
         }
     }
 }

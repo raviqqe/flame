@@ -7,8 +7,8 @@ use core::Value;
 use super::error::RuntimeError;
 
 #[async_move(boxed_send)]
-fn evaluate(v: Value) -> Result<(), Never> {
-    await!(v.impure());
+pub fn evaluate(v: Value) -> Result<(), Never> {
+    await!(v.impure()).unwrap();
     Ok(())
 }
 
@@ -20,7 +20,7 @@ pub fn run(es: Vec<Effect>) -> Result<(), RuntimeError> {
         if e.expanded {
             unimplemented!()
         } else {
-            p.spawn(evaluate(e.value));
+            p.spawn(evaluate(e.value)).unwrap();
         }
     }
 

@@ -282,6 +282,7 @@ impl KeywordArgument {
 mod test {
     use std::mem::size_of;
 
+    use futures::executor::block_on;
     use test::{black_box, Bencher};
 
     use super::*;
@@ -309,7 +310,7 @@ mod test {
             ),
         ]: Vec<(Arguments, List)>
         {
-            assert!(a.rest_positionals().equal(l.into()).wait().unwrap());
+            assert!(block_on(a.rest_positionals().equal(l.into())).unwrap());
         }
     }
 

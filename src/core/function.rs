@@ -69,6 +69,7 @@ macro_rules! impure_function {
 mod test {
     use std::mem::size_of;
 
+    use futures::executor::block_on;
     use test::Bencher;
 
     use super::*;
@@ -92,7 +93,7 @@ mod test {
     fn closure() {
         let f = Function::closure(IDENTITY.clone(), Arguments::positionals(&[42.into()]));
 
-        assert_eq!(papp(f.into(), &[]).number().wait().unwrap(), 42.0);
+        assert_eq!(block_on(papp(f.into(), &[]).number()).unwrap(), 42.0);
     }
 
     #[test]
@@ -104,10 +105,7 @@ mod test {
     #[bench]
     fn function_call(b: &mut Bencher) {
         b.iter(|| {
-            papp(IDENTITY.clone(), &[1000.into()])
-                .pured()
-                .wait()
-                .unwrap();
+            block_on(papp(IDENTITY.clone(), &[1000.into()]).pured()).unwrap();
         });
     }
 }

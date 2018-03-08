@@ -31,6 +31,8 @@ fn iff(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     use super::super::utils::papp;
@@ -47,7 +49,7 @@ mod test {
             ),
         ]: Vec<(&[Value], Value)>
         {
-            assert!(papp(IF.clone(), xs).equal(y).wait().unwrap());
+            assert!(block_on(papp(IF.clone(), xs).equal(y)).unwrap());
         }
     }
 }

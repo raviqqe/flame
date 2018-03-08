@@ -57,6 +57,8 @@ impl Signature {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     #[test]
@@ -67,7 +69,7 @@ mod test {
     #[test]
     fn bind() {
         for (s, mut a) in vec![(Signature::default(), Arguments::default())] {
-            Signature::bind(Ref(&s), RefMut(&mut a)).wait().unwrap();
+            block_on(Signature::bind(Ref(&s), RefMut(&mut a))).unwrap();
         }
     }
 }

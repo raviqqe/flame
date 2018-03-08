@@ -39,6 +39,8 @@ fn equal(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     use super::super::dictionary::Dictionary;
@@ -77,7 +79,7 @@ mod test {
             ],
         ]: Vec<&[Value]>
         {
-            assert!(papp(EQUAL.clone(), xs).boolean().wait().unwrap());
+            assert!(block_on(papp(EQUAL.clone(), xs).boolean()).unwrap());
         }
     }
 
@@ -92,7 +94,7 @@ mod test {
             ],
         ]: Vec<&[Value]>
         {
-            assert!(!papp(EQUAL.clone(), xs).boolean().wait().unwrap());
+            assert!(!block_on(papp(EQUAL.clone(), xs).boolean()).unwrap());
         }
     }
 }

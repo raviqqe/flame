@@ -106,7 +106,7 @@ mod tests {
     use std::time::Duration;
 
     use futures::prelude::*;
-    use futures_cpupool::CpuPool;
+    use futures::executor::ThreadPool;
 
     use super::*;
 
@@ -127,8 +127,8 @@ mod tests {
         type Item = ();
         type Error = BlackHoleError;
 
-        fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-            (&*self.0).poll()
+        fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
+            (&*self.0).poll(c)
         }
     }
 
@@ -143,36 +143,36 @@ mod tests {
     }
 
     #[async_move]
-    fn send(s: Sender<i32>, b: ArcBlackHole) -> Result<(), BlackHoleError> {
+    fn send(s: Sender<i32>, b: ArcBlackHole) -> Result<(), Never> {
         s.send(1).unwrap();
-        await!(b)?;
+        await!(b).unwrap();
         s.send(3).unwrap();
         Ok(())
     }
 
     #[async_move]
-    fn release(s: Sender<i32>, b: ArcBlackHole) -> Result<(), BlackHoleError> {
+    fn release(s: Sender<i32>, b: ArcBlackHole) -> Result<(), Never> {
         s.send(2).unwrap();
-        b.release()?;
+        b.release().unwrap();
         Ok(())
     }
 
     #[test]
     fn black_hole_wait() {
-        let p = CpuPool::new_num_cpus();
+        let mut p = ThreadPool::new();
 
         let b = ArcBlackHole::new();
         let (s, r) = channel();
 
         assert!(r.try_recv().is_err());
 
-        let f1 = p.spawn(send(s.clone(), b.clone()));
+        p.spawn(Box::new(send(s.clone(), b.clone()))).unwrap();
 
         sleep(Duration::from_millis(100));
         assert_eq!(r.recv().unwrap(), 1);
         assert!(r.try_recv().is_err());
 
-        let f2 = p.spawn(release(s.clone(), b.clone()));
+        p.spawn(Box::new(release(s.clone(), b.clone()))).unwrap();
 
         sleep(Duration::from_millis(100));
         assert_eq!(r.recv().unwrap(), 2);
@@ -180,8 +180,5 @@ mod tests {
         sleep(Duration::from_millis(100));
         assert_eq!(r.recv().unwrap(), 3);
         assert!(r.try_recv().is_err());
-
-        assert!(f1.wait().is_ok());
-        assert!(f2.wait().is_ok());
     }
 }

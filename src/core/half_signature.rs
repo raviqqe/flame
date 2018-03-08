@@ -84,6 +84,8 @@ impl HalfSignature {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     #[test]
@@ -130,9 +132,11 @@ mod test {
         ] {
             let mut v = vec![];
 
-            HalfSignature::bind_positionals((&s).into(), (&mut a).into(), (&mut v).into())
-                .wait()
-                .unwrap();
+            block_on(HalfSignature::bind_positionals(
+                (&s).into(),
+                (&mut a).into(),
+                (&mut v).into(),
+            )).unwrap();
 
             assert_eq!(v.len(), l);
         }
@@ -146,9 +150,11 @@ mod test {
                 Arguments::positionals(&[]),
             ),
         ] {
-            HalfSignature::bind_positionals((&s).into(), (&mut a).into(), (&mut vec![]).into())
-                .wait()
-                .unwrap_err();
+            block_on(HalfSignature::bind_positionals(
+                (&s).into(),
+                (&mut a).into(),
+                (&mut vec![]).into(),
+            )).unwrap_err();
         }
     }
 }

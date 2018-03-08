@@ -174,6 +174,8 @@ impl From<Thunk> for Value {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     use super::super::list::List;
@@ -211,7 +213,7 @@ mod test {
             ("foo".into(), "\"foo\""),
         ]: Vec<(Value, &str)>
         {
-            assert_eq!(&v.clone().to_string().wait().unwrap(), s);
+            assert_eq!(&block_on(v.clone().to_string()).unwrap(), s);
         }
     }
 
@@ -261,7 +263,7 @@ mod test {
             ("a".into(), "b".into(), false),
         ]: Vec<(Value, Value, bool)>
         {
-            assert_eq!(v.clone().equal(w).wait().unwrap(), b);
+            assert_eq!(block_on(v.clone().equal(w)).unwrap(), b);
         }
     }
 
@@ -273,7 +275,7 @@ mod test {
             (TEST_FUNCTION.clone(), 0.into()),
         ]: Vec<(Value, Value)>
         {
-            assert!(v.clone().equal(w).wait().is_err());
+            assert!(block_on(v.clone().equal(w)).is_err());
         }
     }
 
@@ -318,7 +320,7 @@ mod test {
             ),
         ]: Vec<(Value, Value, Ordering)>
         {
-            assert_eq!(v.clone().compare(w).wait().unwrap(), o);
+            assert_eq!(block_on(v.clone().compare(w)).unwrap(), o);
         }
     }
 
@@ -332,7 +334,7 @@ mod test {
             (Normal::Nil.into(), Normal::Nil.into()),
         ]: Vec<(Value, Value)>
         {
-            assert!(v.clone().compare(w).wait().is_err());
+            assert!(block_on(v.clone().compare(w)).is_err());
         }
     }
 }

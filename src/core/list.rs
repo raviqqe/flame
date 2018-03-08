@@ -269,6 +269,8 @@ fn prepend(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
+    use futures::executor::block_on;
+
     use super::*;
 
     use super::super::utils::papp;
@@ -282,10 +284,7 @@ mod test {
 
     #[test]
     fn first() {
-        let n = papp(FIRST.clone(), &[List::new(&[42.into()]).into()])
-            .number()
-            .wait()
-            .unwrap();
+        let n = block_on(papp(FIRST.clone(), &[List::new(&[42.into()]).into()]).number()).unwrap();
 
         assert_eq!(n, 42.0);
     }
@@ -293,20 +292,19 @@ mod test {
     #[test]
     fn rest() {
         assert!(
-            papp(REST.clone(), &[List::new(&[42.into()]).into()])
-                .equal(List::Empty.into())
-                .wait()
-                .unwrap()
+            block_on(
+                papp(REST.clone(), &[List::new(&[42.into()]).into()]).equal(List::Empty.into())
+            ).unwrap()
         );
     }
 
     #[test]
     fn prepend() {
         assert!(
-            papp(PREPEND.clone(), &[42.into(), List::Empty.into()])
-                .equal(List::new(&[42.into()]).into())
-                .wait()
-                .unwrap()
+            block_on(
+                papp(PREPEND.clone(), &[42.into(), List::Empty.into()])
+                    .equal(List::new(&[42.into()]).into())
+            ).unwrap()
         );
     }
 
