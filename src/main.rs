@@ -4,6 +4,7 @@
 extern crate array_queue;
 extern crate docopt;
 extern crate futures_await as futures;
+extern crate futures_stable as futures_stable;
 extern crate hamt_sync;
 #[macro_use]
 extern crate lazy_static;

@@ -51,6 +51,7 @@ dependencies = [
  "array-queue 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "docopt 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-await 0.2.0-alpha (registry+https://github.com/rust-lang/crates.io-index)",
+ "futures-stable 0.2.0-alpha (registry+https://github.com/rust-lang/crates.io-index)",
  "hamt-sync 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pest 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)",

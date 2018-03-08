@@ -5,6 +5,7 @@ mod test {
 
     use futures::executor::block_on;
     use futures::prelude::*;
+    use futures_stable::block_on_stable;
     use test::Bencher;
 
     use super::super::core::{Normal, Result};
@@ -45,14 +46,24 @@ mod test {
         });
     }
 
-    #[async_move]
+    #[async]
     fn async_function() -> Result {
         Ok(Normal::Nil.into())
     }
 
     #[bench]
     fn bench_async_function(b: &mut Bencher) {
-        b.iter(|| block_on(async_function()).unwrap());
+        b.iter(|| block_on_stable(async_function()).unwrap());
+    }
+
+    #[async_move]
+    fn async_move_function() -> Result {
+        Ok(Normal::Nil.into())
+    }
+
+    #[bench]
+    fn bench_async_move_function(b: &mut Bencher) {
+        b.iter(|| block_on(async_move_function()).unwrap());
     }
 
     #[async_move(boxed_send)]
