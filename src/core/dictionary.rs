@@ -72,7 +72,7 @@ impl Dictionary {
         Dictionary(Arc::new(Map::new()))
     }
 
-    #[async_move]
+    #[async_move(boxed_send)]
     pub fn to_string(self) -> Result<String> {
         let mut ss = vec![];
 
@@ -138,7 +138,7 @@ impl Dictionary {
         }
     }
 
-    #[async_move]
+    #[async_move(boxed_send)]
     pub fn equal(self, d: Self) -> Result<bool> {
         let kvs1: Vec<(Key, Value)> = self.0
             .into_iter()

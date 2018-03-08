@@ -124,7 +124,7 @@ impl List {
         }
     }
 
-    #[async_move]
+    #[async_move(boxed_send)]
     pub fn to_string(mut self) -> Result<String> {
         let mut ss = vec![];
 
@@ -138,7 +138,7 @@ impl List {
         Ok(["[", &ss.join(" ".into()), "]"].join("").to_string())
     }
 
-    #[async_move]
+    #[async_move(boxed_send)]
     pub fn equal(mut self, mut l: Self) -> Result<bool> {
         loop {
             match (self.clone(), l.clone()) {
@@ -160,7 +160,7 @@ impl List {
         }
     }
 
-    #[async_move]
+    #[async_move(boxed_send)]
     pub fn compare(mut self, mut l: Self) -> Result<Ordering> {
         loop {
             match (self.clone(), l.clone()) {

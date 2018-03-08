@@ -24,7 +24,7 @@ pub enum Normal {
 }
 
 impl Normal {
-    #[async_move(boxed_send)]
+    #[async_move]
     pub fn to_string(self) -> Result<String> {
         Ok(match self {
             Normal::Boolean(b) => (if b { "true" } else { "false" }).to_string(),
