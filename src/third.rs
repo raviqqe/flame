@@ -1,7 +1,9 @@
 #[cfg(test)]
 mod test {
+    use std::ops::{Generator, GeneratorState};
     use std::sync::Arc;
 
+    use futures;
     use futures::prelude::*;
     use test::Bencher;
 
@@ -14,6 +16,33 @@ mod test {
     #[bench]
     fn bench_normal_function(b: &mut Bencher) {
         b.iter(|| normal_function().unwrap());
+    }
+
+    fn generator_function() -> impl Generator<Yield = Async<futures::__rt::Mu>, Return = Result> {
+        return || {
+            if false {
+                yield Async::NotReady;
+            }
+
+            Ok(Normal::Nil.into()): Result
+        };
+    }
+
+    #[bench]
+    fn bench_generator_function(b: &mut Bencher) {
+        b.iter(|| {
+            let mut g = generator_function();
+
+            loop {
+                match g.resume() {
+                    GeneratorState::Complete(r) => {
+                        r.unwrap();
+                        break;
+                    }
+                    GeneratorState::Yielded(_) => {}
+                }
+            }
+        });
     }
 
     #[async]
