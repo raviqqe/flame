@@ -29,7 +29,7 @@ impl Signature {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn bind(this: Ref<Self>, a: RefMut<Arguments>) -> Result<Vec<Value>> {
         let mut vs = vec![];
 

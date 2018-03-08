@@ -20,7 +20,7 @@ pub enum Value {
 }
 
 impl Value {
-    #[async]
+    #[async_move]
     pub fn vague(self) -> Result<VagueNormal> {
         match self {
             Value::Normal(p) => p,
@@ -28,7 +28,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn pured(self) -> Result<Normal> {
         match await!(self.vague())? {
             VagueNormal::Pure(n) => Ok(n),
@@ -39,7 +39,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn impure(self) -> Result<Normal> {
         match await!(self.vague())? {
             VagueNormal::Pure(_) => Err(Error::new(
@@ -50,7 +50,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn boolean(self) -> Result<bool> {
         let n = await!(self.pured())?;
 
@@ -60,7 +60,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn dictionary(self) -> Result<Dictionary> {
         let n = await!(self.pured())?;
 
@@ -70,7 +70,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn function(self) -> Result<Function> {
         let n = await!(self.pured())?;
 
@@ -80,7 +80,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn index(self) -> Result<usize> {
         let n = await!(self.number())?;
 
@@ -91,7 +91,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn list(self) -> Result<List> {
         let n = await!(self.pured())?;
 
@@ -101,7 +101,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn number(self) -> Result<f64> {
         let n = await!(self.pured())?;
 
@@ -111,7 +111,7 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn string(self) -> Result<Str> {
         let n = await!(self.pured())?;
 
@@ -121,24 +121,24 @@ impl Value {
         }
     }
 
-    #[async]
+    #[async_move]
     fn type_name(self) -> Result<Str> {
         Ok(await!(self.pured())?.type_name())
     }
 
-    #[async]
+    #[async_move]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
     }
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     pub fn equal(self, v: Self) -> Result<bool> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;
         await!(m.equal(n))
     }
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     pub fn compare(self, v: Self) -> Result<Ordering> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;

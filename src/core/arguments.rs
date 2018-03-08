@@ -95,7 +95,7 @@ impl Arguments {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn search_keyword(mut this: RefMut<Self>, s: Str) -> Result<Value> {
         for k in &mut this.keywords {
             if s == k.name {
@@ -128,7 +128,7 @@ impl Arguments {
         v
     }
 
-    #[async]
+    #[async_move]
     pub fn check_empty(this: Ref<Self>) -> Result<()> {
         if !this.positionals.is_empty() {
             return Err(Error::argument(&format!(

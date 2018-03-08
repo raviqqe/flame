@@ -45,7 +45,7 @@ mod test {
         });
     }
 
-    #[async]
+    #[async_move]
     fn async_function() -> Result {
         Ok(Normal::Nil.into())
     }
@@ -55,7 +55,7 @@ mod test {
         b.iter(|| async_function().wait().unwrap());
     }
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     fn boxed_async_function() -> Result {
         Ok(Normal::Nil.into())
     }

@@ -9,7 +9,7 @@ use super::black_hole::BlackHole;
 use core::arguments::Arguments;
 use core::vague_normal::VagueNormal;
 use core::result::Result;
-use core::unsafe_ref::RefMut;
+use core::unsafe_ref::{Ref, RefMut};
 use core::utils::IDENTITY;
 use core::value::Value;
 
@@ -21,7 +21,7 @@ impl Thunk {
         Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     pub fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock(State::Normal) {
             self.inner_mut().content = Content::Normal(loop {
@@ -44,14 +44,7 @@ impl Thunk {
 
             self.inner().black_hole.release()?;
         } else {
-            // This block is basically:
-            // await!(&self.inner_mut().black_hole)?;
-            loop {
-                match self.inner_mut().black_hole.poll()? {
-                    Async::Ready(()) => break,
-                    Async::NotReady => yield Async::NotReady,
-                }
-            }
+            await!(Ref(&self.inner().black_hole))?;
         }
 
         match self.inner().content {
@@ -187,7 +180,7 @@ mod test {
         increment
     );
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     fn increment(_: Vec<Value>) -> Result<Value> {
         loop {
             let s = SUM.load(Ordering::SeqCst);

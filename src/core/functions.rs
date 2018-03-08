@@ -15,7 +15,7 @@ pure_function!(
     equal
 );
 
-#[async(boxed_send)]
+#[async_move(boxed_send)]
 fn equal(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
 

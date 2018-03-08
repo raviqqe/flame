@@ -28,7 +28,7 @@ pure_function!(
     identity
 );
 
-#[async(boxed_send)]
+#[async_move(boxed_send)]
 fn identity(vs: Vec<Value>) -> Result<Value> {
     Ok(vs[0].clone())
 }
@@ -46,7 +46,7 @@ pure_function!(
     test_function
 );
 
-#[async(boxed_send)]
+#[async_move(boxed_send)]
 fn test_function(_: Vec<Value>) -> Result<Value> {
     Ok(Normal::Nil.into())
 }

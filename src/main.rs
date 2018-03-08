@@ -4,18 +4,20 @@
 extern crate array_queue;
 extern crate docopt;
 extern crate futures_await as futures;
-extern crate futures_cpupool;
 extern crate hamt_sync;
 #[macro_use]
 extern crate lazy_static;
 extern crate pest;
 #[macro_use]
 extern crate pest_derive;
+extern crate pin_api;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 #[cfg(test)]
 extern crate test;
+
+use futures::executor::block_on;
 
 #[macro_use]
 mod core;
@@ -31,8 +33,6 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{self, stdin, Read};
 use std::process::exit;
-
-use futures::Future;
 
 use compile::compile;
 use desugar::desugar;
@@ -64,9 +64,9 @@ fn main() {
 fn try_main() -> Result<(), Box<Error>> {
     let args: Args = Docopt::new(USAGE).and_then(|d| d.deserialize())?;
 
-    Ok(run(compile(desugar(parse::main_module(&read_source(
-        args.arg_filename,
-    )?)?)?)?).wait()?)
+    Ok(block_on(run(compile(desugar(parse::main_module(
+        &read_source(args.arg_filename)?,
+    )?)?)?))?)
 }
 
 fn read_source(s: Option<String>) -> Result<String, io::Error> {

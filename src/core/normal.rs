@@ -24,7 +24,7 @@ pub enum Normal {
 }
 
 impl Normal {
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     pub fn to_string(self) -> Result<String> {
         Ok(match self {
             Normal::Boolean(b) => (if b { "true" } else { "false" }).to_string(),
@@ -49,7 +49,7 @@ impl Normal {
         }.into()
     }
 
-    #[async]
+    #[async_move]
     pub fn equal(self, n: Self) -> Result<bool> {
         Ok(match (self.clone(), n.clone()) {
             (Normal::Boolean(x), Normal::Boolean(y)) => x == y,
@@ -64,7 +64,7 @@ impl Normal {
         })
     }
 
-    #[async]
+    #[async_move]
     pub fn compare(self, n: Self) -> Result<Ordering> {
         Ok(match (self.clone(), n.clone()) {
             (Normal::List(x), Normal::List(y)) => await!(x.compare(y))?,

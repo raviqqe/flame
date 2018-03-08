@@ -15,7 +15,7 @@ pure_function!(
     y
 );
 
-#[async(boxed_send)]
+#[async_move(boxed_send)]
 fn y(vs: Vec<Value>) -> Result {
     let f = vs[0].clone();
 
@@ -48,7 +48,7 @@ mod test {
         factorial
     );
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     fn factorial(vs: Vec<Value>) -> Result {
         let f = vs[0].clone();
         let n = vs[1].clone();
@@ -126,7 +126,7 @@ mod test {
         infinity
     );
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     fn infinity(vs: Vec<Value>) -> Result {
         Ok(papp(vs[0].clone(), &[]))
     }
@@ -155,7 +155,7 @@ mod test {
         decrement_to_0
     );
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     fn decrement_to_0(vs: Vec<Value>) -> Result {
         let n = await!(vs[1].clone().number())?;
 

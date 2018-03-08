@@ -10,7 +10,7 @@ pure_function!(
     subtract
 );
 
-#[async(boxed_send)]
+#[async_move(boxed_send)]
 fn subtract(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n = await!(l.first()?.number())?;
@@ -31,7 +31,7 @@ pure_function!(
     multiply
 );
 
-#[async(boxed_send)]
+#[async_move(boxed_send)]
 fn multiply(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n: f64 = 1.0;

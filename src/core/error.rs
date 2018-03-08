@@ -37,7 +37,7 @@ impl Error {
         Self::value("list is empty")
     }
 
-    #[async]
+    #[async_move]
     pub fn key_not_found(v: Value) -> Result<Error> {
         let s = await!(v.to_string())?;
 
@@ -51,25 +51,25 @@ impl Error {
         Self::new("TypeError", s)
     }
 
-    #[async]
+    #[async_move]
     pub fn typ(n: Normal, t: String) -> Result<Error> {
         let s = await!(n.to_string())?;
         Ok(Self::typ_raw(&format!("{} is not a {}", s, t)))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_boolean(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "boolean".to_string()))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_comparable(m: Normal, n: Normal) -> Result<Self> {
         let s = await!(m.to_string())?;
         let t = await!(n.to_string())?;
         Ok(Self::typ_raw(&format!("{} and {} is not comparable", s, t)))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_equalable(n: Normal) -> Result<Self> {
         Ok(Self::typ_raw(&format!(
             "{} is not equalable",
@@ -77,37 +77,37 @@ impl Error {
         )))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_collection(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "collection".to_string()))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_dictionary(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "dictionary".to_string()))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_function(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "function".to_string()))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_list(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "list".to_string()))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_nil(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "nil".to_string()))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_number(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "number".to_string()))
     }
 
-    #[async]
+    #[async_move]
     pub fn not_string(n: Normal) -> Result<Error> {
         await!(Self::typ(n, "string".to_string()))
     }

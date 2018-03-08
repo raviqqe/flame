@@ -10,7 +10,7 @@ pure_function!(
     iff
 );
 
-#[async(boxed_send)]
+#[async_move(boxed_send)]
 fn iff(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
 

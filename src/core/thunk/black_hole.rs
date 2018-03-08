@@ -3,40 +3,50 @@ use std::fmt::{self, Display, Formatter};
 use std::sync::{Mutex, PoisonError};
 
 use futures::prelude::*;
-use futures::task::{self, Task};
+use futures::task::{AtomicWaker, Context};
+use pin_api::Unpin;
 
-use self::Inner::*;
+use super::super::unsafe_ref::Ref;
 
 #[derive(Debug)]
 pub struct BlackHole(Mutex<Inner>);
 
 impl BlackHole {
     pub fn new() -> Self {
-        BlackHole(Mutex::new(Wait(vec![])))
+        BlackHole(Mutex::new(Inner::Wait(AtomicWaker::new())))
     }
 
     pub fn release(&self) -> Result<(), BlackHoleError> {
         let mut inner = self.0.lock()?;
 
         match *inner {
-            Released => return Err(BlackHoleError::new("black hole is released twice")),
-            Wait(ref tasks) => for task in tasks {
-                task.notify();
-            },
+            Inner::Released => return Err(BlackHoleError::new("black hole is released twice")),
+            Inner::Wait(ref w) => w.wake(),
         }
 
-        *inner = Released;
+        *inner = Inner::Released;
 
         Ok(())
     }
 }
 
+unsafe impl Unpin for BlackHole {}
+
 impl Future for BlackHole {
     type Item = ();
     type Error = BlackHoleError;
 
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        (&*self).poll()
+    fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
+        (&*self).poll(c)
+    }
+}
+
+impl Future for Ref<BlackHole> {
+    type Item = ();
+    type Error = BlackHoleError;
+
+    fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
+        (&**self: &BlackHole).poll(c)
     }
 }
 
@@ -44,12 +54,12 @@ impl<'a> Future for &'a BlackHole {
     type Item = ();
     type Error = BlackHoleError;
 
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+    fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
         match *self.0.lock()? {
-            Released => Ok(Async::Ready(())),
-            Wait(ref mut tasks) => {
-                tasks.push(task::current());
-                Ok(Async::NotReady)
+            Inner::Released => Ok(Async::Ready(())),
+            Inner::Wait(ref w) => {
+                w.register(c.waker());
+                Ok(Async::Pending)
             }
         }
     }
@@ -58,7 +68,7 @@ impl<'a> Future for &'a BlackHole {
 #[derive(Debug)]
 enum Inner {
     Released,
-    Wait(Vec<Task>),
+    Wait(AtomicWaker),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -132,7 +142,7 @@ mod tests {
         BlackHole::new().release().unwrap();
     }
 
-    #[async]
+    #[async_move]
     fn send(s: Sender<i32>, b: ArcBlackHole) -> Result<(), BlackHoleError> {
         s.send(1).unwrap();
         await!(b)?;
@@ -140,7 +150,7 @@ mod tests {
         Ok(())
     }
 
-    #[async]
+    #[async_move]
     fn release(s: Sender<i32>, b: ArcBlackHole) -> Result<(), BlackHoleError> {
         s.send(2).unwrap();
         b.release()?;

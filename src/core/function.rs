@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use futures::prelude::*;
+use pin_api::Unpin;
 
 use super::arguments::Arguments;
 use super::error::Error;
@@ -10,7 +11,7 @@ use super::unsafe_ref::{Ref, RefMut};
 use super::utils::app;
 use super::value::Value;
 
-type ResultFuture = Box<Future<Item = Value, Error = Error> + Send>;
+type ResultFuture = Box<Future<Item = Value, Error = Error> + Send + Unpin>;
 type SubFunction = fn(vs: Vec<Value>) -> ResultFuture;
 
 pub type Result = result::Result<Value>;
@@ -30,7 +31,7 @@ impl Function {
         Function::Closure(Arc::new((f, a)))
     }
 
-    #[async(boxed_send)]
+    #[async_move]
     pub fn call(self, a: RefMut<Arguments>) -> Result {
         Ok(match self {
             Function::Closure(r) => {
@@ -52,7 +53,7 @@ macro_rules! pure_function {
 
 macro_rules! impure_function {
     ($i:ident, $f:ident, $e:expr, $r:ident) => {
-        #[async(boxed_send)]
+        #[async_move(boxed_send)]
         fn $f(vs: Vec<Value>) -> ::core::Result {
             let n = await!(await!($r(vs))?.pured())?;
             Ok(::core::Value::from(::core::VagueNormal::Impure(n)))
@@ -82,7 +83,7 @@ mod test {
         test_func
     );
 
-    #[async(boxed_send)]
+    #[async_move(boxed_send)]
     fn test_func(vs: Vec<Value>) -> Result {
         Ok(Value::from(42.0))
     }

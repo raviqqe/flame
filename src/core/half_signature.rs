@@ -23,7 +23,7 @@ impl HalfSignature {
         }
     }
 
-    #[async]
+    #[async_move]
     pub fn bind_positionals(
         this: Ref<Self>,
         mut args: RefMut<Arguments>,
@@ -54,7 +54,7 @@ impl HalfSignature {
         Ok(())
     }
 
-    #[async]
+    #[async_move]
     pub fn bind_keywords(
         this: Ref<HalfSignature>,
         mut args: RefMut<Arguments>,
