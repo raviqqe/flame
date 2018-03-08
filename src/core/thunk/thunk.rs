@@ -6,12 +6,12 @@ use std::sync::atomic::Ordering::SeqCst;
 use futures::prelude::*;
 use futures_black_hole::BlackHole;
 
-use super::arguments::Arguments;
-use super::vague_normal::VagueNormal;
-use super::result::Result;
-use super::unsafe_ref::RefMut;
-use super::utils::IDENTITY;
-use super::value::Value;
+use core::arguments::Arguments;
+use core::vague_normal::VagueNormal;
+use core::result::Result;
+use core::unsafe_ref::RefMut;
+use core::utils::IDENTITY;
+use core::value::Value;
 
 #[derive(Clone, Debug)]
 pub struct Thunk(Arc<UnsafeCell<Inner>>);
@@ -155,9 +155,10 @@ mod test {
     use futures_cpupool::CpuPool;
     use test::Bencher;
 
-    use super::super::normal::Normal;
-    use super::super::signature::Signature;
-    use super::super::utils::{papp, IDENTITY};
+    use core::normal::Normal;
+    use core::signature::Signature;
+    use core::utils::{papp, IDENTITY};
+
     use super::*;
 
     #[test]
