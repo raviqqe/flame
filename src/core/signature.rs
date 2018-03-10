@@ -58,6 +58,7 @@ impl Signature {
 #[cfg(test)]
 mod test {
     use futures::executor::block_on;
+    use test::Bencher;
 
     use super::*;
 
@@ -71,5 +72,23 @@ mod test {
         for (s, mut a) in vec![(Signature::default(), Arguments::default())] {
             block_on(Signature::bind(Ref(&s), RefMut(&mut a))).unwrap();
         }
+    }
+
+    #[bench]
+    fn bench_signature_bind(b: &mut Bencher) {
+        let s = Signature::new(
+            vec!["x".into()],
+            vec![],
+            "".into(),
+            vec![],
+            vec![],
+            "".into(),
+        );
+        let a = Arguments::positionals(&[42.into()]);
+
+        b.iter(|| {
+            let mut a = a.clone();
+            Signature::bind((&s).into(), (&mut a).into());
+        });
     }
 }
