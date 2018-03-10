@@ -112,20 +112,12 @@ mod test {
                 2,
             ),
             (
-                HalfSignature::new(
-                    vec![],
-                    vec![OptionalArgument::new("x".into(), 42.into())],
-                    "".into(),
-                ),
+                HalfSignature::new(vec![], vec![OptionalArgument::new("x", 42)], "".into()),
                 Arguments::positionals(&[]),
                 1,
             ),
             (
-                HalfSignature::new(
-                    vec![],
-                    vec![OptionalArgument::new("x".into(), 42.into())],
-                    "".into(),
-                ),
+                HalfSignature::new(vec![], vec![OptionalArgument::new("x", 42)], "".into()),
                 Arguments::positionals(&[42.into()]),
                 1,
             ),

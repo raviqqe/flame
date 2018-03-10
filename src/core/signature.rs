@@ -69,7 +69,31 @@ mod test {
 
     #[test]
     fn bind() {
-        for (s, mut a) in vec![(Signature::default(), Arguments::default())] {
+        for (s, mut a) in vec![
+            (Signature::default(), Arguments::default()),
+            (
+                Signature::new(
+                    vec!["x".into()],
+                    vec![],
+                    "".into(),
+                    vec![],
+                    vec![],
+                    "".into(),
+                ),
+                Arguments::positionals(&[42.into()]),
+            ),
+            (
+                Signature::new(
+                    vec![],
+                    vec![OptionalArgument::new("x", 42)],
+                    "".into(),
+                    vec![],
+                    vec![],
+                    "".into(),
+                ),
+                Arguments::positionals(&[42.into()]),
+            ),
+        ] {
             block_on(Signature::bind(Ref(&s), RefMut(&mut a))).unwrap();
         }
     }

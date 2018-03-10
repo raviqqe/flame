@@ -8,7 +8,10 @@ pub struct OptionalArgument {
 }
 
 impl OptionalArgument {
-    pub fn new(n: Str, v: Value) -> Self {
-        OptionalArgument { name: n, value: v }
+    pub fn new(n: impl Into<Str>, v: impl Into<Value>) -> Self {
+        OptionalArgument {
+            name: n.into(),
+            value: v.into(),
+        }
     }
 }
