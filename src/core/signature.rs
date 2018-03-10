@@ -112,7 +112,7 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            Signature::bind((&s).into(), (&mut a).into());
+            block_on(Signature::bind((&s).into(), (&mut a).into())).unwrap();
         });
     }
 }
