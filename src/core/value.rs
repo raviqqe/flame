@@ -174,6 +174,8 @@ impl From<Thunk> for Value {
 
 #[cfg(test)]
 mod test {
+    use std::mem::size_of;
+
     use futures::executor::block_on;
 
     use super::*;
@@ -336,5 +338,15 @@ mod test {
         {
             assert!(block_on(v.clone().compare(w)).is_err());
         }
+    }
+
+    #[test]
+    fn size() {
+        let s = size_of::<Value>();
+        assert!(
+            s <= size_of::<u64>() + size_of::<Normal>(),
+            "size of Value: {}",
+            s
+        );
     }
 }
