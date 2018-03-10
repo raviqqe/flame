@@ -85,7 +85,9 @@ impl HalfSignature {
 #[cfg(test)]
 mod test {
     use futures::executor::block_on;
+    use test::Bencher;
 
+    use super::super::arguments::KeywordArgument;
     use super::*;
 
     #[test]
@@ -148,5 +150,35 @@ mod test {
                 (&mut vec![]).into(),
             )).unwrap_err();
         }
+    }
+
+    #[bench]
+    fn bench_half_signature_bind_positionals(b: &mut Bencher) {
+        let s = HalfSignature::new(vec!["x".into()], vec![], "".into());
+        let a = Arguments::positionals(&[42.into()]);
+
+        b.iter(|| {
+            let mut a = a.clone();
+            block_on(HalfSignature::bind_positionals(
+                (&s).into(),
+                (&mut a).into(),
+                (&mut Vec::with_capacity(s.arity())).into(),
+            )).unwrap();
+        });
+    }
+
+    #[bench]
+    fn bench_half_signature_bind_keywords(b: &mut Bencher) {
+        let s = HalfSignature::new(vec!["x".into()], vec![], "".into());
+        let a = Arguments::new(&[], &[KeywordArgument::new("x", 42)], &[]);
+
+        b.iter(|| {
+            let mut a = a.clone();
+            block_on(HalfSignature::bind_positionals(
+                (&s).into(),
+                (&mut a).into(),
+                (&mut Vec::with_capacity(s.arity())).into(),
+            )).unwrap();
+        });
     }
 }
