@@ -31,7 +31,7 @@ impl Signature {
 
     #[async_move]
     pub fn bind(this: Ref<Self>, a: RefMut<Arguments>) -> Result<Vec<Value>> {
-        let mut vs = vec![];
+        let mut vs = Vec::with_capacity(this.arity());
 
         await!(HalfSignature::bind_positionals(
             Ref(&this.positionals),
