@@ -150,7 +150,11 @@ mod test {
         }
 
         let s = size_of::<Normal>();
-        // TODO: Why not 3 times?
-        assert!(s <= 4 * size_of::<usize>(), "size of Normal: {}", s);
+
+        assert!(
+            s <= size_of::<u64>() + 2 * size_of::<usize>(),
+            "size of Normal: {}",
+            s
+        );
     }
 }
