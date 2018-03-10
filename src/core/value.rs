@@ -15,7 +15,9 @@ use super::vague_normal::VagueNormal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
-    Normal(Result<VagueNormal>),
+    Pure(Normal),
+    Impure(Normal),
+    Error(Error),
     Thunk(Thunk),
 }
 
@@ -23,7 +25,9 @@ impl Value {
     #[async_move]
     pub fn vague(self) -> Result<VagueNormal> {
         match self {
-            Value::Normal(p) => p,
+            Value::Pure(n) => Ok(VagueNormal::Pure(n)),
+            Value::Impure(n) => Ok(VagueNormal::Impure(n)),
+            Value::Error(e) => Err(e),
             Value::Thunk(t) => await!(t.eval()),
         }
     }
@@ -32,20 +36,14 @@ impl Value {
     pub fn pured(self) -> Result<Normal> {
         match await!(self.vague())? {
             VagueNormal::Pure(n) => Ok(n),
-            VagueNormal::Impure(_) => Err(Error::new(
-                "ImpureError",
-                "impure value detected in pure context",
-            )),
+            VagueNormal::Impure(_) => Err(Error::impure()),
         }
     }
 
     #[async_move]
     pub fn impure(self) -> Result<Normal> {
         match await!(self.vague())? {
-            VagueNormal::Pure(_) => Err(Error::new(
-                "PureError",
-                "pure value detected in impure context",
-            )),
+            VagueNormal::Pure(_) => Err(Error::pured()),
             VagueNormal::Impure(n) => Ok(n),
         }
     }
@@ -161,8 +159,11 @@ impl<T: Into<Normal>> From<T> for Value {
 }
 
 impl From<VagueNormal> for Value {
-    fn from(b: VagueNormal) -> Self {
-        Value::Normal(Ok(b))
+    fn from(v: VagueNormal) -> Self {
+        match v {
+            VagueNormal::Pure(n) => Value::Pure(n),
+            VagueNormal::Impure(n) => Value::Impure(n),
+        }
     }
 }
 
@@ -343,6 +344,7 @@ mod test {
     #[test]
     fn size() {
         let s = size_of::<Value>();
+
         assert!(
             s <= size_of::<u64>() + size_of::<Normal>(),
             "size of Value: {}",

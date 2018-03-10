@@ -1,4 +1,5 @@
 use std::error;
+use std::sync::Arc;
 
 use futures::prelude::*;
 
@@ -7,18 +8,29 @@ use super::result::Result;
 use super::value::Value;
 
 #[derive(Clone, Debug)]
-pub struct Error {
+pub struct Error(Arc<Inner>);
+
+#[derive(Clone, Debug)]
+pub struct Inner {
     pub name: String,
     pub message: String,
     // callTrace: Vec<T>,
 }
 
 impl Error {
-    pub fn new(n: &str, m: &str) -> Error {
-        Error {
-            name: String::from(n),
-            message: String::from(m),
-        }
+    pub fn new(n: &str, m: &str) -> Self {
+        Error(Arc::new(Inner {
+            name: n.into(),
+            message: m.into(),
+        }))
+    }
+
+    pub fn name(&self) -> &str {
+        &self.0.name
+    }
+
+    pub fn message(&self) -> &str {
+        &self.0.message
     }
 
     pub fn argument(m: &str) -> Error {
@@ -27,6 +39,14 @@ impl Error {
 
     pub fn runtime(m: &str) -> Error {
         Self::new("RuntimeError", m)
+    }
+
+    pub fn pured() -> Self {
+        Self::new("PureError", "pure value detected in impure context")
+    }
+
+    pub fn impure() -> Self {
+        Self::new("ImpureError", "impure value detected in pure context")
     }
 
     pub fn value(m: &str) -> Error {

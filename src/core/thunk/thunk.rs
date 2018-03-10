@@ -34,7 +34,9 @@ impl Thunk {
                     Err(e) => break Err(e),
                     Ok(f) => match await!(f.call(a)) {
                         Err(e) => break Err(e),
-                        Ok(Value::Normal(n)) => break n,
+                        Ok(Value::Pure(n)) => break Ok(VagueNormal::Pure(n)),
+                        Ok(Value::Impure(n)) => break Ok(VagueNormal::Impure(n)),
+                        Ok(Value::Error(e)) => break Err(e),
                         Ok(Value::Thunk(t)) => if !t.delegate_evaluation(&self) {
                             break await!(t.eval());
                         },
@@ -164,8 +166,8 @@ mod test {
         let e = block_on(Thunk::new(Value::from(42.0), Arguments::new(&[], &[], &[])).eval())
             .unwrap_err();
 
-        assert_eq!(e.name, "TypeError");
-        assert_eq!(e.message, "42 is not a function");
+        assert_eq!(e.name(), "TypeError");
+        assert_eq!(e.message(), "42 is not a function");
     }
 
     lazy_static! {
