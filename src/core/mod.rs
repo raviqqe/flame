@@ -20,7 +20,7 @@ mod unsafe_ref;
 mod utils;
 mod value;
 
-pub use self::arguments::Arguments;
+pub use self::arguments::{Arguments, KeywordArgument, PositionalArgument};
 pub use self::function::{Function, Result};
 pub use self::normal::Normal;
 pub use self::signature::Signature;
