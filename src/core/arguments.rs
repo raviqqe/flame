@@ -99,7 +99,7 @@ impl Arguments {
     pub fn search_keyword(mut this: RefMut<Self>, s: Str) -> Result<Value> {
         for k in &mut this.keywords {
             if s == k.name {
-                return Ok(replace(k, KeywordArgument::new("".into(), Normal::Nil.into())).value);
+                return Ok(replace(k, KeywordArgument::new("", Normal::Nil)).value);
             }
         }
 
@@ -258,9 +258,9 @@ pub struct PositionalArgument {
 }
 
 impl PositionalArgument {
-    pub fn new(v: Value, e: bool) -> Self {
+    pub fn new(v: impl Into<Value>, e: bool) -> Self {
         PositionalArgument {
-            value: v,
+            value: v.into(),
             expanded: e,
         }
     }
@@ -273,8 +273,11 @@ pub struct KeywordArgument {
 }
 
 impl KeywordArgument {
-    pub fn new(s: Str, v: Value) -> Self {
-        KeywordArgument { name: s, value: v }
+    pub fn new(s: impl Into<Str>, v: impl Into<Value>) -> Self {
+        KeywordArgument {
+            name: s.into(),
+            value: v.into(),
+        }
     }
 }
 
@@ -301,11 +304,7 @@ mod test {
                 List::new(&[42.into()]),
             ),
             (
-                Arguments::new(
-                    &[PositionalArgument::new(List::Empty.into(), true)],
-                    &[],
-                    &[],
-                ),
+                Arguments::new(&[PositionalArgument::new(List::Empty, true)], &[], &[]),
                 List::Empty,
             ),
         ]: Vec<(Arguments, List)>

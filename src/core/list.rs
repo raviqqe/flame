@@ -262,7 +262,7 @@ fn prepend(vs: Vec<Value>) -> Result<Value> {
         f,
         app(
             PREPEND.clone(),
-            Arguments::new(&[PositionalArgument::new(r.into(), true)], &[], &[]),
+            Arguments::new(&[PositionalArgument::new(r, true)], &[], &[]),
         ),
     ).into())
 }
