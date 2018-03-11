@@ -67,7 +67,7 @@ impl HalfSignature {
 
         for o in this.optionals.clone() {
             let r = await!(Arguments::search_keyword(args.clone(), o.name));
-            vs.push(r.unwrap_or(o.value.clone()));
+            vs.push(r.unwrap_or(o.value));
         }
 
         if this.rest != "" {
