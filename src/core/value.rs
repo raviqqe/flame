@@ -1,5 +1,5 @@
-use std::cmp::Ordering;
 use futures::prelude::*;
+use std::cmp::Ordering;
 
 use super::collection::{INSERT, MERGE};
 use super::dictionary::Dictionary;

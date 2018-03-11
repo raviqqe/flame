@@ -1,5 +1,5 @@
-use futures::prelude::*;
 use futures::executor::ThreadPool;
+use futures::prelude::*;
 
 use compile::Effect;
 use core::Value;

@@ -105,8 +105,8 @@ mod tests {
     use std::thread::sleep;
     use std::time::Duration;
 
-    use futures::prelude::*;
     use futures::executor::ThreadPool;
+    use futures::prelude::*;
 
     use super::*;
 

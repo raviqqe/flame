@@ -87,8 +87,8 @@ mod test {
     use futures::executor::block_on;
     use test::Bencher;
 
-    use super::super::arguments::KeywordArgument;
     use super::*;
+    use super::super::arguments::KeywordArgument;
 
     #[test]
     fn new() {

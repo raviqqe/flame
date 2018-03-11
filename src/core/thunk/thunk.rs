@@ -3,14 +3,14 @@ use std::sync::Arc;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
 
-use futures::prelude::*;
 use super::black_hole::BlackHole;
+use futures::prelude::*;
 
 use core::arguments::Arguments;
-use core::vague_normal::VagueNormal;
 use core::result::Result;
 use core::unsafe_ref::{Ref, RefMut};
 use core::utils::IDENTITY;
+use core::vague_normal::VagueNormal;
 use core::value::Value;
 
 #[derive(Clone, Debug)]
