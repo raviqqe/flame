@@ -140,7 +140,18 @@ mod test {
 
     #[test]
     fn def_function() {
-        for s in &["(def (func) 123)", "(  def \n(func) (let  x  42\t) x)"] {
+        for s in &[
+            "(def (func) 123)",
+            "(  def \n(func) (let  x  42\t) x)",
+            "(def (func x) x)",
+            "(def (func x y) x)",
+            "(def (func (x 123)) x)",
+            "(def (func ..args) x)",
+            "(def (func . x) x)",
+            "(def (func . x y) x)",
+            "(def (func . (x 123)) x)",
+            "(def (func . ..kwargs) x)",
+        ] {
             println!("{}", s);
             LanguageParser::parse(Rule::def_function, s).unwrap();
         }

@@ -4,7 +4,12 @@ statement = { def_function | let_variable | effect }
 
 effect = { expression }
 
-def_function = { "(" ~ "def" ~ "(" ~ name ~ ")" ~ let_variable* ~ expression ~ ")" }
+def_function = { "(" ~ "def" ~ "(" ~ name ~ signature ~ ")" ~ let_variable* ~ expression ~ ")" }
+
+signature = { half_signature ~ ("." ~ half_signature)? }
+half_signature = { name* ~ optional_parameter* ~ expanded_parameter? }
+optional_parameter = { "(" ~ name ~ expression ~ ")" }
+expanded_parameter = @{ ".." ~ name }
 
 let_variable = { "(" ~ "let" ~ name ~ expression ~ ")" }
 
