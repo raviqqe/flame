@@ -2,10 +2,7 @@ use super::expression::Expression;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Statement {
-    Effect {
-        value: Expression,
-        expanded: bool,
-    },
+    Effect { value: Expression, expanded: bool },
 }
 
 impl Statement {

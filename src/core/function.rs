@@ -44,15 +44,15 @@ impl Function {
 }
 
 macro_rules! pure_function {
-    ($i:ident,  $e:expr, $f:ident) => {
+    ($i: ident, $e: expr, $f: ident) => {
         lazy_static! {
             pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f));
         }
-    }
+    };
 }
 
 macro_rules! impure_function {
-    ($i:ident, $f:ident, $e:expr, $r:ident) => {
+    ($i: ident, $f: ident, $e: expr, $r: ident) => {
         #[async_move(boxed_send)]
         fn $f(vs: Vec<Value>) -> ::core::Result {
             let n = await!(await!($r(vs))?.pured())?;
@@ -62,7 +62,7 @@ macro_rules! impure_function {
         lazy_static! {
             pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f));
         }
-    }
+    };
 }
 
 #[cfg(test)]
