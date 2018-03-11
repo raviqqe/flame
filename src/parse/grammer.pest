@@ -1,19 +1,29 @@
 main_module = { soi ~ statement* ~ eoi }
 
-statement = { effect }
+statement = { def_function | let_variable | effect }
 
 effect = { expression }
 
-expression = { boolean | nil | number | string }
+def_function = { "(" ~ "def" ~ "(" ~ name ~ ")" ~ let_variable* ~ expression ~ ")" }
+
+let_variable = { "(" ~ "let" ~ name ~ expression ~ ")" }
+
+expression = { boolean | nil | number | string | name }
 
 boolean = { "true" | "false" }
 nil = { "nil" }
 
-number = @{ "-"? ~ integer ~ ("." ~ '0'..'9'+)? }
-integer = @{ "0" | '1'..'9' ~ '0'..'9'* }
+number = @{ "-"? ~ integer ~ ("." ~ digit+)? }
+integer = @{ "0" | head_digit ~ digit* }
 
 string  = @{ "\"" ~ (escape | !("\"" | "\\") ~ any)* ~ "\"" }
 escape  = @{ "\\" ~ ("\"" | "\\" | "n" | "r" | "t") }
+
+name = @{ alphabet ~ (alphabet | digit)* }
+
+alphabet = { 'a'..'z' | 'A'..'Z' | "?" }
+digit = { '0'..'9' }
+head_digit = { '1'..'9' }
 
 whitespace = _{ " " | "\t" | "\r" | "\n" }
 comment = _{ ";" ~ (!"\n" ~ any)* }

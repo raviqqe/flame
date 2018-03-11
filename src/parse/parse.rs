@@ -68,6 +68,23 @@ mod test {
     const EXPRESSIONS: &[&'static str] = &["nil", "123", "0.1", "-123", "-0.1", "true", "false"];
 
     #[test]
+    fn name() {
+        for s in &[
+            "x",
+            "x1",
+            "func",
+            "PureFunc",
+            "alskfj1",
+            "?",
+            "is_boolean?",
+            "isBoolean?",
+        ] {
+            println!("{}", s);
+            LanguageParser::parse(Rule::name, s).unwrap();
+        }
+    }
+
+    #[test]
     fn boolean() {
         for s in vec!["true", "false"] {
             LanguageParser::parse(Rule::boolean, s).unwrap();
@@ -122,8 +139,31 @@ mod test {
     }
 
     #[test]
+    fn def_function() {
+        for s in &["(def (func) 123)", "(  def \n(func) (let  x  42\t) x)"] {
+            println!("{}", s);
+            LanguageParser::parse(Rule::def_function, s).unwrap();
+        }
+    }
+
+    #[test]
+    fn let_variable() {
+        for s in &["(let x 123)", "(   let   thisIsNumber \t\n 123\n)"] {
+            println!("{}", s);
+            LanguageParser::parse(Rule::let_variable, s).unwrap();
+        }
+    }
+
+    #[test]
     fn main_module_combinator() {
-        for s in &["", " 123 nil \n \ttrue", "; comment", "; comment\n123"] {
+        for s in &[
+            "",
+            " 123 nil \n \ttrue",
+            "; comment",
+            "; comment\n123",
+            "(def (f) 123)",
+            "(let x 123)",
+        ] {
             println!("{}", s);
             LanguageParser::parse(Rule::main_module, s).unwrap();
         }
