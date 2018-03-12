@@ -199,6 +199,13 @@ mod test {
     }
 
     #[test]
+    fn import() {
+        for s in &["(import \"foo\")", "(import \"x\")"] {
+            LanguageParser::parse(Rule::import, s).unwrap();
+        }
+    }
+
+    #[test]
     fn main_module_combinator() {
         for s in &[
             "",

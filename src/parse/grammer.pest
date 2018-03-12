@@ -1,4 +1,6 @@
-main_module = { soi ~ statement* ~ eoi }
+main_module = { soi ~ import* ~ statement* ~ eoi }
+
+import = { "(" ~ "import" ~ string ~ ")" }
 
 statement = { def_function | let_variable | effect }
 
