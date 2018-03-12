@@ -20,6 +20,8 @@ arguments = { (expression | expanded_argument)* ~ ("." ~ (keyword_argument | exp
 keyword_argument = { name ~ expression }
 expanded_argument = { ".." ~ expression }
 
+anonymous_function = { "(" ~ "\\" ~ "(" ~ signature ~ ")" ~ expression ~ ")" }
+
 boolean = { "true" | "false" }
 nil = { "nil" }
 

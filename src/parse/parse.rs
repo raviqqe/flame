@@ -109,6 +109,7 @@ mod test {
             "\"\"",
             "\"a\"",
             "\"abc\"",
+            "\"Hi!\"",
             "\"\\\"\"",
             "\"\\\\\"",
             "\"\\n\"",
@@ -128,6 +129,19 @@ mod test {
                 Statement::effect(Expression::String("\"\\\n\r\t".to_string()), false),
             ]
         );
+    }
+
+    #[test]
+    fn anonymous_function() {
+        for s in &[
+            "(\\ () 123)",
+            "(\\ (x) x)",
+            "(\\ (x y) (+ x y))",
+            "(\\ (x y . ..options) \"Hi!\")",
+        ] {
+            println!("{}", s);
+            LanguageParser::parse(Rule::anonymous_function, s).unwrap();
+        }
     }
 
     #[test]
@@ -169,6 +183,7 @@ mod test {
             "(def (func . x y) x)",
             "(def (func . (x 123)) x)",
             "(def (func . ..kwargs) x)",
+            "(def (func x y . ..kwargs) x)",
         ] {
             println!("{}", s);
             LanguageParser::parse(Rule::def_function, s).unwrap();
