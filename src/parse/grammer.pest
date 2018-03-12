@@ -33,7 +33,7 @@ escape  = @{ "\\" ~ ("\"" | "\\" | "n" | "r" | "t") }
 
 name = @{ alphabet ~ (alphabet | digit)* }
 
-alphabet = { 'a'..'z' | 'A'..'Z' | "?" }
+alphabet = { !("(" | ")" | "[" | "]" | "{" | "}" | "\\" | "\"" | "$" | whitespace) ~ any }
 digit = { '0'..'9' }
 head_digit = { '1'..'9' }
 
