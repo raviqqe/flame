@@ -9,11 +9,16 @@ def_function = { "(" ~ "def" ~ "(" ~ name ~ signature ~ ")" ~ let_variable* ~ ex
 signature = { half_signature ~ ("." ~ half_signature)? }
 half_signature = { name* ~ optional_parameter* ~ expanded_parameter? }
 optional_parameter = { "(" ~ name ~ expression ~ ")" }
-expanded_parameter = @{ ".." ~ name }
+expanded_parameter = { ".." ~ name }
 
 let_variable = { "(" ~ "let" ~ name ~ expression ~ ")" }
 
-expression = { boolean | nil | number | string | name }
+expression = { boolean | nil | number | string | name | application }
+
+application = { "(" ~ expression ~ arguments ~ ")" }
+arguments = { (expression | expanded_argument)* ~ ("." ~ (keyword_argument | expanded_argument)*)? }
+keyword_argument = { name ~ expression }
+expanded_argument = { ".." ~ expression }
 
 boolean = { "true" | "false" }
 nil = { "nil" }

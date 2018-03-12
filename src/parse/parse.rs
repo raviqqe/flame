@@ -131,6 +131,24 @@ mod test {
     }
 
     #[test]
+    fn application() {
+        for s in &[
+            "(foo)",
+            "(f x)",
+            "(f x y)",
+            "(f ..args)",
+            "(f x ..args)",
+            "(f . x 123)",
+            "(f . x 123 y 456)",
+            "(f . ..kwargs)",
+            "(f . x 123 ..kwargs)",
+        ] {
+            println!("{}", s);
+            LanguageParser::parse(Rule::application, s).unwrap();
+        }
+    }
+
+    #[test]
     fn expression() {
         for s in EXPRESSIONS {
             println!("{}", s);
