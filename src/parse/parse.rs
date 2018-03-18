@@ -41,7 +41,8 @@ fn statement(p: Pair<Rule>) -> Statement {
 }
 
 fn effect(p: Pair<Rule>) -> Effect {
-    Effect::new(expression(p.into_inner().next().unwrap()), false)
+    let b = &p.as_str()[0..2] == "..";
+    Effect::new(expression(p.into_inner().next().unwrap()), b)
 }
 
 fn expression(p: Pair<Rule>) -> Expression {
@@ -303,6 +304,24 @@ mod test {
     fn import() {
         for s in &["(import \"foo\")", "(import \"x\")"] {
             LanguageParser::parse(Rule::import, s).unwrap();
+        }
+    }
+
+    #[test]
+    fn effect_parser() {
+        for (s, x) in vec![
+            ("nil", Effect::new(Expression::Nil, false)),
+            ("..nil", Effect::new(Expression::Nil, true)),
+        ] {
+            assert_eq!(
+                effect(
+                    LanguageParser::parse(Rule::effect, s)
+                        .unwrap()
+                        .next()
+                        .unwrap()
+                ),
+                x
+            );
         }
     }
 

@@ -5,7 +5,7 @@ import = { "(" ~ "import" ~ string ~ ")" }
 statement = { def_function | let_variable | effect }
 inner_statement = { def_function | let_variable }
 
-effect = { expression }
+effect = { ".."? ~ expression }
 
 def_function = { "(" ~ "def" ~ "(" ~ name ~ signature ~ ")" ~ (inner_statement)* ~ expression ~ ")" }
 
