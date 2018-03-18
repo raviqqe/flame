@@ -69,9 +69,12 @@ fn expression(p: Pair<Rule>) -> Expression {
 fn signature(p: Pair<Rule>) -> Signature {
     let mut i = p.into_inner();
 
-    let ps = half_signature(i.next().unwrap());
-
-    Signature::new(ps, HalfSignature::default())
+    Signature::new(
+        half_signature(i.next().unwrap()),
+        i.next()
+            .map(half_signature)
+            .unwrap_or(HalfSignature::default()),
+    )
 }
 
 fn half_signature(p: Pair<Rule>) -> HalfSignature {
@@ -83,7 +86,7 @@ fn half_signature(p: Pair<Rule>) -> HalfSignature {
         match p.as_rule() {
             Rule::name => rs.push(p.as_str().into()),
             Rule::optional_parameter => os.push(optional_parameter(p)),
-            Rule::rest_parameter => r = p.as_str().into(),
+            Rule::rest_parameter => r = p.into_inner().next().unwrap().as_str().into(),
             _ => unreachable!(),
         }
     }
@@ -102,16 +105,18 @@ fn optional_parameter(p: Pair<Rule>) -> OptionalParameter {
 
 fn def_function(p: Pair<Rule>) -> DefFunction {
     let mut i = p.into_inner();
+
     let n = i.next().unwrap().as_str().into();
     let s = signature(i.next().unwrap());
-    let mut b = Expression::Nil;
-    let mut ss = vec![];
 
-    for p in &mut i {
-        if let Rule::inner_statement = p.as_rule() {
-            ss.push(inner_statement(p));
-        } else {
-            b = expression(p);
+    let mut ss = vec![];
+    let mut b = Expression::Nil;
+
+    for p in i {
+        match p.as_rule() {
+            Rule::inner_statement => ss.push(inner_statement(p)),
+            Rule::expression => b = expression(p),
+            _ => unreachable!(),
         }
     }
 
@@ -259,7 +264,41 @@ mod test {
 
     #[test]
     fn signature_parser() {
-        for (s, x) in vec![("", Signature::default())] {
+        for (s, x) in vec![
+            ("", Signature::default()),
+            (
+                "x y",
+                Signature::new(
+                    HalfSignature::new(vec!["x".into(), "y".into()], vec![], "".into()),
+                    HalfSignature::default(),
+                ),
+            ),
+            (
+                "(x 42)",
+                Signature::new(
+                    HalfSignature::new(
+                        vec![],
+                        vec![OptionalParameter::new("x".into(), Expression::Number(42.0))],
+                        "".into(),
+                    ),
+                    HalfSignature::default(),
+                ),
+            ),
+            (
+                ". x y",
+                Signature::new(
+                    HalfSignature::default(),
+                    HalfSignature::new(vec!["x".into(), "y".into()], vec![], "".into()),
+                ),
+            ),
+            (
+                "..rest",
+                Signature::new(
+                    HalfSignature::new(vec![], vec![], "rest".into()),
+                    HalfSignature::default(),
+                ),
+            ),
+        ] {
             assert_eq!(
                 signature(
                     LanguageParser::parse(Rule::signature, s)
