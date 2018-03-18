@@ -24,6 +24,7 @@ pub use self::arguments::{Arguments, KeywordArgument, PositionalArgument};
 pub use self::function::{Function, Result};
 pub use self::normal::Normal;
 pub use self::signature::Signature;
+pub use self::string::Str;
 pub use self::utils::{app, papp};
 pub use self::vague_normal::VagueNormal;
 pub use self::value::Value;

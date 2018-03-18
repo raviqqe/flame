@@ -3,8 +3,7 @@ use std::str::FromStr;
 use pest::Parser;
 use pest::iterators::Pair;
 
-use super::super::ast::Expression;
-use super::super::ast::Statement;
+use super::super::ast::{DefFunction, Effect, Expression, LetVariable, Statement};
 
 use super::error::ParsingError;
 
@@ -25,7 +24,15 @@ pub fn main_module(s: &str) -> Result<Vec<Statement>, ParsingError> {
                 let p = first(p);
 
                 match p.as_rule() {
-                    Rule::effect => Statement::effect(expression(first(p)), false),
+                    Rule::effect => Statement::Effect(Effect::new(expression(first(p)), false)),
+                    Rule::let_variable => {
+                        let mut i = p.into_inner();
+
+                        Statement::LetVariable(LetVariable::new(
+                            i.next().unwrap().as_str().into(),
+                            expression(i.next().unwrap()),
+                        ))
+                    }
                     _ => unreachable!(),
                 }
             }
@@ -126,7 +133,10 @@ mod test {
         assert_eq!(
             main_module("\"\\\"\\\\\\n\\r\\t\"").unwrap(),
             vec![
-                Statement::effect(Expression::String("\"\\\n\r\t".to_string()), false),
+                Statement::Effect(Effect::new(
+                    Expression::String("\"\\\n\r\t".to_string()),
+                    false,
+                )),
             ]
         );
     }
@@ -234,22 +244,33 @@ mod test {
             ("", vec![]),
             (
                 "123",
-                vec![Statement::effect(Expression::Number(123.0), false)],
+                vec![
+                    Statement::Effect(Effect::new(Expression::Number(123.0), false)),
+                ],
             ),
             (
                 "true nil 123 \"foo\"",
                 vec![
-                    Statement::effect(Expression::Boolean(true), false),
-                    Statement::effect(Expression::Nil, false),
-                    Statement::effect(Expression::Number(123.0), false),
-                    Statement::effect(Expression::String("foo".to_string()), false),
+                    Statement::Effect(Effect::new(Expression::Boolean(true), false)),
+                    Statement::Effect(Effect::new(Expression::Nil, false)),
+                    Statement::Effect(Effect::new(Expression::Number(123.0), false)),
+                    Statement::Effect(Effect::new(Expression::String("foo".to_string()), false)),
                 ],
             ),
             (
                 " 123 ; foo \n456",
                 vec![
-                    Statement::effect(Expression::Number(123.0), false),
-                    Statement::effect(Expression::Number(456.0), false),
+                    Statement::Effect(Effect::new(Expression::Number(123.0), false)),
+                    Statement::Effect(Effect::new(Expression::Number(456.0), false)),
+                ],
+            ),
+            (
+                "(let name 42)",
+                vec![
+                    Statement::LetVariable(LetVariable::new(
+                        "name".into(),
+                        Expression::Number(42.0),
+                    )),
                 ],
             ),
         ] {
