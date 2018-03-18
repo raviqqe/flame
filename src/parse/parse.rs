@@ -145,6 +145,14 @@ mod test {
     }
 
     #[test]
+    fn match_expression() {
+        for s in &["(match a _ 42)", "(match (f x y) \"foo\" \"bar\" 42 nil)"] {
+            println!("{}", s);
+            LanguageParser::parse(Rule::match_expression, s).unwrap();
+        }
+    }
+
+    #[test]
     fn application() {
         for s in &[
             "(foo)",

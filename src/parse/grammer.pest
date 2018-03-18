@@ -24,6 +24,9 @@ expanded_argument = { ".." ~ expression }
 
 anonymous_function = { "(" ~ "\\" ~ "(" ~ signature ~ ")" ~ expression ~ ")" }
 
+match_expression = { "(" ~ "match" ~ expression ~ (pattern ~ expression)+ ~ ")" }
+pattern = { boolean | nil | number | string | name }
+
 boolean = { "true" | "false" }
 nil = { "nil" }
 
