@@ -3,7 +3,8 @@ use std::str::FromStr;
 use pest::Parser;
 use pest::iterators::Pair;
 
-use super::super::ast::{DefFunction, Effect, Expression, LetVariable, Statement};
+use super::super::ast::{DefFunction, Effect, Expression, HalfSignature, InnerStatement,
+                        LetVariable, OptionalParameter, Signature, Statement};
 
 use super::error::ParsingError;
 
@@ -16,26 +17,11 @@ struct LanguageParser;
 pub fn main_module(s: &str) -> Result<Vec<Statement>, ParsingError> {
     let mut ss = vec![];
 
-    let p = LanguageParser::parse(Rule::main_module, s)?.nth(0).unwrap();
+    let p = LanguageParser::parse(Rule::main_module, s)?.next().unwrap();
 
     for p in p.into_inner() {
         ss.push(match p.as_rule() {
-            Rule::statement => {
-                let p = first(p);
-
-                match p.as_rule() {
-                    Rule::effect => Statement::Effect(Effect::new(expression(first(p)), false)),
-                    Rule::let_variable => {
-                        let mut i = p.into_inner();
-
-                        Statement::LetVariable(LetVariable::new(
-                            i.next().unwrap().as_str().into(),
-                            expression(i.next().unwrap()),
-                        ))
-                    }
-                    _ => unreachable!(),
-                }
-            }
+            Rule::statement => statement(p),
             _ => unreachable!(),
         });
     }
@@ -43,8 +29,23 @@ pub fn main_module(s: &str) -> Result<Vec<Statement>, ParsingError> {
     Ok(ss)
 }
 
+fn statement(p: Pair<Rule>) -> Statement {
+    let p = p.into_inner().next().unwrap();
+
+    match p.as_rule() {
+        Rule::def_function => Statement::DefFunction(def_function(p)),
+        Rule::effect => Statement::Effect(effect(p)),
+        Rule::let_variable => Statement::LetVariable(let_variable(p)),
+        _ => unreachable!(),
+    }
+}
+
+fn effect(p: Pair<Rule>) -> Effect {
+    Effect::new(expression(p.into_inner().next().unwrap()), false)
+}
+
 fn expression(p: Pair<Rule>) -> Expression {
-    let p = first(p);
+    let p = p.into_inner().next().unwrap();
 
     match p.as_rule() {
         Rule::boolean => Expression::Boolean(FromStr::from_str(p.as_str()).unwrap()),
@@ -64,8 +65,75 @@ fn expression(p: Pair<Rule>) -> Expression {
     }
 }
 
-fn first(p: Pair<Rule>) -> Pair<Rule> {
-    p.into_inner().nth(0).unwrap()
+fn signature(p: Pair<Rule>) -> Signature {
+    let mut i = p.into_inner();
+
+    let ps = half_signature(i.next().unwrap());
+
+    Signature::new(ps, HalfSignature::default())
+}
+
+fn half_signature(p: Pair<Rule>) -> HalfSignature {
+    let mut rs = vec![];
+    let mut os = vec![];
+    let mut r = "".into();
+
+    for p in p.into_inner() {
+        match p.as_rule() {
+            Rule::name => rs.push(p.as_str().into()),
+            Rule::optional_parameter => os.push(optional_parameter(p)),
+            Rule::rest_parameter => r = p.as_str().into(),
+            _ => unreachable!(),
+        }
+    }
+
+    HalfSignature::new(rs, os, r)
+}
+
+fn optional_parameter(p: Pair<Rule>) -> OptionalParameter {
+    let mut i = p.into_inner();
+
+    OptionalParameter::new(
+        i.next().unwrap().as_str().into(),
+        expression(i.next().unwrap()),
+    )
+}
+
+fn def_function(p: Pair<Rule>) -> DefFunction {
+    let mut i = p.into_inner();
+    let n = i.next().unwrap().as_str().into();
+    let s = signature(i.next().unwrap());
+    let mut b = Expression::Nil;
+    let mut ss = vec![];
+
+    for p in &mut i {
+        if let Rule::inner_statement = p.as_rule() {
+            ss.push(inner_statement(p));
+        } else {
+            b = expression(p);
+        }
+    }
+
+    DefFunction::new(n, s, ss, b)
+}
+
+fn inner_statement(p: Pair<Rule>) -> InnerStatement {
+    let p = p.into_inner().next().unwrap();
+
+    match p.as_rule() {
+        Rule::def_function => InnerStatement::DefFunction(def_function(p)),
+        Rule::let_variable => InnerStatement::LetVariable(let_variable(p)),
+        _ => unreachable!(),
+    }
+}
+
+fn let_variable(p: Pair<Rule>) -> LetVariable {
+    let mut i = p.into_inner();
+
+    LetVariable::new(
+        i.next().unwrap().as_str().into(),
+        expression(i.next().unwrap()),
+    )
 }
 
 #[cfg(test)]
@@ -131,13 +199,13 @@ mod test {
     #[test]
     fn escaped_string() {
         assert_eq!(
-            main_module("\"\\\"\\\\\\n\\r\\t\"").unwrap(),
-            vec![
-                Statement::Effect(Effect::new(
-                    Expression::String("\"\\\n\r\t".to_string()),
-                    false,
-                )),
-            ]
+            super::expression(
+                LanguageParser::parse(Rule::expression, "\"\\\"\\\\\\n\\r\\t\"")
+                    .unwrap()
+                    .next()
+                    .unwrap()
+            ),
+            Expression::String("\"\\\n\r\t".to_string()),
         );
     }
 
@@ -189,6 +257,21 @@ mod test {
     }
 
     #[test]
+    fn signature_parser() {
+        for (s, x) in vec![("", Signature::default())] {
+            assert_eq!(
+                signature(
+                    LanguageParser::parse(Rule::signature, s)
+                        .unwrap()
+                        .next()
+                        .unwrap()
+                ),
+                x
+            );
+        }
+    }
+
+    #[test]
     fn def_function() {
         for s in &[
             "(def (func) 123)",
@@ -224,7 +307,7 @@ mod test {
     }
 
     #[test]
-    fn main_module_combinator() {
+    fn main_module_tokenizer() {
         for s in &[
             "",
             " 123 nil \n \ttrue",
@@ -239,7 +322,7 @@ mod test {
     }
 
     #[test]
-    fn main_module_function() {
+    fn main_module_parser() {
         for &(s, ref m) in &[
             ("", vec![]),
             (
@@ -269,6 +352,17 @@ mod test {
                 vec![
                     Statement::LetVariable(LetVariable::new(
                         "name".into(),
+                        Expression::Number(42.0),
+                    )),
+                ],
+            ),
+            (
+                "(def (f) 42)",
+                vec![
+                    Statement::DefFunction(DefFunction::new(
+                        "f".into(),
+                        Signature::default(),
+                        vec![],
                         Expression::Number(42.0),
                     )),
                 ],

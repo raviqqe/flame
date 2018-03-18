@@ -3,15 +3,16 @@ main_module = { soi ~ import* ~ statement* ~ eoi }
 import = { "(" ~ "import" ~ string ~ ")" }
 
 statement = { def_function | let_variable | effect }
+inner_statement = { def_function | let_variable }
 
 effect = { expression }
 
-def_function = { "(" ~ "def" ~ "(" ~ name ~ signature ~ ")" ~ let_variable* ~ expression ~ ")" }
+def_function = { "(" ~ "def" ~ "(" ~ name ~ signature ~ ")" ~ (inner_statement)* ~ expression ~ ")" }
 
 signature = { half_signature ~ ("." ~ half_signature)? }
-half_signature = { name* ~ optional_parameter* ~ expanded_parameter? }
+half_signature = { name* ~ optional_parameter* ~ rest_parameter? }
 optional_parameter = { "(" ~ name ~ expression ~ ")" }
-expanded_parameter = { ".." ~ name }
+rest_parameter = { ".." ~ name }
 
 let_variable = { "(" ~ "let" ~ name ~ expression ~ ")" }
 
