@@ -143,10 +143,13 @@ impl Value {
         await!(m.compare(n))
     }
 
+    // TODO: Any methods should be eager.
+    #[deprecated]
     pub fn insert(&self, k: impl Into<Self>, v: impl Into<Self>) -> Self {
         papp(INSERT.clone(), &[self.clone(), k.into(), v.into()])
     }
 
+    #[deprecated]
     pub fn merge(&self, v: Self) -> Self {
         papp(MERGE.clone(), &[self.clone(), v])
     }
