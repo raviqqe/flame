@@ -1,4 +1,3 @@
-use super::expression::Expression;
 use super::keyword_argument::KeywordArgument;
 use super::positional_argument::PositionalArgument;
 
@@ -6,19 +5,13 @@ use super::positional_argument::PositionalArgument;
 pub struct Arguments {
     positionals: Vec<PositionalArgument>,
     keywords: Vec<KeywordArgument>,
-    expanded_dicts: Vec<Expression>,
 }
 
 impl Arguments {
-    pub fn new(
-        positionals: Vec<PositionalArgument>,
-        keywords: Vec<KeywordArgument>,
-        expanded_dicts: Vec<Expression>,
-    ) -> Self {
+    pub fn new(positionals: Vec<PositionalArgument>, keywords: Vec<KeywordArgument>) -> Self {
         Arguments {
             positionals,
             keywords,
-            expanded_dicts,
         }
     }
 }

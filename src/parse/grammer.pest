@@ -16,7 +16,7 @@ rest_parameter = { ".." ~ name }
 
 let_variable = { "(" ~ "let" ~ name ~ expression ~ ")" }
 
-expression = { boolean | nil | number | string | name | application }
+expression = { boolean | dictionary | list | nil | number | string | name | application }
 
 application = { "(" ~ expression ~ arguments ~ ")" }
 arguments = { positional_arguments ~ ("." ~ keyword_arguments)? }
@@ -29,6 +29,11 @@ anonymous_function = { "(" ~ "\\" ~ "(" ~ signature ~ ")" ~ expression ~ ")" }
 
 match_expression = { "(" ~ "match" ~ expression ~ (pattern ~ expression)+ ~ ")" }
 pattern = { boolean | nil | number | string | name }
+
+list = { "[" ~ (expression | expanded_expression) ~ "]" }
+dictionary = { "{" ~ (key_value_pair | expanded_expression) ~ "}" }
+key_value_pair = { expression ~ expression }
+expanded_expression = { ".." ~ expression }
 
 boolean = { "true" | "false" }
 nil = { "nil" }

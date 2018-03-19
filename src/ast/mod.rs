@@ -13,7 +13,7 @@ mod statement;
 pub use self::arguments::Arguments;
 pub use self::def_function::DefFunction;
 pub use self::effect::Effect;
-pub use self::expression::Expression;
+pub use self::expression::{DictionaryElement, Expression, ListElement};
 pub use self::inner_statement::InnerStatement;
 pub use self::keyword_argument::KeywordArgument;
 pub use self::let_variable::LetVariable;

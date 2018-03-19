@@ -82,21 +82,16 @@ fn application(p: Pair<Rule>) -> Expression {
 fn arguments(p: Pair<Rule>) -> Arguments {
     let mut ps = vec![];
     let mut ks = vec![];
-    let mut ds = vec![];
 
     for p in p.into_inner() {
         match p.as_rule() {
             Rule::positional_arguments => ps = positional_arguments(p),
-            Rule::keyword_arguments => {
-                let (k, d) = keyword_arguments(p);
-                ks = k;
-                ds = d;
-            }
+            Rule::keyword_arguments => ks = keyword_arguments(p),
             _ => unreachable!(),
         }
     }
 
-    Arguments::new(ps, ks, ds)
+    Arguments::new(ps, ks)
 }
 
 fn positional_arguments(p: Pair<Rule>) -> Vec<PositionalArgument> {
@@ -112,28 +107,25 @@ fn positional_arguments(p: Pair<Rule>) -> Vec<PositionalArgument> {
         .collect()
 }
 
-fn keyword_arguments(p: Pair<Rule>) -> (Vec<KeywordArgument>, Vec<Expression>) {
-    let mut ks = vec![];
-    let mut ds = vec![];
-
-    for p in p.into_inner() {
-        match p.as_rule() {
-            Rule::keyword_argument => ks.push(keyword_argument(p)),
-            Rule::expanded_argument => ds.push(expression(p.into_inner().next().unwrap())),
-            _ => unreachable!(),
-        }
-    }
-
-    (ks, ds)
+fn keyword_arguments(p: Pair<Rule>) -> Vec<KeywordArgument> {
+    p.into_inner().map(keyword_argument).collect()
 }
 
 fn keyword_argument(p: Pair<Rule>) -> KeywordArgument {
-    let mut i = p.into_inner();
+    match p.as_rule() {
+        Rule::keyword_argument => {
+            let mut i = p.into_inner();
 
-    KeywordArgument::new(
-        i.next().unwrap().as_str().into(),
-        expression(i.next().unwrap()),
-    )
+            KeywordArgument::new(
+                i.next().unwrap().as_str().into(),
+                expression(i.next().unwrap()),
+            )
+        }
+        Rule::expanded_argument => {
+            KeywordArgument::expanded(expression(p.into_inner().next().unwrap()))
+        }
+        _ => unreachable!(),
+    }
 }
 
 fn signature(p: Pair<Rule>) -> Signature {
@@ -331,7 +323,20 @@ mod test {
                 "(f)",
                 Expression::App(
                     Box::new(Expression::Name("f".into())),
-                    Arguments::new(vec![], vec![], vec![]),
+                    Arguments::new(vec![], vec![]),
+                ),
+            ),
+            (
+                "(f . x 42 ..options)",
+                Expression::App(
+                    Box::new(Expression::Name("f".into())),
+                    Arguments::new(
+                        vec![],
+                        vec![
+                            KeywordArgument::new("x".into(), Expression::Number(42.0)),
+                            KeywordArgument::expanded(Expression::Name("options".into())),
+                        ],
+                    ),
                 ),
             ),
         ] {
