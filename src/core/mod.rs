@@ -10,7 +10,7 @@ mod half_signature;
 mod list;
 mod normal;
 mod number;
-mod optional_argument;
+mod optional_parameter;
 mod result;
 mod signature;
 mod string;

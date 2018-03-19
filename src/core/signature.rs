@@ -2,7 +2,7 @@ use futures::prelude::*;
 
 use super::arguments::Arguments;
 use super::half_signature::HalfSignature;
-use super::optional_argument::OptionalArgument;
+use super::optional_parameter::OptionalParameter;
 use super::result::Result;
 use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
@@ -17,10 +17,10 @@ pub struct Signature {
 impl Signature {
     pub fn new(
         pr: Vec<Str>,
-        po: Vec<OptionalArgument>,
+        po: Vec<OptionalParameter>,
         pp: Str,
         kr: Vec<Str>,
-        ko: Vec<OptionalArgument>,
+        ko: Vec<OptionalParameter>,
         kk: Str,
     ) -> Self {
         Signature {
@@ -85,7 +85,7 @@ mod test {
             (
                 Signature::new(
                     vec![],
-                    vec![OptionalArgument::new("x", 42)],
+                    vec![OptionalParameter::new("x", 42)],
                     "".into(),
                     vec![],
                     vec![],

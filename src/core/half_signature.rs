@@ -1,7 +1,7 @@
 use futures::prelude::*;
 
 use super::arguments::Arguments;
-use super::optional_argument::OptionalArgument;
+use super::optional_parameter::OptionalParameter;
 use super::result::Result;
 use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
@@ -10,12 +10,12 @@ use super::value::Value;
 #[derive(Clone, Debug, Default)]
 pub struct HalfSignature {
     requireds: Vec<Str>,
-    optionals: Vec<OptionalArgument>,
+    optionals: Vec<OptionalParameter>,
     rest: Str,
 }
 
 impl HalfSignature {
-    pub fn new(rs: Vec<Str>, os: Vec<OptionalArgument>, r: Str) -> Self {
+    pub fn new(rs: Vec<Str>, os: Vec<OptionalParameter>, r: Str) -> Self {
         HalfSignature {
             requireds: rs,
             optionals: os,
@@ -114,12 +114,12 @@ mod test {
                 2,
             ),
             (
-                HalfSignature::new(vec![], vec![OptionalArgument::new("x", 42)], "".into()),
+                HalfSignature::new(vec![], vec![OptionalParameter::new("x", 42)], "".into()),
                 Arguments::positionals(&[]),
                 1,
             ),
             (
-                HalfSignature::new(vec![], vec![OptionalArgument::new("x", 42)], "".into()),
+                HalfSignature::new(vec![], vec![OptionalParameter::new("x", 42)], "".into()),
                 Arguments::positionals(&[42.into()]),
                 1,
             ),
