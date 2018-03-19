@@ -51,6 +51,8 @@ fn expression(p: Pair<Rule>) -> Expression {
 
     match p.as_rule() {
         Rule::boolean => Expression::Boolean(FromStr::from_str(p.as_str()).unwrap()),
+        Rule::dictionary => dictionary(p),
+        Rule::list => list(p),
         Rule::nil => Expression::Nil,
         Rule::number => Expression::Number(FromStr::from_str(p.as_str()).unwrap()),
         Rule::string => Expression::String({
@@ -66,6 +68,37 @@ fn expression(p: Pair<Rule>) -> Expression {
         }),
         Rule::name => Expression::Name(p.as_str().into()),
         Rule::application => application(p),
+        _ => unreachable!(),
+    }
+}
+
+fn dictionary(p: Pair<Rule>) -> Expression {
+    Expression::Dictionary(p.into_inner().map(dictionary_element).collect())
+}
+
+fn dictionary_element(p: Pair<Rule>) -> Expansion<(Expression, Expression)> {
+    match p.as_rule() {
+        Rule::key_value_pair => {
+            let mut i = p.into_inner();
+            Expansion::Unexpanded((expression(i.next().unwrap()), expression(i.next().unwrap())))
+        }
+        Rule::expanded_expression => {
+            Expansion::Expanded(expression(p.into_inner().next().unwrap()))
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn list(p: Pair<Rule>) -> Expression {
+    Expression::List(p.into_inner().map(list_element).collect())
+}
+
+fn list_element(p: Pair<Rule>) -> Expansion<Expression> {
+    match p.as_rule() {
+        Rule::expression => Expansion::Unexpanded(expression(p)),
+        Rule::expanded_expression => {
+            Expansion::Expanded(expression(p.into_inner().next().unwrap()))
+        }
         _ => unreachable!(),
     }
 }
@@ -229,6 +262,58 @@ mod test {
     fn boolean() {
         for s in vec!["true", "false"] {
             LanguageParser::parse(Rule::boolean, s).unwrap();
+        }
+    }
+
+    #[test]
+    fn dictionary_parser() {
+        for (s, e) in vec![
+            ("{}", Expression::Dictionary(vec![])),
+            (
+                "{\"foo\" 42 ..dict}",
+                Expression::Dictionary(vec![
+                    Expansion::Unexpanded((
+                        Expression::String("foo".into()),
+                        Expression::Number(42.0),
+                    )),
+                    Expansion::Expanded(Expression::Name("dict".into())),
+                ]),
+            ),
+        ] {
+            assert_eq!(
+                expression(
+                    LanguageParser::parse(Rule::expression, s)
+                        .unwrap()
+                        .next()
+                        .unwrap()
+                ),
+                e
+            );
+        }
+    }
+
+    #[test]
+    fn list_parser() {
+        for (s, e) in vec![
+            ("[]", Expression::List(vec![])),
+            (
+                "[\"foo\" 42 ..list]",
+                Expression::List(vec![
+                    Expansion::Unexpanded(Expression::String("foo".into())),
+                    Expansion::Unexpanded(Expression::Number(42.0)),
+                    Expansion::Expanded(Expression::Name("list".into())),
+                ]),
+            ),
+        ] {
+            assert_eq!(
+                expression(
+                    LanguageParser::parse(Rule::expression, s)
+                        .unwrap()
+                        .next()
+                        .unwrap()
+                ),
+                e
+            );
         }
     }
 

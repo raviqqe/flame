@@ -30,8 +30,8 @@ anonymous_function = { "(" ~ "\\" ~ "(" ~ signature ~ ")" ~ expression ~ ")" }
 match_expression = { "(" ~ "match" ~ expression ~ (pattern ~ expression)+ ~ ")" }
 pattern = { boolean | nil | number | string | name }
 
-list = { "[" ~ (expression | expanded_expression) ~ "]" }
-dictionary = { "{" ~ (key_value_pair | expanded_expression) ~ "}" }
+list = { "[" ~ (expression | expanded_expression)* ~ "]" }
+dictionary = { "{" ~ (key_value_pair | expanded_expression)* ~ "}" }
 key_value_pair = { expression ~ expression }
 expanded_expression = { ".." ~ expression }
 
