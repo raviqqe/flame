@@ -8,3 +8,17 @@ pub struct Arguments {
     keywords: Vec<KeywordArgument>,
     expanded_dicts: Vec<Expression>,
 }
+
+impl Arguments {
+    pub fn new(
+        positionals: Vec<PositionalArgument>,
+        keywords: Vec<KeywordArgument>,
+        expanded_dicts: Vec<Expression>,
+    ) -> Self {
+        Arguments {
+            positionals,
+            keywords,
+            expanded_dicts,
+        }
+    }
+}

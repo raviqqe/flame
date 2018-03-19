@@ -5,3 +5,9 @@ pub struct PositionalArgument {
     value: Expression,
     expanded: bool,
 }
+
+impl PositionalArgument {
+    pub fn new(value: Expression, expanded: bool) -> Self {
+        PositionalArgument { value, expanded }
+    }
+}

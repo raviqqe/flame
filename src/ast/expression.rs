@@ -1,14 +1,13 @@
+use super::super::core::Str;
+
 use super::arguments::Arguments;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Expression {
-    App {
-        function: Box<Expression>,
-        arguments: Arguments,
-    },
+    App(Box<Expression>, Arguments),
     Boolean(bool),
-    Name(String),
+    Name(Str),
     Nil,
     Number(f64),
-    String(String),
+    String(Str),
 }

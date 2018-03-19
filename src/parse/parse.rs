@@ -3,8 +3,9 @@ use std::str::FromStr;
 use pest::Parser;
 use pest::iterators::Pair;
 
-use super::super::ast::{DefFunction, Effect, Expression, HalfSignature, InnerStatement,
-                        LetVariable, OptionalParameter, Signature, Statement};
+use super::super::ast::{Arguments, DefFunction, Effect, Expression, HalfSignature, InnerStatement,
+                        KeywordArgument, LetVariable, OptionalParameter, PositionalArgument,
+                        Signature, Statement};
 
 use super::error::ParsingError;
 
@@ -61,10 +62,78 @@ fn expression(p: Pair<Rule>) -> Expression {
                 .replace("\\n", "\n")
                 .replace("\\r", "\r")
                 .replace("\\t", "\t")
+                .into()
         }),
         Rule::name => Expression::Name(p.as_str().into()),
+        Rule::application => application(p),
         _ => unreachable!(),
     }
+}
+
+fn application(p: Pair<Rule>) -> Expression {
+    let mut i = p.into_inner();
+
+    Expression::App(
+        Box::new(expression(i.next().unwrap())),
+        arguments(i.next().unwrap()),
+    )
+}
+
+fn arguments(p: Pair<Rule>) -> Arguments {
+    let mut ps = vec![];
+    let mut ks = vec![];
+    let mut ds = vec![];
+
+    for p in p.into_inner() {
+        match p.as_rule() {
+            Rule::positional_arguments => ps = positional_arguments(p),
+            Rule::keyword_arguments => {
+                let (k, d) = keyword_arguments(p);
+                ks = k;
+                ds = d;
+            }
+            _ => unreachable!(),
+        }
+    }
+
+    Arguments::new(ps, ks, ds)
+}
+
+fn positional_arguments(p: Pair<Rule>) -> Vec<PositionalArgument> {
+    p.into_inner()
+        .map(|p| match p.as_rule() {
+            Rule::expression => PositionalArgument::new(expression(p), false),
+            Rule::expanded_argument => {
+                PositionalArgument::new(expression(p.into_inner().next().unwrap()), true)
+            }
+
+            _ => unreachable!(),
+        })
+        .collect()
+}
+
+fn keyword_arguments(p: Pair<Rule>) -> (Vec<KeywordArgument>, Vec<Expression>) {
+    let mut ks = vec![];
+    let mut ds = vec![];
+
+    for p in p.into_inner() {
+        match p.as_rule() {
+            Rule::keyword_argument => ks.push(keyword_argument(p)),
+            Rule::expanded_argument => ds.push(expression(p.into_inner().next().unwrap())),
+            _ => unreachable!(),
+        }
+    }
+
+    (ks, ds)
+}
+
+fn keyword_argument(p: Pair<Rule>) -> KeywordArgument {
+    let mut i = p.into_inner();
+
+    KeywordArgument::new(
+        i.next().unwrap().as_str().into(),
+        expression(i.next().unwrap()),
+    )
 }
 
 fn signature(p: Pair<Rule>) -> Signature {
@@ -206,13 +275,13 @@ mod test {
     #[test]
     fn escaped_string() {
         assert_eq!(
-            super::expression(
+            expression(
                 LanguageParser::parse(Rule::expression, "\"\\\"\\\\\\n\\r\\t\"")
                     .unwrap()
                     .next()
                     .unwrap()
             ),
-            Expression::String("\"\\\n\r\t".to_string()),
+            Expression::String("\"\\\n\r\t".into()),
         );
     }
 
@@ -238,7 +307,7 @@ mod test {
     }
 
     #[test]
-    fn application() {
+    fn application_tokenizer() {
         for s in &[
             "(foo)",
             "(f x)",
@@ -256,7 +325,30 @@ mod test {
     }
 
     #[test]
-    fn expression() {
+    fn application_parser() {
+        for (s, e) in vec![
+            (
+                "(f)",
+                Expression::App(
+                    Box::new(Expression::Name("f".into())),
+                    Arguments::new(vec![], vec![], vec![]),
+                ),
+            ),
+        ] {
+            assert_eq!(
+                expression(
+                    LanguageParser::parse(Rule::expression, s)
+                        .unwrap()
+                        .next()
+                        .unwrap()
+                ),
+                e
+            );
+        }
+    }
+
+    #[test]
+    fn expression_tokenizer() {
         for s in EXPRESSIONS {
             println!("{}", s);
             LanguageParser::parse(Rule::expression, s).unwrap();
@@ -463,7 +555,7 @@ mod test {
                     Statement::Effect(Effect::new(Expression::Boolean(true), false)),
                     Statement::Effect(Effect::new(Expression::Nil, false)),
                     Statement::Effect(Effect::new(Expression::Number(123.0), false)),
-                    Statement::Effect(Effect::new(Expression::String("foo".to_string()), false)),
+                    Statement::Effect(Effect::new(Expression::String("foo".into()), false)),
                 ],
             ),
             (
