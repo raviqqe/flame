@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use futures::prelude::*;
 
-use super::arguments::{Arguments, PositionalArgument};
+use super::arguments::{Arguments, Expansion};
 use super::collection::MERGE;
 use super::error::Error;
 use super::result::Result;
@@ -93,7 +93,7 @@ impl List {
         Ok(match self {
             List::Empty => app(
                 MERGE.clone(),
-                Arguments::new(&[PositionalArgument::new(v, true)], &[], &[]),
+                Arguments::new(&[Expansion::Expanded(v)], &[]),
             ).into(),
             List::Cons(ref c) => {
                 let Cons(f, r) = (**c).clone();
@@ -102,14 +102,7 @@ impl List {
                     f,
                     app(
                         MERGE.clone(),
-                        Arguments::new(
-                            &[
-                                PositionalArgument::new(r, false),
-                                PositionalArgument::new(v, true),
-                            ],
-                            &[],
-                            &[],
-                        ),
+                        Arguments::new(&[Expansion::Unexpanded(r), Expansion::Expanded(v)], &[]),
                     ),
                 ).into()
             }
@@ -262,7 +255,7 @@ fn prepend(vs: Vec<Value>) -> Result<Value> {
         f,
         app(
             PREPEND.clone(),
-            Arguments::new(&[PositionalArgument::new(r, true)], &[], &[]),
+            Arguments::new(&[Expansion::Expanded(r.into())], &[]),
         ),
     ).into())
 }

@@ -158,13 +158,13 @@ mod test {
 
     #[test]
     fn new() {
-        Thunk::new(Value::from(0.0), Arguments::new(&[], &[], &[]));
+        Thunk::new(Value::from(0.0), Arguments::new(&[], &[]));
     }
 
     #[test]
     fn eval_error() {
-        let e = block_on(Thunk::new(Value::from(42.0), Arguments::new(&[], &[], &[])).eval())
-            .unwrap_err();
+        let e =
+            block_on(Thunk::new(Value::from(42.0), Arguments::new(&[], &[])).eval()).unwrap_err();
 
         assert_eq!(e.name(), "TypeError");
         assert_eq!(e.message(), "42 is not a function");

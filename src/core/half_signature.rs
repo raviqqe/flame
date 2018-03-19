@@ -88,7 +88,7 @@ mod test {
     use test::Bencher;
 
     use super::*;
-    use super::super::arguments::KeywordArgument;
+    use super::super::arguments::{Expansion, KeywordArgument};
 
     #[test]
     fn new() {
@@ -170,7 +170,7 @@ mod test {
     #[bench]
     fn bench_half_signature_bind_keywords(b: &mut Bencher) {
         let s = HalfSignature::new(vec!["x".into()], vec![], "".into());
-        let a = Arguments::new(&[], &[KeywordArgument::new("x", 42)], &[]);
+        let a = Arguments::new(&[], &[Expansion::Unexpanded(KeywordArgument::new("x", 42))]);
 
         b.iter(|| {
             let mut a = a.clone();

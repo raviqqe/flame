@@ -20,7 +20,7 @@ mod utils;
 mod vague_normal;
 mod value;
 
-pub use self::arguments::{Arguments, KeywordArgument, PositionalArgument};
+pub use self::arguments::{Arguments, Expansion, KeywordArgument};
 pub use self::function::{Function, Result};
 pub use self::normal::Normal;
 pub use self::signature::Signature;

@@ -23,12 +23,15 @@ pub struct Arguments {
 }
 
 impl Arguments {
-    pub fn new(ps: &[PositionalArgument], ks: &[KeywordArgument], ds: &[Value]) -> Self {
+    pub fn new(ps: &[Expansion<Value>], ks: &[Expansion<KeywordArgument>]) -> Self {
         let mut l = None;
         let mut pq = ArrayQueue::new();
 
         for (i, p) in ps.iter().enumerate() {
-            if p.expanded || pq.push_back(&p.value.clone()).is_err() {
+            if match *p {
+                Expansion::Expanded(_) => true,
+                Expansion::Unexpanded(ref v) => pq.push_back(v).is_err(),
+            } {
                 l = Some(Self::merge_positional_arguments(&ps[i..]));
                 break;
             }
@@ -38,20 +41,13 @@ impl Arguments {
         let mut d = None;
 
         for (i, k) in ks.iter().enumerate() {
-            if kq.push_back(&k.clone()).is_err() {
+            if match *k {
+                Expansion::Expanded(_) => true,
+                Expansion::Unexpanded(ref k) => kq.push_back(k).is_err(),
+            } {
                 d = Some(Self::merge_keyword_arguments(&ks[i..]).into());
                 break;
             }
-        }
-
-        if !ds.is_empty() {
-            let mut v: Value = d.unwrap_or(Dictionary::new().into());
-
-            for d in ds {
-                v = v.merge(d.clone());
-            }
-
-            d = Some(v)
         }
 
         Arguments {
@@ -63,10 +59,10 @@ impl Arguments {
     }
 
     pub fn positionals(vs: &[Value]) -> Self {
-        let ps: Vec<PositionalArgument> = vs.iter()
-            .map(|v| PositionalArgument::new(v.clone(), false))
+        let ps: Vec<Expansion<Value>> = vs.iter()
+            .map(|v| Expansion::Unexpanded(v.clone()))
             .collect();
-        Self::new(&ps, &[], &[])
+        Self::new(&ps, &[])
     }
 
     pub fn next_positional(&mut self) -> Option<Value> {
@@ -151,35 +147,37 @@ impl Arguments {
         Ok(())
     }
 
-    fn merge_positional_arguments(mut ps: &[PositionalArgument]) -> Value {
-        let mut l = Value::from(List::Empty);
+    fn merge_positional_arguments(mut ps: &[Expansion<Value>]) -> Value {
+        let mut l = List::Empty.into();
 
-        if let Some(&PositionalArgument {
-            value: ref v,
-            expanded: true,
-        }) = ps.last()
-        {
+        if let Some(&Expansion::Expanded(ref v)) = ps.last() {
             l = v.clone();
             ps = &ps[0..(ps.len() - 1)];
         }
 
         for p in ps.iter().rev() {
-            if p.expanded {
-                l = l.merge(p.value.clone());
-            } else {
-                l = List::cons(p.value.clone(), l).into();
+            match *p {
+                Expansion::Expanded(ref v) => l = l.merge(v.clone()),
+                Expansion::Unexpanded(ref v) => l = List::cons(v.clone(), l).into(),
             }
         }
 
         l
     }
 
-    fn merge_keyword_arguments(ks: &[KeywordArgument]) -> Dictionary {
-        let mut d = Dictionary::new();
+    fn merge_keyword_arguments(mut ks: &[Expansion<KeywordArgument>]) -> Value {
+        let mut d = Dictionary::new().into();
+
+        if let Some(&Expansion::Expanded(ref v)) = ks.first() {
+            d = v.clone();
+            ks = &ks[1..];
+        }
 
         for k in ks {
-            let k = k.clone();
-            d = d.strict_insert(k.name, k.value);
+            match k.clone() {
+                Expansion::Expanded(v) => d = d.merge(v),
+                Expansion::Unexpanded(k) => d = d.insert(k.name, k.value),
+            }
         }
 
         d
@@ -252,24 +250,15 @@ impl Arguments {
 }
 
 #[derive(Clone, Debug)]
-pub struct PositionalArgument {
-    pub value: Value,
-    pub expanded: bool,
-}
-
-impl PositionalArgument {
-    pub fn new(v: impl Into<Value>, e: bool) -> Self {
-        PositionalArgument {
-            value: v.into(),
-            expanded: e,
-        }
-    }
+pub enum Expansion<T> {
+    Unexpanded(T),
+    Expanded(Value),
 }
 
 #[derive(Clone, Debug)]
 pub struct KeywordArgument {
-    pub name: Str,
-    pub value: Value,
+    name: Str,
+    value: Value,
 }
 
 impl KeywordArgument {
@@ -292,7 +281,7 @@ mod test {
 
     #[test]
     fn new() {
-        Arguments::new(&[], &[], &[]);
+        Arguments::new(&[], &[]);
     }
 
     #[test]
@@ -304,7 +293,7 @@ mod test {
                 List::new(&[42.into()]),
             ),
             (
-                Arguments::new(&[PositionalArgument::new(List::Empty, true)], &[], &[]),
+                Arguments::new(&[Expansion::Expanded(List::Empty.into())], &[]),
                 List::Empty,
             ),
         ]: Vec<(Arguments, List)>
@@ -321,6 +310,6 @@ mod test {
 
     #[bench]
     fn bench_arguments_new(b: &mut Bencher) {
-        b.iter(|| black_box(Arguments::new(&[], &[], &[])));
+        b.iter(|| black_box(Arguments::new(&[], &[])));
     }
 }
