@@ -62,6 +62,7 @@ fn expression(p: Pair<Rule>) -> Expression {
                 .replace("\\r", "\r")
                 .replace("\\t", "\t")
         }),
+        Rule::name => Expression::Name(p.as_str().into()),
         _ => unreachable!(),
     }
 }
@@ -312,7 +313,7 @@ mod test {
     }
 
     #[test]
-    fn def_function() {
+    fn def_function_tokenizer() {
         for s in &[
             "(def (func) 123)",
             "(  def \n(func) (let  x  42\t) x)",
@@ -328,6 +329,73 @@ mod test {
         ] {
             println!("{}", s);
             LanguageParser::parse(Rule::def_function, s).unwrap();
+        }
+    }
+
+    #[test]
+    fn def_function_parser() {
+        for (s, f) in vec![
+            (
+                "(def (f x) x)",
+                DefFunction::new(
+                    "f".into(),
+                    Signature::new(
+                        HalfSignature::new(vec!["x".into()], vec![], "".into()),
+                        HalfSignature::default(),
+                    ),
+                    vec![],
+                    Expression::Name("x".into()),
+                ),
+            ),
+            (
+                "(def (f x) (let y 42) x)",
+                DefFunction::new(
+                    "f".into(),
+                    Signature::new(
+                        HalfSignature::new(vec!["x".into()], vec![], "".into()),
+                        HalfSignature::default(),
+                    ),
+                    vec![
+                        InnerStatement::LetVariable(LetVariable::new(
+                            "y".into(),
+                            Expression::Number(42.into()),
+                        )),
+                    ],
+                    Expression::Name("x".into()),
+                ),
+            ),
+            (
+                "(def (f x) (def (g y) y) x)",
+                DefFunction::new(
+                    "f".into(),
+                    Signature::new(
+                        HalfSignature::new(vec!["x".into()], vec![], "".into()),
+                        HalfSignature::default(),
+                    ),
+                    vec![
+                        InnerStatement::DefFunction(DefFunction::new(
+                            "g".into(),
+                            Signature::new(
+                                HalfSignature::new(vec!["y".into()], vec![], "".into()),
+                                HalfSignature::default(),
+                            ),
+                            vec![],
+                            Expression::Name("y".into()),
+                        )),
+                    ],
+                    Expression::Name("x".into()),
+                ),
+            ),
+        ] {
+            assert_eq!(
+                def_function(
+                    LanguageParser::parse(Rule::def_function, s)
+                        .unwrap()
+                        .next()
+                        .unwrap()
+                ),
+                f
+            );
         }
     }
 
