@@ -19,7 +19,6 @@ pub enum Normal {
     List(List),
     Nil,
     Number(f64),
-    // TODO: Optimize String embedding small ones into Normal.
     String(Str),
 }
 

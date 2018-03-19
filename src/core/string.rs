@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use super::error::Error;
 
+// TODO: Optimize String by embedding small ones into struct without heap.
 #[derive(Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Str(Arc<[u8]>);
 
