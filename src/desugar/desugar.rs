@@ -1,7 +1,7 @@
-use super::super::ast::Statement;
+use super::super::ast::Module;
 
 use super::error::DesugarError;
 
-pub fn desugar(ss: Vec<Statement>) -> Result<Vec<Statement>, DesugarError> {
-    Ok(ss)
+pub fn desugar(m: Module) -> Result<Module, DesugarError> {
+    Ok(m)
 }

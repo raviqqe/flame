@@ -4,8 +4,8 @@ use pest::Parser;
 use pest::iterators::Pair;
 
 use super::super::ast::{Arguments, DefFunction, Effect, Expansion, Expression, HalfSignature,
-                        InnerStatement, KeywordArgument, LetVariable, OptionalParameter,
-                        Signature, Statement};
+                        Import, InnerStatement, KeywordArgument, LetVariable, Module,
+                        OptionalParameter, Signature, Statement};
 
 use super::error::ParsingError;
 
@@ -15,19 +15,34 @@ const _GRAMMAR: &'static str = include_str!("grammer.pest");
 #[grammar = "parse/grammer.pest"]
 struct LanguageParser;
 
-pub fn main_module(s: &str) -> Result<Vec<Statement>, ParsingError> {
+pub fn main_module(s: &str) -> Result<Module, ParsingError> {
+    module(Rule::main_module, s)
+}
+
+pub fn sub_module(s: &str) -> Result<Module, ParsingError> {
+    module(Rule::sub_module, s)
+}
+
+fn module(r: Rule, s: &str) -> Result<Module, ParsingError> {
+    let mut is = vec![];
     let mut ss = vec![];
 
-    let p = LanguageParser::parse(Rule::main_module, s)?.next().unwrap();
+    let p = LanguageParser::parse(r, s)?.next().unwrap();
 
     for p in p.into_inner() {
-        ss.push(match p.as_rule() {
-            Rule::statement => statement(p),
+        match p.as_rule() {
+            Rule::import => is.push(import(p)),
+            Rule::statement => ss.push(statement(p)),
             _ => unreachable!(),
-        });
+        }
     }
 
-    Ok(ss)
+    Ok(Module::new(is, ss))
+}
+
+fn import(p: Pair<Rule>) -> Import {
+    let s = p.into_inner().next().unwrap().as_str();
+    Import::new(s[1..(s.len() - 1)].into())
 }
 
 fn statement(p: Pair<Rule>) -> Statement {
@@ -632,49 +647,68 @@ mod test {
 
     #[test]
     fn main_module_parser() {
-        for &(s, ref m) in &[
-            ("", vec![]),
+        for (s, m) in vec![
+            ("", Module::new(vec![], vec![])),
             (
                 "123",
-                vec![
-                    Statement::Effect(Effect::new(Expression::Number(123.0), false)),
-                ],
+                Module::new(
+                    vec![],
+                    vec![
+                        Statement::Effect(Effect::new(Expression::Number(123.0), false)),
+                    ],
+                ),
             ),
             (
                 "true nil 123 \"foo\"",
-                vec![
-                    Statement::Effect(Effect::new(Expression::Boolean(true), false)),
-                    Statement::Effect(Effect::new(Expression::Nil, false)),
-                    Statement::Effect(Effect::new(Expression::Number(123.0), false)),
-                    Statement::Effect(Effect::new(Expression::String("foo".into()), false)),
-                ],
+                Module::new(
+                    vec![],
+                    vec![
+                        Statement::Effect(Effect::new(Expression::Boolean(true), false)),
+                        Statement::Effect(Effect::new(Expression::Nil, false)),
+                        Statement::Effect(Effect::new(Expression::Number(123.0), false)),
+                        Statement::Effect(Effect::new(Expression::String("foo".into()), false)),
+                    ],
+                ),
             ),
             (
                 " 123 ; foo \n456",
-                vec![
-                    Statement::Effect(Effect::new(Expression::Number(123.0), false)),
-                    Statement::Effect(Effect::new(Expression::Number(456.0), false)),
-                ],
+                Module::new(
+                    vec![],
+                    vec![
+                        Statement::Effect(Effect::new(Expression::Number(123.0), false)),
+                        Statement::Effect(Effect::new(Expression::Number(456.0), false)),
+                    ],
+                ),
             ),
             (
                 "(let name 42)",
-                vec![
-                    Statement::LetVariable(LetVariable::new(
-                        "name".into(),
-                        Expression::Number(42.0),
-                    )),
-                ],
+                Module::new(
+                    vec![],
+                    vec![
+                        Statement::LetVariable(LetVariable::new(
+                            "name".into(),
+                            Expression::Number(42.0),
+                        )),
+                    ],
+                ),
             ),
             (
                 "(def (f) 42)",
-                vec![
-                    Statement::DefFunction(DefFunction::new(
-                        "f".into(),
-                        Signature::default(),
-                        vec![],
-                        Expression::Number(42.0),
-                    )),
-                ],
+                Module::new(
+                    vec![],
+                    vec![
+                        Statement::DefFunction(DefFunction::new(
+                            "f".into(),
+                            Signature::default(),
+                            vec![],
+                            Expression::Number(42.0),
+                        )),
+                    ],
+                ),
+            ),
+            (
+                "(import \"http\")",
+                Module::new(vec![Import::new("http".into())], vec![]),
             ),
         ] {
             println!("{:?}", s);

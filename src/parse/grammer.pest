@@ -1,4 +1,5 @@
 main_module = { soi ~ import* ~ statement* ~ eoi }
+sub_module = { soi ~ import* ~ inner_statement* ~ eoi }
 
 import = { "(" ~ "import" ~ string ~ ")" }
 
