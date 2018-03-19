@@ -3,8 +3,8 @@ use std::str::FromStr;
 use pest::Parser;
 use pest::iterators::Pair;
 
-use super::super::ast::{Arguments, DefFunction, Effect, Expression, HalfSignature, InnerStatement,
-                        KeywordArgument, LetVariable, OptionalParameter, PositionalArgument,
+use super::super::ast::{Arguments, DefFunction, Effect, Expansion, Expression, HalfSignature,
+                        InnerStatement, KeywordArgument, LetVariable, OptionalParameter,
                         Signature, Statement};
 
 use super::error::ParsingError;
@@ -94,12 +94,12 @@ fn arguments(p: Pair<Rule>) -> Arguments {
     Arguments::new(ps, ks)
 }
 
-fn positional_arguments(p: Pair<Rule>) -> Vec<PositionalArgument> {
+fn positional_arguments(p: Pair<Rule>) -> Vec<Expansion<Expression>> {
     p.into_inner()
         .map(|p| match p.as_rule() {
-            Rule::expression => PositionalArgument::new(expression(p), false),
+            Rule::expression => Expansion::Unexpanded(expression(p)),
             Rule::expanded_argument => {
-                PositionalArgument::new(expression(p.into_inner().next().unwrap()), true)
+                Expansion::Expanded(expression(p.into_inner().next().unwrap()))
             }
 
             _ => unreachable!(),
@@ -107,23 +107,21 @@ fn positional_arguments(p: Pair<Rule>) -> Vec<PositionalArgument> {
         .collect()
 }
 
-fn keyword_arguments(p: Pair<Rule>) -> Vec<KeywordArgument> {
+fn keyword_arguments(p: Pair<Rule>) -> Vec<Expansion<KeywordArgument>> {
     p.into_inner().map(keyword_argument).collect()
 }
 
-fn keyword_argument(p: Pair<Rule>) -> KeywordArgument {
+fn keyword_argument(p: Pair<Rule>) -> Expansion<KeywordArgument> {
     match p.as_rule() {
         Rule::keyword_argument => {
             let mut i = p.into_inner();
 
-            KeywordArgument::new(
+            Expansion::Unexpanded(KeywordArgument::new(
                 i.next().unwrap().as_str().into(),
                 expression(i.next().unwrap()),
-            )
+            ))
         }
-        Rule::expanded_argument => {
-            KeywordArgument::expanded(expression(p.into_inner().next().unwrap()))
-        }
+        Rule::expanded_argument => Expansion::Expanded(expression(p.into_inner().next().unwrap())),
         _ => unreachable!(),
     }
 }
@@ -333,8 +331,11 @@ mod test {
                     Arguments::new(
                         vec![],
                         vec![
-                            KeywordArgument::new("x".into(), Expression::Number(42.0)),
-                            KeywordArgument::expanded(Expression::Name("options".into())),
+                            Expansion::Unexpanded(KeywordArgument::new(
+                                "x".into(),
+                                Expression::Number(42.0),
+                            )),
+                            Expansion::Expanded(Expression::Name("options".into())),
                         ],
                     ),
                 ),

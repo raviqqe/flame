@@ -1,14 +1,18 @@
+use super::expansion::Expansion;
+use super::expression::Expression;
 use super::keyword_argument::KeywordArgument;
-use super::positional_argument::PositionalArgument;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Arguments {
-    positionals: Vec<PositionalArgument>,
-    keywords: Vec<KeywordArgument>,
+    positionals: Vec<Expansion<Expression>>,
+    keywords: Vec<Expansion<KeywordArgument>>,
 }
 
 impl Arguments {
-    pub fn new(positionals: Vec<PositionalArgument>, keywords: Vec<KeywordArgument>) -> Self {
+    pub fn new(
+        positionals: Vec<Expansion<Expression>>,
+        keywords: Vec<Expansion<KeywordArgument>>,
+    ) -> Self {
         Arguments {
             positionals,
             keywords,
