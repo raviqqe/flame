@@ -39,7 +39,9 @@ impl Compiler {
 
     fn compile_expression(&mut self, e: ast::Expression) -> Result<Value, CompileError> {
         Ok(match e {
-            ast::Expression::App(f, a) => unimplemented!(),
+            ast::Expression::App(f, a) => {
+                app(self.compile_expression(*f)?, self.compile_arguments(a)?)
+            }
             ast::Expression::Number(n) => n.into(),
             ast::Expression::Boolean(b) => b.into(),
             ast::Expression::Dictionary(es) => unimplemented!(),
@@ -63,5 +65,9 @@ impl Compiler {
             ast::Expression::Nil => Normal::Nil.into(),
             ast::Expression::String(s) => s.into(),
         })
+    }
+
+    fn compile_arguments(&mut self, a: ast::Arguments) -> Result<Arguments, CompileError> {
+        unimplemented!()
     }
 }
