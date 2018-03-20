@@ -103,8 +103,8 @@ impl Dictionary {
         Ok(Dictionary::from(self.0.insert(k, v)))
     }
 
-    pub fn strict_insert(self, k: impl Into<Key>, v: Value) -> Dictionary {
-        Dictionary::from(self.0.insert(k.into(), v))
+    pub fn strict_insert(self, k: impl Into<Key>, v: impl Into<Value>) -> Dictionary {
+        Dictionary::from(self.0.insert(k.into(), v.into()))
     }
 
     pub fn merge(&self, d: &Self) -> Self {

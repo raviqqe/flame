@@ -199,13 +199,13 @@ mod test {
             (false.into(), "false"),
             (Dictionary::new().into(), "{}"),
             (
-                Dictionary::new().strict_insert("foo", 42.into()).into(),
+                Dictionary::new().strict_insert("foo", 42).into(),
                 "{\"foo\" 42}",
             ),
             (
                 Dictionary::new()
-                    .strict_insert("foo", 1.into())
-                    .strict_insert("bar", 2.into())
+                    .strict_insert("foo", 1)
+                    .strict_insert("bar", 2)
                     .into(),
                 "{\"bar\" 2 \"foo\" 1}",
             ),
@@ -232,20 +232,20 @@ mod test {
             (true.into(), false.into(), false),
             (Dictionary::new().into(), Dictionary::new().into(), true),
             (
-                Dictionary::new().strict_insert("foo", 42.into()).into(),
-                Dictionary::new().strict_insert("foo", 42.into()).into(),
+                Dictionary::new().strict_insert("foo", 42).into(),
+                Dictionary::new().strict_insert("foo", 42).into(),
                 true,
             ),
             (
                 Dictionary::new().into(),
-                Dictionary::new().strict_insert("foo", 42.into()).into(),
+                Dictionary::new().strict_insert("foo", 42).into(),
                 false,
             ),
             (
-                Dictionary::new().strict_insert("foo", 42.into()).into(),
+                Dictionary::new().strict_insert("foo", 42).into(),
                 Dictionary::new()
-                    .strict_insert("foo", 42.into())
-                    .strict_insert("bar", 42.into())
+                    .strict_insert("foo", 42)
+                    .strict_insert("bar", 42)
                     .into(),
                 false,
             ),

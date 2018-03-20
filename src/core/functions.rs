@@ -69,12 +69,12 @@ mod test {
             ],
             &[
                 Dictionary::new()
-                    .strict_insert("foo", 42.into())
-                    .strict_insert("bar", 42.into())
+                    .strict_insert("foo", 42)
+                    .strict_insert("bar", 42)
                     .into(),
                 Dictionary::new()
-                    .strict_insert("bar", 42.into())
-                    .strict_insert("foo", 42.into())
+                    .strict_insert("bar", 42)
+                    .strict_insert("foo", 42)
                     .into(),
             ],
         ]: Vec<&[Value]>
