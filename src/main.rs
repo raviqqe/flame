@@ -26,6 +26,7 @@ mod ast;
 mod builtin;
 mod compile;
 mod desugar;
+mod ir;
 mod parse;
 mod run;
 mod third;
