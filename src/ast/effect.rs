@@ -2,8 +2,8 @@ use super::expression::Expression;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Effect {
-    value: Expression,
-    expanded: bool,
+    pub value: Expression,
+    pub expanded: bool,
 }
 
 impl Effect {

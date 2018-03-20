@@ -3,8 +3,8 @@ use super::statement::Statement;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Module {
-    imports: Vec<Import>,
-    statements: Vec<Statement>,
+    pub imports: Vec<Import>,
+    pub statements: Vec<Statement>,
 }
 
 impl Module {
