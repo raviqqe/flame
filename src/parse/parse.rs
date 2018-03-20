@@ -33,6 +33,7 @@ fn module(r: Rule, s: &str) -> Result<Module, ParsingError> {
         match p.as_rule() {
             Rule::import => is.push(import(p)),
             Rule::statement => ss.push(statement(p)),
+            Rule::inner_statement => ss.push(statement(p)),
             _ => unreachable!(),
         }
     }
@@ -742,5 +743,51 @@ mod test {
             println!("{:?}", m);
             assert_eq!(main_module(s), Ok(m.clone()));
         }
+    }
+
+    #[test]
+    fn sub_module_parser() {
+        for (s, m) in vec![
+            ("", Module::new(vec![], vec![])),
+            (
+                "(let name 42)",
+                Module::new(
+                    vec![],
+                    vec![
+                        Statement::LetVariable(LetVariable::new(
+                            "name".into(),
+                            Expression::Number(42.0),
+                        )),
+                    ],
+                ),
+            ),
+            (
+                "(def (f) 42)",
+                Module::new(
+                    vec![],
+                    vec![
+                        Statement::DefFunction(DefFunction::new(
+                            "f".into(),
+                            Signature::default(),
+                            vec![],
+                            Expression::Number(42.0),
+                        )),
+                    ],
+                ),
+            ),
+            (
+                "(import \"http\")",
+                Module::new(vec![Import::new("http".into())], vec![]),
+            ),
+        ] {
+            println!("{:?}", s);
+            println!("{:?}", m);
+            assert_eq!(sub_module(s), Ok(m.clone()));
+        }
+    }
+
+    #[test]
+    fn sub_module_parser_error() {
+        assert!(sub_module("(write 42)").is_err());
     }
 }
