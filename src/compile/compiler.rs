@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::super::ast;
 use super::super::builtin::LIST;
-use super::super::core::{app, Arguments, Expansion, Normal, Str, Value};
+use super::super::core::{app, Arguments, Dictionary, Expansion, Normal, Str, Value};
 
 use super::builtins::builtins;
 use super::effect::Effect;
@@ -44,7 +44,20 @@ impl Compiler {
             }
             ast::Expression::Number(n) => n.into(),
             ast::Expression::Boolean(b) => b.into(),
-            ast::Expression::Dictionary(es) => unimplemented!(),
+            ast::Expression::Dictionary(es) => {
+                let mut d: Value = Dictionary::new().into();
+
+                for e in es {
+                    match e {
+                        ast::Expansion::Expanded(e) => d = d.merge(self.compile_expression(e)?),
+                        ast::Expansion::Unexpanded((k, v)) => {
+                            d = d.insert(self.compile_expression(k)?, self.compile_expression(v)?)
+                        }
+                    }
+                }
+
+                d
+            }
             ast::Expression::List(es) => {
                 let mut ps = vec![];
 
