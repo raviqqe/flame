@@ -7,7 +7,7 @@ use super::value::Value;
 pub use super::boolean::IF;
 pub use super::collection::{INSERT, MERGE};
 pub use super::list::{FIRST, PREPEND, REST};
-pub use super::number::{MULTIPLY, SUBTRACT};
+pub use super::number::{ADD, DIVIDE, MULTIPLY, SUBTRACT};
 
 pure_function!(
     EQUAL,

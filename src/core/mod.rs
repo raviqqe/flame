@@ -21,7 +21,9 @@ mod vague_normal;
 mod value;
 
 pub use self::arguments::{Arguments, Expansion, KeywordArgument};
+pub use self::dictionary::Dictionary;
 pub use self::function::{Function, Result};
+pub use self::list::List;
 pub use self::normal::Normal;
 pub use self::signature::Signature;
 pub use self::string::Str;

@@ -157,7 +157,7 @@ impl Arguments {
 
         for p in ps.iter().rev() {
             match *p {
-                Expansion::Expanded(ref v) => l = l.merge(v.clone()),
+                Expansion::Expanded(ref v) => l = v.merge(l),
                 Expansion::Unexpanded(ref v) => l = List::cons(v.clone(), l).into(),
             }
         }
