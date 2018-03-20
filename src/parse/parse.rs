@@ -584,6 +584,33 @@ mod test {
                     Expression::Name("x".into()),
                 ),
             ),
+            (
+                "(def (f x) (def (g y) (let z 42) y) x)",
+                DefFunction::new(
+                    "f".into(),
+                    Signature::new(
+                        HalfSignature::new(vec!["x".into()], vec![], "".into()),
+                        HalfSignature::default(),
+                    ),
+                    vec![
+                        InnerStatement::DefFunction(DefFunction::new(
+                            "g".into(),
+                            Signature::new(
+                                HalfSignature::new(vec!["y".into()], vec![], "".into()),
+                                HalfSignature::default(),
+                            ),
+                            vec![
+                                InnerStatement::LetVariable(LetVariable::new(
+                                    "z".into(),
+                                    Expression::Number(42.0),
+                                )),
+                            ],
+                            Expression::Name("y".into()),
+                        )),
+                    ],
+                    Expression::Name("x".into()),
+                ),
+            ),
         ] {
             assert_eq!(
                 def_function(
