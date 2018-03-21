@@ -25,7 +25,6 @@ pub enum Value {
     Number(f64),
     String(Str),
 
-    Error(Error),
     Thunk(Thunk),
 }
 
@@ -33,7 +32,6 @@ impl Value {
     #[async_move]
     pub fn pured(self) -> Result<Normal> {
         match self {
-            Value::Error(e) => Err(e),
             Value::Thunk(t) => await!(t.eval_pure()),
             v => Ok(v.try_into().unwrap()),
         }
@@ -42,7 +40,6 @@ impl Value {
     #[async_move]
     pub fn impure(self) -> Result<Normal> {
         match self {
-            Value::Error(e) => Err(e),
             Value::Thunk(t) => await!(t.eval_impure()),
             _ => Err(Error::pured()),
         }

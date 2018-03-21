@@ -67,7 +67,6 @@ impl Thunk {
 
                 match await!(f.call(a)) {
                     Err(e) => break Err(e),
-                    Ok(Value::Error(e)) => break Err(e),
                     Ok(Value::Thunk(t)) => if !t.delegate_evaluation(&self) {
                         break match await!(t.eval()) {
                             Err(e) => Err(e),
