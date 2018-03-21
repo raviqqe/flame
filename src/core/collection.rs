@@ -67,7 +67,7 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
 
             Value::from(s)
         }
-        n => return Err(await!(Error::not_collection(n))?),
+        v => return Err(await!(Error::not_collection(v))?),
     })
 }
 
@@ -96,7 +96,7 @@ fn merge(vs: Vec<Value>) -> Result<Value> {
             let ss = await!(vs[1].clone().string())?;
             Value::from(s.merge(&ss))
         }
-        n => return Err(await!(Error::not_collection(n))?),
+        v => return Err(await!(Error::not_collection(v))?),
     })
 }
 
