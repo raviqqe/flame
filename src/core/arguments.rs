@@ -7,7 +7,6 @@ use super::collection::MERGE;
 use super::dictionary::Dictionary;
 use super::error::Error;
 use super::list::{List, FIRST, REST};
-use super::normal::Normal;
 use super::result::Result;
 use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
@@ -95,7 +94,7 @@ impl Arguments {
     pub fn search_keyword(mut this: RefMut<Self>, s: Str) -> Result<Value> {
         for k in &mut this.keywords {
             if s == k.name {
-                return Ok(replace(k, KeywordArgument::new("", Normal::Nil)).value);
+                return Ok(replace(k, KeywordArgument::new("", Value::Nil)).value);
             }
         }
 

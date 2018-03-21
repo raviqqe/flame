@@ -7,7 +7,6 @@ use futures::prelude::*;
 use hamt_sync::Map;
 
 use super::error::Error;
-use super::normal::Normal;
 use super::result::Result;
 use super::string::Str;
 use super::value::Value;
@@ -29,14 +28,14 @@ impl Hash for Key {
     }
 }
 
-impl TryFrom<Normal> for Key {
+impl TryFrom<Value> for Key {
     type Error = Error;
 
-    fn try_from(n: Normal) -> Result<Self> {
+    fn try_from(n: Value) -> Result<Self> {
         match n {
-            Normal::Nil => Ok(Key::Nil),
-            Normal::Number(n) => Ok(Key::Number(n)),
-            Normal::String(s) => Ok(Key::String(s)),
+            Value::Nil => Ok(Key::Nil),
+            Value::Number(n) => Ok(Key::Number(n)),
+            Value::String(s) => Ok(Key::String(s)),
             _ => Err(Error::value("{} cannot be a key in dictionaries")),
         }
     }
@@ -54,12 +53,12 @@ impl From<Str> for Key {
     }
 }
 
-impl Into<Normal> for Key {
-    fn into(self) -> Normal {
+impl Into<Value> for Key {
+    fn into(self) -> Value {
         match self {
-            Key::Nil => Normal::Nil,
-            Key::Number(n) => Normal::Number(n),
-            Key::String(s) => Normal::String(s),
+            Key::Nil => Value::Nil,
+            Key::Number(n) => Value::Number(n),
+            Key::String(s) => Value::String(s),
         }
     }
 }
@@ -82,7 +81,7 @@ impl Dictionary {
             .collect();
 
         for (k, v) in kvs {
-            let n: Normal = k.into();
+            let n: Value = k.into();
             let k = await!(n.to_string())?;
             ss.push(k);
 
@@ -119,7 +118,7 @@ impl Dictionary {
 
     #[async_move]
     pub fn find(self, k: Value) -> Result<Value> {
-        let n: Normal = await!(k.pured())?;
+        let n: Value = await!(k.pured())?;
         let k: Key = n.try_into()?;
 
         match self.0.find(&k).map(|v| v.clone()) {

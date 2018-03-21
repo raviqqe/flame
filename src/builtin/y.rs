@@ -34,7 +34,7 @@ mod test {
 
     use super::*;
 
-    use super::super::super::core::Normal;
+    use super::super::super::core::Value;
     use super::super::super::core::functions::{EQUAL, IF, MULTIPLY, SUBTRACT};
 
     pure_function!(
@@ -147,7 +147,7 @@ mod test {
         let n = await!(vs[1].clone().number())?;
 
         if n == 0.0 {
-            return Ok(Normal::Nil.into());
+            return Ok(Value::Nil);
         }
 
         Ok(papp(vs[0].clone(), &[(n - 1.0).into()]))

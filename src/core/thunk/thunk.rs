@@ -12,7 +12,6 @@ use core::error::Error;
 use core::result::Result;
 use core::unsafe_ref::{Ref, RefMut};
 use core::utils::IDENTITY;
-use core::vague_normal::VagueNormal;
 use core::value::Value;
 
 #[derive(Clone, Debug)]
@@ -23,15 +22,35 @@ impl Thunk {
         Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
+    #[async_move]
+    pub fn eval_pure(self) -> Result<Value> {
+        let v = await!(self.eval())?;
+
+        match v {
+            VagueValue::Pure(v) => Ok(v),
+            _ => Err(Error::impure()),
+        }
+    }
+
+    #[async_move]
+    pub fn eval_impure(self) -> Result<Value> {
+        let v = await!(self.eval())?;
+
+        match v {
+            VagueValue::Impure(v) => Ok(v),
+            _ => Err(Error::pured()),
+        }
+    }
+
     #[async_move(boxed_send)]
-    pub fn eval(self) -> Result<VagueNormal> {
-        if self.inner_mut().lock(State::Normal) {
+    pub fn eval(self) -> Result<VagueValue> {
+        if self.inner_mut().lock(State::Value) {
             let mut purity = true;
 
-            self.inner_mut().content = Content::Normal(loop {
+            self.inner_mut().content = Content::Value(loop {
                 let (f, a) = match self.inner_mut().content {
                     Content::App(ref f, ref mut a) => (f.clone(), RefMut(a)),
-                    Content::Normal(_) => unreachable!(),
+                    Content::Value(_) => unreachable!(),
                 };
 
                 let f = match await!(f.function()) {
@@ -51,13 +70,13 @@ impl Thunk {
                     Ok(Value::Thunk(t)) => if !t.delegate_evaluation(&self) {
                         break match await!(t.eval()) {
                             Err(e) => Err(e),
-                            Ok(VagueNormal::Pure(n)) => Ok(if purity {
-                                VagueNormal::Pure
+                            Ok(VagueValue::Pure(v)) => Ok(if purity {
+                                VagueValue::Pure
                             } else {
-                                VagueNormal::Impure
-                            }(n)),
-                            Ok(VagueNormal::Impure(n)) => if purity {
-                                Ok(VagueNormal::Impure(n))
+                                VagueValue::Impure
+                            }(v)),
+                            Ok(VagueValue::Impure(n)) => if purity {
+                                Ok(VagueValue::Impure(n))
                             } else {
                                 Err(Error::impure())
                             },
@@ -65,9 +84,9 @@ impl Thunk {
                     },
                     Ok(v) => {
                         break Ok(if purity {
-                            VagueNormal::Pure
+                            VagueValue::Pure
                         } else {
-                            VagueNormal::Impure
+                            VagueValue::Impure
                         }(v.try_into().unwrap()))
                     }
                 }
@@ -80,7 +99,7 @@ impl Thunk {
 
         match self.inner().content {
             Content::App(_, _) => unreachable!(),
-            Content::Normal(ref r) => r.clone(),
+            Content::Value(ref r) => r.clone(),
         }
     }
 
@@ -99,7 +118,7 @@ impl Thunk {
 
         let (f, a) = match self.inner_mut().content {
             Content::App(ref mut f, ref mut a) => (f, a),
-            Content::Normal(_) => unreachable!(),
+            Content::Value(_) => unreachable!(),
         };
 
         t.inner_mut().content = Content::App(f.clone(), a.clone());
@@ -118,7 +137,7 @@ unsafe impl Sync for Thunk {}
 #[repr(u8)]
 enum State {
     App = 0,
-    Normal = 1,
+    Value = 1,
     SpinLock = 2,
 }
 
@@ -126,7 +145,7 @@ impl From<u8> for State {
     fn from(u: u8) -> Self {
         match u {
             0 => State::App,
-            1 => State::Normal,
+            1 => State::Value,
             2 => State::SpinLock,
             _ => unreachable!(),
         }
@@ -136,7 +155,7 @@ impl From<u8> for State {
 #[derive(Clone, Debug)]
 enum Content {
     App(Value, Arguments),
-    Normal(Result<VagueNormal>),
+    Value(Result<VagueValue>),
 }
 
 #[derive(Debug)]
@@ -158,7 +177,7 @@ impl Inner {
     fn lock(&mut self, s: State) -> bool {
         loop {
             match State::from(self.state.load(SeqCst)) {
-                State::Normal => break false,
+                State::Value => break false,
                 State::App => {
                     break State::from(self.state.compare_and_swap(
                         State::App as u8,
@@ -172,6 +191,12 @@ impl Inner {
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum VagueValue {
+    Pure(Value),
+    Impure(Value),
+}
+
 #[cfg(test)]
 mod test {
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -179,7 +204,6 @@ mod test {
     use futures::executor::block_on;
     use test::Bencher;
 
-    use core::normal::Normal;
     use core::signature::Signature;
     use core::utils::{papp, IDENTITY};
 
@@ -219,7 +243,7 @@ mod test {
             }
         }
 
-        Ok(Normal::Number(SUM.load(Ordering::SeqCst) as f64).into())
+        Ok(Value::Number(SUM.load(Ordering::SeqCst) as f64).into())
     }
 
     #[test]

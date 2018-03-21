@@ -8,10 +8,10 @@ mod test {
     use futures_stable::block_on_stable;
     use test::Bencher;
 
-    use super::super::core::{Normal, Result};
+    use super::super::core::{Result, Value};
 
     fn normal_function() -> Result {
-        Ok(Normal::Nil.into())
+        Ok(Value::Nil)
     }
 
     #[bench]
@@ -25,7 +25,7 @@ mod test {
                 yield Async::Pending;
             }
 
-            Ok(Normal::Nil.into()): Result
+            Ok(Value::Nil): Result
         };
     }
 
@@ -48,7 +48,7 @@ mod test {
 
     #[async]
     fn async_function() -> Result {
-        Ok(Normal::Nil.into())
+        Ok(Value::Nil)
     }
 
     #[bench]
@@ -58,7 +58,7 @@ mod test {
 
     #[async_move]
     fn async_move_function() -> Result {
-        Ok(Normal::Nil.into())
+        Ok(Value::Nil)
     }
 
     #[bench]
@@ -68,7 +68,7 @@ mod test {
 
     #[async_move(boxed_send)]
     fn boxed_async_function() -> Result {
-        Ok(Normal::Nil.into())
+        Ok(Value::Nil)
     }
 
     #[bench]
@@ -78,13 +78,13 @@ mod test {
 
     #[bench]
     fn bench_box(b: &mut Bencher) {
-        b.iter(|| Box::new(Ok(Normal::Nil.into()): Result).unwrap());
+        b.iter(|| Box::new(Ok(Value::Nil): Result).unwrap());
     }
 
     #[bench]
     fn bench_arc(b: &mut Bencher) {
         b.iter(|| {
-            Arc::try_unwrap(Arc::new(Ok(Normal::Nil.into()): Result))
+            Arc::try_unwrap(Arc::new(Ok(Value::Nil): Result))
                 .unwrap()
                 .unwrap()
         });

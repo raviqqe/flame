@@ -3,7 +3,6 @@ use std::sync::Arc;
 
 use futures::prelude::*;
 
-use super::normal::Normal;
 use super::result::Result;
 use super::value::Value;
 
@@ -76,64 +75,64 @@ impl Error {
     }
 
     #[async_move]
-    pub fn typ(n: Normal, t: String) -> Result<Self> {
-        let s = await!(n.to_string())?;
+    pub fn typ(v: Value, t: String) -> Result<Self> {
+        let s = await!(v.to_string())?;
         Ok(Self::typ_raw(&format!("{} is not a {}", s, t)))
     }
 
     #[async_move]
-    pub fn not_boolean(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "boolean".to_string()))
+    pub fn not_boolean(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "boolean".to_string()))
     }
 
     #[async_move]
-    pub fn not_comparable(m: Normal, n: Normal) -> Result<Self> {
-        let s = await!(m.to_string())?;
-        let t = await!(n.to_string())?;
+    pub fn not_comparable(v: Value, w: Value) -> Result<Self> {
+        let s = await!(v.to_string())?;
+        let t = await!(w.to_string())?;
         Ok(Self::typ_raw(&format!("{} and {} is not comparable", s, t)))
     }
 
     #[async_move]
-    pub fn not_equalable(n: Normal) -> Result<Self> {
+    pub fn not_equalable(v: Value) -> Result<Self> {
         Ok(Self::typ_raw(&format!(
             "{} is not equalable",
-            await!(n.to_string())?
+            await!(v.to_string())?
         )))
     }
 
     #[async_move]
-    pub fn not_collection(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "collection".to_string()))
+    pub fn not_collection(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "collection".to_string()))
     }
 
     #[async_move]
-    pub fn not_dictionary(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "dictionary".to_string()))
+    pub fn not_dictionary(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "dictionary".to_string()))
     }
 
     #[async_move]
-    pub fn not_function(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "function".to_string()))
+    pub fn not_function(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "function".to_string()))
     }
 
     #[async_move]
-    pub fn not_list(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "list".to_string()))
+    pub fn not_list(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "list".to_string()))
     }
 
     #[async_move]
-    pub fn not_nil(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "nil".to_string()))
+    pub fn not_nil(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "nil".to_string()))
     }
 
     #[async_move]
-    pub fn not_number(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "number".to_string()))
+    pub fn not_number(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "number".to_string()))
     }
 
     #[async_move]
-    pub fn not_string(n: Normal) -> Result<Self> {
-        await!(Self::typ(n, "string".to_string()))
+    pub fn not_string(v: Value) -> Result<Self> {
+        await!(Self::typ(v, "string".to_string()))
     }
 }
 

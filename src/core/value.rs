@@ -1,5 +1,4 @@
 use futures::prelude::*;
-use std;
 use std::cmp::Ordering;
 use std::convert::TryInto;
 
@@ -8,16 +7,13 @@ use super::dictionary::Dictionary;
 use super::error::Error;
 use super::function::Function;
 use super::list::List;
-use super::normal::Normal;
 use super::result::Result;
 use super::string::Str;
 use super::thunk::Thunk;
 use super::utils::papp;
-use super::vague_normal::VagueNormal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
-    // from Normal
     Boolean(bool),
     Dictionary(Dictionary),
     Function(Function),
@@ -32,57 +28,50 @@ pub enum Value {
 
 impl Value {
     #[async_move]
-    pub fn vague(self) -> Result<VagueNormal> {
+    pub fn pured(self) -> Result<Value> {
         match self {
             Value::Error(e) => Err(e),
-            Value::Thunk(t) => await!(t.eval()),
-            _ => Ok(VagueNormal::Pure(self.try_into().unwrap())),
+            Value::Thunk(t) => await!(t.eval_pure()),
+            v => Ok(v),
         }
     }
 
     #[async_move]
-    pub fn pured(self) -> Result<Normal> {
-        match await!(self.vague())? {
-            VagueNormal::Pure(n) => Ok(n),
-            VagueNormal::Impure(_) => Err(Error::impure()),
-        }
-    }
-
-    #[async_move]
-    pub fn impure(self) -> Result<Normal> {
-        match await!(self.vague())? {
-            VagueNormal::Pure(_) => Err(Error::pured()),
-            VagueNormal::Impure(n) => Ok(n),
+    pub fn impure(self) -> Result<Value> {
+        match self {
+            Value::Error(e) => Err(e),
+            Value::Thunk(t) => await!(t.eval_impure()),
+            v => Err(Error::pured()),
         }
     }
 
     #[async_move]
     pub fn boolean(self) -> Result<bool> {
-        let n = await!(self.pured())?;
+        let v = await!(self.pured())?;
 
-        match n {
-            Normal::Boolean(b) => Ok(b),
-            _ => Err(await!(Error::not_boolean(n))?),
+        match v {
+            Value::Boolean(b) => Ok(b),
+            _ => Err(await!(Error::not_boolean(v))?),
         }
     }
 
     #[async_move]
     pub fn dictionary(self) -> Result<Dictionary> {
-        let n = await!(self.pured())?;
+        let v = await!(self.pured())?;
 
-        match n {
-            Normal::Dictionary(d) => Ok(d),
-            _ => Err(await!(Error::not_dictionary(n))?),
+        match v {
+            Value::Dictionary(d) => Ok(d),
+            _ => Err(await!(Error::not_dictionary(v))?),
         }
     }
 
     #[async_move]
     pub fn function(self) -> Result<Function> {
-        let n = await!(self.pured())?;
+        let v = await!(self.pured())?;
 
-        match n {
-            Normal::Function(f) => Ok(f),
-            _ => Err(await!(Error::not_function(n))?),
+        match v {
+            Value::Function(f) => Ok(f),
+            _ => Err(await!(Error::not_function(v))?),
         }
     }
 
@@ -99,56 +88,99 @@ impl Value {
 
     #[async_move]
     pub fn list(self) -> Result<List> {
-        let n = await!(self.pured())?;
+        let v = await!(self.pured())?;
 
-        match n {
-            Normal::List(l) => Ok(l),
-            _ => Err(await!(Error::not_list(n))?),
+        match v {
+            Value::List(l) => Ok(l),
+            _ => Err(await!(Error::not_list(v))?),
         }
     }
 
     #[async_move]
     pub fn number(self) -> Result<f64> {
-        let n = await!(self.pured())?;
+        let v = await!(self.pured())?;
 
-        match n {
-            Normal::Number(n) => Ok(n),
-            _ => Err(await!(Error::not_number(n))?),
+        match v {
+            Value::Number(n) => Ok(n),
+            _ => Err(await!(Error::not_number(v))?),
         }
     }
 
     #[async_move]
     pub fn string(self) -> Result<Str> {
-        let n = await!(self.pured())?;
+        let v = await!(self.pured())?;
 
-        match n {
-            Normal::String(s) => Ok(s),
-            _ => Err(await!(Error::not_string(n))?),
+        match v {
+            Value::String(s) => Ok(s),
+            _ => Err(await!(Error::not_string(v))?),
         }
     }
 
     #[async_move]
     fn type_name(self) -> Result<Str> {
-        Ok(await!(self.pured())?.type_name())
+        let v = await!(self.pured())?;
+
+        Ok(match v {
+            Value::Boolean(_) => "boolean",
+            Value::Dictionary(_) => "dictionary",
+            Value::Function(_) => "function",
+            Value::List(_) => "list",
+            Value::Number(_) => "number",
+            Value::Nil => "nil",
+            Value::String(_) => "string",
+            _ => unreachable!(),
+        }.into())
     }
 
     #[async_move]
     pub fn to_string(self) -> Result<String> {
-        await!(await!(self.pured())?.to_string())
+        let v = await!(self.pured())?;
+
+        Ok(match v {
+            Value::Boolean(b) => (if b { "true" } else { "false" }).to_string(),
+            Value::Dictionary(d) => await!(d.to_string())?,
+            Value::Function(_) => "<function>".to_string(),
+            Value::List(l) => await!(l.to_string())?,
+            Value::Number(n) => n.to_string(),
+            Value::Nil => "nil".to_string(),
+            Value::String(s) => ["\"".to_string(), s.try_into()?, "\"".to_string()].join(""),
+            _ => unreachable!(),
+        })
     }
 
     #[async_move]
-    pub fn equal(self, v: Self) -> Result<bool> {
-        let m = await!(self.pured())?;
-        let n = await!(v.pured())?;
-        await!(m.equal(n))
+    pub fn equal(self, w: Self) -> Result<bool> {
+        let v = await!(self.pured())?;
+        let w = await!(w.pured())?;
+
+        Ok(match (v, w) {
+            (Value::Boolean(x), Value::Boolean(y)) => x == y,
+            (Value::Dictionary(x), Value::Dictionary(y)) => await!(x.equal(y))?,
+            (Value::List(x), Value::List(y)) => await!(x.equal(y))?,
+            (Value::Number(x), Value::Number(y)) => x == y,
+            (Value::Nil, Value::Nil) => true,
+            (Value::String(x), Value::String(y)) => x == y,
+            (Value::Function(f), _) => return Err(await!(Error::not_equalable(f.into()))?),
+            (_, Value::Function(f)) => return Err(await!(Error::not_equalable(f.into()))?),
+            _ => false,
+        })
     }
 
     #[async_move]
-    pub fn compare(self, v: Self) -> Result<Ordering> {
-        let m = await!(self.pured())?;
-        let n = await!(v.pured())?;
-        await!(m.compare(n))
+    pub fn compare(self, w: Self) -> Result<Ordering> {
+        let v = await!(self.pured())?;
+        let w = await!(w.pured())?;
+
+        Ok(match (v, w) {
+            (Value::List(x), Value::List(y)) => await!(x.compare(y))?,
+            (Value::Number(x), Value::Number(y)) => if let Some(o) = x.partial_cmp(&y) {
+                o
+            } else {
+                return Err(await!(Error::not_comparable(x.into(), y.into()))?);
+            },
+            (Value::String(x), Value::String(y)) => x.cmp(&y),
+            (v, w) => return Err(await!(Error::not_comparable(v, w))?),
+        })
     }
 
     // TODO: Any methods should be eager.
@@ -163,17 +195,45 @@ impl Value {
     }
 }
 
-impl<T: Into<Normal>> From<T> for Value {
-    fn from(x: T) -> Self {
-        match x.into() {
-            Normal::Boolean(b) => Value::Boolean(b),
-            Normal::Dictionary(d) => Value::Dictionary(d),
-            Normal::Function(f) => Value::Function(f),
-            Normal::List(l) => Value::List(l),
-            Normal::Nil => Value::Nil,
-            Normal::Number(n) => Value::Number(n),
-            Normal::String(s) => Value::String(s),
-        }
+impl From<bool> for Value {
+    fn from(b: bool) -> Self {
+        Value::Boolean(b)
+    }
+}
+
+impl From<Dictionary> for Value {
+    fn from(d: Dictionary) -> Self {
+        Value::Dictionary(d)
+    }
+}
+
+impl From<f64> for Value {
+    fn from(n: f64) -> Self {
+        Value::Number(n)
+    }
+}
+
+impl From<Function> for Value {
+    fn from(f: Function) -> Self {
+        Value::Function(f)
+    }
+}
+
+impl From<List> for Value {
+    fn from(l: List) -> Self {
+        Value::List(l)
+    }
+}
+
+impl From<usize> for Value {
+    fn from(u: usize) -> Self {
+        Value::from(u as f64)
+    }
+}
+
+impl<S: Into<Str>> From<S> for Value {
+    fn from(s: S) -> Self {
+        Value::String(s.into())
     }
 }
 
@@ -189,23 +249,6 @@ impl TryInto<Str> for Value {
     fn try_into(self) -> Result<Str> {
         match self {
             Value::String(s) => Ok(s),
-            _ => Err(Error::unreachable()),
-        }
-    }
-}
-
-impl TryInto<Normal> for Value {
-    type Error = Error;
-
-    fn try_into(self) -> std::result::Result<Normal, Self::Error> {
-        match self {
-            Value::Boolean(b) => Ok(b.into()),
-            Value::Dictionary(d) => Ok(d.into()),
-            Value::Function(f) => Ok(f.into()),
-            Value::List(l) => Ok(l.into()),
-            Value::Nil => Ok(Normal::Nil),
-            Value::Number(n) => Ok(n.into()),
-            Value::String(s) => Ok(s.into()),
             _ => Err(Error::unreachable()),
         }
     }
@@ -248,7 +291,7 @@ mod test {
             (List::Empty.into(), "[]"),
             (List::new(&[42.into()]).into(), "[42]"),
             (List::new(&[0.into(), 42.into()]).into(), "[0 42]"),
-            (Normal::Nil.into(), "nil"),
+            (Value::Nil, "nil"),
             (42.into(), "42"),
             (1.5.into(), "1.5"),
             ("foo".into(), "\"foo\""),
@@ -296,8 +339,8 @@ mod test {
                 List::new(&[1.into()]).into(),
                 false,
             ),
-            (Normal::Nil.into(), Normal::Nil.into(), true),
-            (Normal::Nil.into(), 0.into(), false),
+            (Value::Nil, Value::Nil, true),
+            (Value::Nil, 0.into(), false),
             (0.into(), 0.into(), true),
             (0.into(), 1.into(), false),
             ("a".into(), "a".into(), true),
@@ -372,7 +415,7 @@ mod test {
             (0.into(), List::default().into()),
             (true.into(), true.into()),
             (TEST_FUNCTION.clone(), TEST_FUNCTION.clone()),
-            (Normal::Nil.into(), Normal::Nil.into()),
+            (Value::Nil, Value::Nil),
         ]: Vec<(Value, Value)>
         {
             assert!(block_on(v.clone().compare(w)).is_err());
@@ -384,7 +427,7 @@ mod test {
         let s = size_of::<Value>();
 
         assert!(
-            s <= size_of::<u64>() + size_of::<Normal>(),
+            s <= 2 * size_of::<u64>() + size_of::<usize>(),
             "size of Value: {}",
             s
         );

@@ -1,7 +1,6 @@
 use futures::prelude::*;
 
 use super::error::Error;
-use super::normal::Normal;
 use super::result::Result;
 use super::signature::Signature;
 use super::value::Value;
@@ -22,7 +21,7 @@ pure_function!(
 #[async_move(boxed_send)]
 fn insert(vs: Vec<Value>) -> Result<Value> {
     Ok(match await!(vs[0].clone().pured())? {
-        Normal::Dictionary(mut d) => {
+        Value::Dictionary(mut d) => {
             let mut l = await!(vs[1].clone().list())?;
 
             while !l.is_empty() {
@@ -37,7 +36,7 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
 
             Value::from(d)
         }
-        Normal::List(mut l) => {
+        Value::List(mut l) => {
             let mut ivs = await!(vs[1].clone().list())?;
 
             while !ivs.is_empty() {
@@ -52,7 +51,7 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
 
             Value::from(l)
         }
-        Normal::String(mut s) => {
+        Value::String(mut s) => {
             let mut l = await!(vs[1].clone().list())?;
 
             while !l.is_empty() {
@@ -88,12 +87,12 @@ pure_function!(
 #[async_move(boxed_send)]
 fn merge(vs: Vec<Value>) -> Result<Value> {
     Ok(match await!(vs[0].clone().pured())? {
-        Normal::Dictionary(d) => {
+        Value::Dictionary(d) => {
             let dd = await!(vs[1].clone().dictionary())?;
             Value::from(d.merge(&dd))
         }
-        Normal::List(l) => await!(l.merge(vs[1].clone()))?,
-        Normal::String(mut s) => {
+        Value::List(l) => await!(l.merge(vs[1].clone()))?,
+        Value::String(mut s) => {
             let ss = await!(vs[1].clone().string())?;
             Value::from(s.merge(&ss))
         }

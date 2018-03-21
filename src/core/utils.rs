@@ -1,7 +1,6 @@
 use futures::prelude::*;
 
 use super::arguments::Arguments;
-use super::normal::Normal;
 use super::result::Result;
 use super::signature::Signature;
 use super::thunk::Thunk;
@@ -48,5 +47,5 @@ pure_function!(
 
 #[async_move(boxed_send)]
 fn test_function(_: Vec<Value>) -> Result<Value> {
-    Ok(Normal::Nil.into())
+    Ok(Value::Nil)
 }

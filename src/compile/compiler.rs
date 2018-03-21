@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::super::ast;
 use super::super::builtin::LIST;
-use super::super::core::{app, Arguments, Dictionary, Expansion, Normal, Str, Value};
+use super::super::core::{app, Arguments, Dictionary, Expansion, Str, Value};
 
 use super::builtins::builtins;
 use super::effect::Effect;
@@ -75,7 +75,7 @@ impl Compiler {
                 app(LIST.clone(), Arguments::new(&ps, &[]))
             }
             ast::Expression::Name(n) => self.environment[&n].clone(),
-            ast::Expression::Nil => Normal::Nil.into(),
+            ast::Expression::Nil => Value::Nil,
             ast::Expression::String(s) => s.into(),
         })
     }
