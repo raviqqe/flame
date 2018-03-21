@@ -1,4 +1,3 @@
-use std::convert::{TryFrom, TryInto};
 use std::hash::{Hash, Hasher};
 use std::mem::transmute;
 use std::sync::Arc;
@@ -24,19 +23,6 @@ impl Hash for Key {
             Key::Nil => state.write_u8(0),
             Key::Number(n) => state.write_u64(unsafe { transmute(n) }),
             Key::String(ref s) => state.write(s.into()),
-        }
-    }
-}
-
-impl TryFrom<Value> for Key {
-    type Error = Error;
-
-    fn try_from(n: Value) -> Result<Self> {
-        match n {
-            Value::Nil => Ok(Key::Nil),
-            Value::Number(n) => Ok(Key::Number(n)),
-            Value::String(s) => Ok(Key::String(s)),
-            _ => Err(Error::value("{} cannot be a key in dictionaries")),
         }
     }
 }
@@ -98,7 +84,7 @@ impl Dictionary {
 
     #[async_move]
     pub fn insert(self, k: Value, v: Value) -> Result<Dictionary> {
-        let k = Key::try_from(await!(k.pured())?)?;
+        let k = await!(k.to_key())?;
         Ok(Dictionary::from(self.0.insert(k, v)))
     }
 
@@ -118,8 +104,7 @@ impl Dictionary {
 
     #[async_move]
     pub fn find(self, k: Value) -> Result<Value> {
-        let n: Value = await!(k.pured())?;
-        let k: Key = n.try_into()?;
+        let k = await!(k.to_key())?;
 
         match self.0.find(&k).map(|v| v.clone()) {
             Some(v) => Ok(v),
@@ -129,7 +114,7 @@ impl Dictionary {
 
     #[async_move]
     pub fn delete(self, k: Value) -> Result<Dictionary> {
-        let k: Key = await!(k.pured())?.try_into()?;
+        let k = await!(k.to_key())?;
 
         match self.0.delete(&k) {
             Some(m) => Ok(m.into()),

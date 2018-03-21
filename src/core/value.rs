@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use std::convert::TryInto;
 
 use super::collection::{INSERT, MERGE};
-use super::dictionary::Dictionary;
+use super::dictionary::{Dictionary, Key};
 use super::error::Error;
 use super::function::Function;
 use super::list::List;
@@ -192,6 +192,18 @@ impl Value {
     #[deprecated]
     pub fn merge(&self, v: Self) -> Self {
         papp(MERGE.clone(), &[self.clone(), v])
+    }
+
+    #[async_move]
+    pub fn to_key(self) -> Result<Key> {
+        let v = await!(self.pured())?;
+
+        match v {
+            Value::Nil => Ok(Key::Nil),
+            Value::Number(n) => Ok(Key::Number(n)),
+            Value::String(s) => Ok(Key::String(s)),
+            _ => Err(Error::value("{} cannot be a key in dictionaries")),
+        }
     }
 }
 
