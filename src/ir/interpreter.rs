@@ -1,4 +1,8 @@
-use super::super::core::{app, Arguments, Expansion, KeywordArgument, Value};
+use std::convert::TryInto;
+
+use super::super::core::{app, Arguments, Expansion, KeywordArgument, Str, Value};
+
+use super::ir;
 
 #[derive(Clone, Debug)]
 pub struct Interpreter<'a> {
@@ -18,18 +22,12 @@ impl<'a> Interpreter<'a> {
 
     pub fn interpret(&mut self) -> Value {
         while self.index < self.code.len() - 1 {
-            let f = self.interpret_function();
+            let f = self.get_variable();
             let a = self.interpret_arguments();
             self.variables.push(app(f, a));
         }
 
-        self.variables[self.code[self.index] as usize].clone()
-    }
-
-    fn interpret_function(&mut self) -> Value {
-        let f = self.variables[self.code[self.index] as usize].clone();
-        self.index += 1;
-        f
+        self.get_variable()
     }
 
     fn interpret_arguments(&mut self) -> Arguments {
@@ -39,10 +37,46 @@ impl<'a> Interpreter<'a> {
     }
 
     fn interpret_positional_arguments(&mut self) -> Vec<Expansion<Value>> {
-        unimplemented!()
+        let mut ps = vec![];
+
+        for _ in 0..self.read_byte() {
+            let e = self.read_byte();
+            let v = self.get_variable();
+
+            ps.push(match e.into() {
+                ir::Expansion::Expanded => Expansion::Expanded,
+                ir::Expansion::Unexpanded => Expansion::Unexpanded,
+            }(v));
+        }
+
+        ps
     }
 
     fn interpret_keyword_arguments(&mut self) -> Vec<Expansion<KeywordArgument>> {
-        unimplemented!()
+        let mut ks = vec![];
+
+        for _ in 0..self.read_byte() {
+            ks.push(match self.read_byte().into() {
+                ir::Expansion::Expanded => Expansion::Expanded(self.get_variable()),
+                ir::Expansion::Unexpanded => {
+                    let k = self.get_variable();
+                    let v = self.get_variable();
+                    Expansion::Unexpanded(KeywordArgument::new(k.try_into().unwrap(): Str, v))
+                }
+            });
+        }
+
+        ks
+    }
+
+    fn read_byte(&mut self) -> u8 {
+        let b = self.code[self.index];
+        self.index += 1;
+        b
+    }
+
+    fn get_variable(&mut self) -> Value {
+        let i = self.read_byte();
+        self.variables[i as usize].clone()
     }
 }

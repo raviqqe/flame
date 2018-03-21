@@ -1,5 +1,6 @@
 use futures::prelude::*;
 use std::cmp::Ordering;
+use std::convert::TryInto;
 
 use super::collection::{INSERT, MERGE};
 use super::dictionary::Dictionary;
@@ -173,6 +174,17 @@ impl From<VagueNormal> for Value {
 impl From<Thunk> for Value {
     fn from(t: Thunk) -> Self {
         Value::Thunk(t)
+    }
+}
+
+impl TryInto<Str> for Value {
+    type Error = Error;
+
+    fn try_into(self) -> Result<Str> {
+        match self {
+            Value::Pure(Normal::String(s)) => Ok(s),
+            _ => Err(Error::unreachable()),
+        }
     }
 }
 

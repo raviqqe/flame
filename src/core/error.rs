@@ -41,6 +41,10 @@ impl Error {
         Self::new("RuntimeError", m)
     }
 
+    pub fn unreachable() -> Self {
+        Self::new("UnreachableError", "unreachable code")
+    }
+
     pub fn pured() -> Self {
         Self::new("PureError", "pure value detected in impure context")
     }
