@@ -1,4 +1,5 @@
 use futures::prelude::*;
+use std;
 use std::cmp::Ordering;
 use std::convert::TryInto;
 
@@ -16,8 +17,15 @@ use super::vague_normal::VagueNormal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
-    Pure(Normal),
-    Impure(Normal),
+    // from Normal
+    Boolean(bool),
+    Dictionary(Dictionary),
+    Function(Function),
+    List(List),
+    Nil,
+    Number(f64),
+    String(Str),
+
     Error(Error),
     Thunk(Thunk),
 }
@@ -26,10 +34,9 @@ impl Value {
     #[async_move]
     pub fn vague(self) -> Result<VagueNormal> {
         match self {
-            Value::Pure(n) => Ok(VagueNormal::Pure(n)),
-            Value::Impure(n) => Ok(VagueNormal::Impure(n)),
             Value::Error(e) => Err(e),
             Value::Thunk(t) => await!(t.eval()),
+            _ => Ok(VagueNormal::Pure(self.try_into().unwrap())),
         }
     }
 
@@ -158,15 +165,14 @@ impl Value {
 
 impl<T: Into<Normal>> From<T> for Value {
     fn from(x: T) -> Self {
-        Value::from(VagueNormal::from(x.into()))
-    }
-}
-
-impl From<VagueNormal> for Value {
-    fn from(v: VagueNormal) -> Self {
-        match v {
-            VagueNormal::Pure(n) => Value::Pure(n),
-            VagueNormal::Impure(n) => Value::Impure(n),
+        match x.into() {
+            Normal::Boolean(b) => Value::Boolean(b),
+            Normal::Dictionary(d) => Value::Dictionary(d),
+            Normal::Function(f) => Value::Function(f),
+            Normal::List(l) => Value::List(l),
+            Normal::Nil => Value::Nil,
+            Normal::Number(n) => Value::Number(n),
+            Normal::String(s) => Value::String(s),
         }
     }
 }
@@ -182,7 +188,24 @@ impl TryInto<Str> for Value {
 
     fn try_into(self) -> Result<Str> {
         match self {
-            Value::Pure(Normal::String(s)) => Ok(s),
+            Value::String(s) => Ok(s),
+            _ => Err(Error::unreachable()),
+        }
+    }
+}
+
+impl TryInto<Normal> for Value {
+    type Error = Error;
+
+    fn try_into(self) -> std::result::Result<Normal, Self::Error> {
+        match self {
+            Value::Boolean(b) => Ok(b.into()),
+            Value::Dictionary(d) => Ok(d.into()),
+            Value::Function(f) => Ok(f.into()),
+            Value::List(l) => Ok(l.into()),
+            Value::Nil => Ok(Normal::Nil),
+            Value::Number(n) => Ok(n.into()),
+            Value::String(s) => Ok(s.into()),
             _ => Err(Error::unreachable()),
         }
     }

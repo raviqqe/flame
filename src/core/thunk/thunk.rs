@@ -1,4 +1,5 @@
 use std::cell::UnsafeCell;
+use std::convert::TryInto;
 use std::sync::Arc;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
@@ -7,6 +8,7 @@ use super::black_hole::BlackHole;
 use futures::prelude::*;
 
 use core::arguments::Arguments;
+use core::error::Error;
 use core::result::Result;
 use core::unsafe_ref::{Ref, RefMut};
 use core::utils::IDENTITY;
@@ -24,23 +26,50 @@ impl Thunk {
     #[async_move(boxed_send)]
     pub fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock(State::Normal) {
+            let mut purity = true;
+
             self.inner_mut().content = Content::Normal(loop {
                 let (f, a) = match self.inner_mut().content {
                     Content::App(ref f, ref mut a) => (f.clone(), RefMut(a)),
                     Content::Normal(_) => unreachable!(),
                 };
 
-                match await!(f.function()) {
+                let f = match await!(f.function()) {
                     Err(e) => break Err(e),
-                    Ok(f) => match await!(f.call(a)) {
-                        Err(e) => break Err(e),
-                        Ok(Value::Pure(n)) => break Ok(VagueNormal::Pure(n)),
-                        Ok(Value::Impure(n)) => break Ok(VagueNormal::Impure(n)),
-                        Ok(Value::Error(e)) => break Err(e),
-                        Ok(Value::Thunk(t)) => if !t.delegate_evaluation(&self) {
-                            break await!(t.eval());
-                        },
+                    Ok(f) => f,
+                };
+
+                if !f.is_pure() && purity {
+                    purity = false;
+                } else if !f.is_pure() {
+                    break Err(Error::impure());
+                }
+
+                match await!(f.call(a)) {
+                    Err(e) => break Err(e),
+                    Ok(Value::Error(e)) => break Err(e),
+                    Ok(Value::Thunk(t)) => if !t.delegate_evaluation(&self) {
+                        break match await!(t.eval()) {
+                            Err(e) => Err(e),
+                            Ok(VagueNormal::Pure(n)) => Ok(if purity {
+                                VagueNormal::Pure
+                            } else {
+                                VagueNormal::Impure
+                            }(n)),
+                            Ok(VagueNormal::Impure(n)) => if purity {
+                                Ok(VagueNormal::Impure(n))
+                            } else {
+                                Err(Error::impure())
+                            },
+                        };
                     },
+                    Ok(v) => {
+                        break Ok(if purity {
+                            VagueNormal::Pure
+                        } else {
+                            VagueNormal::Impure
+                        }(v.try_into().unwrap()))
+                    }
                 }
             });
 

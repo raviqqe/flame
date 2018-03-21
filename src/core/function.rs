@@ -19,16 +19,23 @@ pub type Result = result::Result<Value>;
 #[derive(Clone, Debug)]
 pub enum Function {
     Closure(Arc<(Value, Arguments)>),
-    Signatured(Arc<(Signature, SubFunction)>),
+    Signatured(Arc<(Signature, SubFunction, bool)>),
 }
 
 impl Function {
-    pub fn new(s: Signature, f: SubFunction) -> Self {
-        Function::Signatured(Arc::new((s, f)))
+    pub fn new(s: Signature, f: SubFunction, p: bool) -> Self {
+        Function::Signatured(Arc::new((s, f, p)))
     }
 
     pub fn closure(f: Value, a: Arguments) -> Self {
         Function::Closure(Arc::new((f, a)))
+    }
+
+    pub fn is_pure(&self) -> bool {
+        match *self {
+            Function::Closure(_) => true,
+            Function::Signatured(ref r) => r.2,
+        }
     }
 
     #[async_move]
@@ -46,21 +53,15 @@ impl Function {
 macro_rules! pure_function {
     ($i: ident, $e: expr, $f: ident) => {
         lazy_static! {
-            pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f));
+            pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f, true));
         }
     };
 }
 
 macro_rules! impure_function {
-    ($i: ident, $f: ident, $e: expr, $r: ident) => {
-        #[async_move(boxed_send)]
-        fn $f(vs: Vec<Value>) -> ::core::Result {
-            let n = await!(await!($r(vs))?.pured())?;
-            Ok(::core::Value::from(::core::VagueNormal::Impure(n)))
-        }
-
+    ($i: ident, $e: expr, $f: ident) => {
         lazy_static! {
-            pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f));
+            pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f, false));
         }
     };
 }
@@ -77,12 +78,7 @@ mod test {
     use super::super::utils::{papp, IDENTITY};
 
     pure_function!(TEST_FUNC, Default::default(), test_func);
-    impure_function!(
-        TEST_FUNC_IMPURE,
-        test_func_impure,
-        Default::default(),
-        test_func
-    );
+    impure_function!(TEST_FUNC_IMPURE, Default::default(), test_func);
 
     #[async_move(boxed_send)]
     fn test_func(vs: Vec<Value>) -> Result {
