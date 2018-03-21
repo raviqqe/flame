@@ -65,15 +65,15 @@ impl Normal {
 
     #[async_move]
     pub fn compare(self, n: Self) -> Result<Ordering> {
-        Ok(match (self.clone(), n.clone()) {
+        Ok(match (self, n) {
             (Normal::List(x), Normal::List(y)) => await!(x.compare(y))?,
             (Normal::Number(x), Normal::Number(y)) => if let Some(o) = x.partial_cmp(&y) {
                 o
             } else {
-                return Err(await!(Error::not_comparable(self.into(), n.into()))?);
+                return Err(await!(Error::not_comparable(x.into(), y.into()))?);
             },
             (Normal::String(x), Normal::String(y)) => x.cmp(&y),
-            _ => return Err(await!(Error::not_comparable(self.into(), n.into()))?),
+            (x, y) => return Err(await!(Error::not_comparable(x.into(), y.into()))?),
         })
     }
 }
