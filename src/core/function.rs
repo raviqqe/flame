@@ -97,6 +97,18 @@ mod test {
     }
 
     #[test]
+    fn pure_function_call() {
+        block_on(papp(TEST_FUNC.clone(), &[]).pured()).unwrap();
+        block_on(papp(IDENTITY.clone(), &[papp(TEST_FUNC.clone(), &[])]).pured()).unwrap();
+    }
+
+    #[test]
+    fn impure_function_call() {
+        block_on(papp(TEST_FUNC_IMPURE.clone(), &[]).impure()).unwrap();
+        block_on(papp(IDENTITY.clone(), &[papp(TEST_FUNC_IMPURE.clone(), &[])]).impure()).unwrap();
+    }
+
+    #[test]
     fn size() {
         let s = size_of::<Function>();
         assert!(s <= 2 * size_of::<usize>(), "size of Function: {}", s);
