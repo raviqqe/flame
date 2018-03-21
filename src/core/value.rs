@@ -438,10 +438,6 @@ mod test {
     fn size() {
         let s = size_of::<Value>();
 
-        assert!(
-            s <= 2 * size_of::<u64>() + size_of::<usize>(),
-            "size of Value: {}",
-            s
-        );
+        assert!(s <= 2 * size_of::<u64>(), "size of Value: {}", s);
     }
 }
