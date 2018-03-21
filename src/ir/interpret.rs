@@ -10,8 +10,8 @@ pub fn interpret(vs: Vec<Value>, bs: &[u8]) -> Value {
 mod test {
     use futures::executor::block_on;
 
+    use super::super::super::core::{papp, Dictionary, List};
     use super::super::super::core::functions::{EQUAL, IDENTITY};
-    use super::super::super::core::papp;
 
     use super::super::ir;
 
@@ -27,8 +27,21 @@ mod test {
                 42.into(),
             ),
             (
+                vec![IDENTITY.clone(), List::new(&[42.into()]).into()],
+                &[0, 1, ir::Expansion::Expanded as u8, 1, 0, 2],
+                42.into(),
+            ),
+            (
                 vec![IDENTITY.clone(), "x".into(), 42.into()],
                 &[0, 0, 1, ir::Expansion::Unexpanded as u8, 1, 2, 3],
+                42.into(),
+            ),
+            (
+                vec![
+                    IDENTITY.clone(),
+                    Dictionary::new().strict_insert("x", 42).into(),
+                ],
+                &[0, 0, 1, ir::Expansion::Expanded as u8, 1, 2],
                 42.into(),
             ),
         ]: Vec<(Vec<Value>, &[u8], Value)>
