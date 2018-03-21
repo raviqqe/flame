@@ -19,12 +19,12 @@ pub type Result = result::Result<Value>;
 #[derive(Clone, Debug)]
 pub enum Function {
     Closure(Arc<(Value, Arguments)>),
-    Signatured(Arc<(Signature, SubFunction, bool)>),
+    Builtin(Arc<(Signature, SubFunction, bool)>),
 }
 
 impl Function {
     pub fn new(s: Signature, f: SubFunction, p: bool) -> Self {
-        Function::Signatured(Arc::new((s, f, p)))
+        Function::Builtin(Arc::new((s, f, p)))
     }
 
     pub fn closure(f: Value, a: Arguments) -> Self {
@@ -34,7 +34,7 @@ impl Function {
     pub fn is_pure(&self) -> bool {
         match *self {
             Function::Closure(_) => true,
-            Function::Signatured(ref r) => r.2,
+            Function::Builtin(ref r) => r.2,
         }
     }
 
@@ -45,7 +45,7 @@ impl Function {
                 let (f, vs) = (*r).clone();
                 app(f, vs.merge(&a))
             }
-            Function::Signatured(r) => await!(r.1(await!(Signature::bind(Ref(&r.0), a))?))?,
+            Function::Builtin(r) => await!(r.1(await!(Signature::bind(Ref(&r.0), a))?))?,
         })
     }
 }
