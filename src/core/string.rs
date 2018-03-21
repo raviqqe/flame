@@ -14,16 +14,16 @@ impl Str {
         let mut v = Vec::with_capacity(self.0.len() + s.0.len());
         v.extend_from_slice(&self.0);
         v.extend_from_slice(&s.0);
-        Str(v.into())
+        (&v as &[u8]).into()
     }
 
     pub fn split(&self, i: usize) -> (Self, Self) {
         let (f, l) = self.0.split_at(i);
-        (Str(f.into()), Str(l.into()))
+        (f.into(), l.into())
     }
 
     fn as_slice(&self) -> &[u8] {
-        &self.0
+        self.into()
     }
 }
 
@@ -45,15 +45,21 @@ impl<'a> Into<&'a [u8]> for &'a Str {
     }
 }
 
+impl<'a> From<&'a [u8]> for Str {
+    fn from(bs: &'a [u8]) -> Self {
+        Str(bs.into())
+    }
+}
+
 impl<'a> From<&'a str> for Str {
     fn from(s: &'a str) -> Self {
-        Str(s.as_bytes().into())
+        s.as_bytes().into()
     }
 }
 
 impl From<String> for Str {
     fn from(s: String) -> Self {
-        Str(s.as_bytes().into())
+        s.as_bytes().into()
     }
 }
 
