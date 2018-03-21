@@ -10,11 +10,8 @@ use super::error::Error;
 pub struct Str(Arc<[u8]>);
 
 impl Str {
-    pub fn merge(&self, s: &Self) -> Self {
-        let mut v = Vec::with_capacity(self.0.len() + s.0.len());
-        v.extend_from_slice(&self.0);
-        v.extend_from_slice(&s.0);
-        (&v as &[u8]).into()
+    pub fn merge(ss: &[Self]) -> Self {
+        (&(ss.iter().map(|s| &s.0 as &[u8]).collect(): Vec<&[u8]>).concat() as &[u8]).into()
     }
 
     pub fn split(&self, i: usize) -> (Self, Self) {

@@ -128,7 +128,7 @@ impl List {
             self = await!(l.clone().list())?;
         }
 
-        Ok(["[", &ss.join(" ".into()), "]"].join("").to_string())
+        Ok(["[", &ss.join(" ".into()), "]"].concat().to_string())
     }
 
     #[async_move(boxed_send)]

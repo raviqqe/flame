@@ -90,7 +90,7 @@ impl Dictionary {
             ss.push(v);
         }
 
-        Ok(["{", &ss.join(" ".into()), "}"].join("").to_string())
+        Ok(["{", &ss.join(" ".into()), "}"].concat().to_string())
     }
 
     pub fn size(&self) -> usize {

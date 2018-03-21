@@ -4,6 +4,7 @@ use super::error::Error;
 use super::normal::Normal;
 use super::result::Result;
 use super::signature::Signature;
+use super::string::Str;
 use super::value::Value;
 
 pure_function!(
@@ -63,7 +64,7 @@ fn insert(vs: Vec<Value>) -> Result<Value> {
                 l = await!(l.rest())?;
 
                 let (f, l) = s.split(i);
-                s = f.merge(&m).merge(&l);
+                s = Str::merge(&[f, m, l]);
             }
 
             Value::from(s)
@@ -94,8 +95,16 @@ fn merge(vs: Vec<Value>) -> Result<Value> {
         }
         Normal::List(l) => await!(l.merge(vs[1].clone()))?,
         Normal::String(mut s) => {
-            let ss = await!(vs[1].clone().string())?;
-            Value::from(s.merge(&ss))
+            let mut l = await!(vs[1].clone().list())?;
+            let mut ss = vec![s];
+
+            while !l.is_empty() {
+                let s = await!(l.first()?.string())?;
+                l = await!(l.rest())?;
+                ss.push(s);
+            }
+
+            Str::merge(&ss).into()
         }
         n => return Err(await!(Error::not_collection(n.into()))?),
     })
@@ -133,6 +142,11 @@ mod test {
                     List::new(&[2.into()]).into(),
                 ],
                 List::new(&[0.into(), 1.into(), 2.into()]).into(),
+            ),
+            (&["".into()], "".into()),
+            (
+                &["foo".into(), "bar".into(), "baz".into()],
+                "foobarbaz".into(),
             ),
         ]: Vec<(&[Value], Value)>
         {
