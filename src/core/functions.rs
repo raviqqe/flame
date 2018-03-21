@@ -46,7 +46,6 @@ mod test {
 
     use super::super::dictionary::Dictionary;
     use super::super::list::List;
-    use super::super::normal::Normal;
     use super::super::utils::papp;
 
     #[test]
@@ -88,7 +87,7 @@ mod test {
     fn equal_false() {
         for xs in vec![
             &[42.into(), 0.into()],
-            &[42.into(), 42.into(), Normal::Nil.into()],
+            &[42.into(), 42.into(), Value::Nil],
             &[
                 List::new(&[42.into()]).into(),
                 List::new(&["foo".into()]).into(),

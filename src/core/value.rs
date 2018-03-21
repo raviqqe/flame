@@ -13,7 +13,6 @@ use super::result::Result;
 use super::string::Str;
 use super::thunk::Thunk;
 use super::utils::papp;
-use super::vague_normal::VagueNormal;
 
 #[derive(Clone, Debug)]
 pub enum Value {
@@ -32,27 +31,20 @@ pub enum Value {
 
 impl Value {
     #[async_move]
-    pub fn vague(self) -> Result<VagueNormal> {
+    pub fn pured(self) -> Result<Normal> {
         match self {
             Value::Error(e) => Err(e),
-            Value::Thunk(t) => await!(t.eval()),
-            _ => Ok(VagueNormal::Pure(self.try_into().unwrap())),
-        }
-    }
-
-    #[async_move]
-    pub fn pured(self) -> Result<Normal> {
-        match await!(self.vague())? {
-            VagueNormal::Pure(n) => Ok(n),
-            VagueNormal::Impure(_) => Err(Error::impure()),
+            Value::Thunk(t) => await!(t.eval_pure()),
+            v => Ok(v.try_into().unwrap()),
         }
     }
 
     #[async_move]
     pub fn impure(self) -> Result<Normal> {
-        match await!(self.vague())? {
-            VagueNormal::Pure(_) => Err(Error::pured()),
-            VagueNormal::Impure(n) => Ok(n),
+        match self {
+            Value::Error(e) => Err(e),
+            Value::Thunk(t) => await!(t.eval_impure()),
+            _ => Err(Error::pured()),
         }
     }
 
@@ -62,7 +54,7 @@ impl Value {
 
         match n {
             Normal::Boolean(b) => Ok(b),
-            _ => Err(await!(Error::not_boolean(n))?),
+            _ => Err(await!(Error::not_boolean(n.into()))?),
         }
     }
 
@@ -72,7 +64,7 @@ impl Value {
 
         match n {
             Normal::Dictionary(d) => Ok(d),
-            _ => Err(await!(Error::not_dictionary(n))?),
+            _ => Err(await!(Error::not_dictionary(n.into()))?),
         }
     }
 
@@ -82,7 +74,7 @@ impl Value {
 
         match n {
             Normal::Function(f) => Ok(f),
-            _ => Err(await!(Error::not_function(n))?),
+            _ => Err(await!(Error::not_function(n.into()))?),
         }
     }
 
@@ -103,7 +95,7 @@ impl Value {
 
         match n {
             Normal::List(l) => Ok(l),
-            _ => Err(await!(Error::not_list(n))?),
+            _ => Err(await!(Error::not_list(n.into()))?),
         }
     }
 
@@ -113,7 +105,7 @@ impl Value {
 
         match n {
             Normal::Number(n) => Ok(n),
-            _ => Err(await!(Error::not_number(n))?),
+            _ => Err(await!(Error::not_number(n.into()))?),
         }
     }
 
@@ -123,7 +115,7 @@ impl Value {
 
         match n {
             Normal::String(s) => Ok(s),
-            _ => Err(await!(Error::not_string(n))?),
+            _ => Err(await!(Error::not_string(n.into()))?),
         }
     }
 
@@ -248,7 +240,7 @@ mod test {
             (List::Empty.into(), "[]"),
             (List::new(&[42.into()]).into(), "[42]"),
             (List::new(&[0.into(), 42.into()]).into(), "[0 42]"),
-            (Normal::Nil.into(), "nil"),
+            (Value::Nil, "nil"),
             (42.into(), "42"),
             (1.5.into(), "1.5"),
             ("foo".into(), "\"foo\""),
@@ -296,8 +288,8 @@ mod test {
                 List::new(&[1.into()]).into(),
                 false,
             ),
-            (Normal::Nil.into(), Normal::Nil.into(), true),
-            (Normal::Nil.into(), 0.into(), false),
+            (Value::Nil, Value::Nil, true),
+            (Value::Nil, 0.into(), false),
             (0.into(), 0.into(), true),
             (0.into(), 1.into(), false),
             ("a".into(), "a".into(), true),
@@ -372,7 +364,7 @@ mod test {
             (0.into(), List::default().into()),
             (true.into(), true.into()),
             (TEST_FUNCTION.clone(), TEST_FUNCTION.clone()),
-            (Normal::Nil.into(), Normal::Nil.into()),
+            (Value::Nil, Value::Nil),
         ]: Vec<(Value, Value)>
         {
             assert!(block_on(v.clone().compare(w)).is_err());
@@ -384,7 +376,7 @@ mod test {
         let s = size_of::<Value>();
 
         assert!(
-            s <= size_of::<u64>() + size_of::<Normal>(),
+            s <= 2 * size_of::<u64>() + size_of::<usize>(),
             "size of Value: {}",
             s
         );

@@ -9,10 +9,10 @@ use futures::prelude::*;
 
 use core::arguments::Arguments;
 use core::error::Error;
+use core::normal::Normal;
 use core::result::Result;
 use core::unsafe_ref::{Ref, RefMut};
 use core::utils::IDENTITY;
-use core::vague_normal::VagueNormal;
 use core::value::Value;
 
 #[derive(Clone, Debug)]
@@ -23,8 +23,28 @@ impl Thunk {
         Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
+    #[async_move]
+    pub fn eval_pure(self) -> Result<Normal> {
+        let n = await!(self.eval())?;
+
+        match n {
+            VagueNormal::Pure(n) => Ok(n),
+            _ => Err(Error::impure()),
+        }
+    }
+
+    #[async_move]
+    pub fn eval_impure(self) -> Result<Normal> {
+        let n = await!(self.eval())?;
+
+        match n {
+            VagueNormal::Impure(n) => Ok(n),
+            _ => Err(Error::pured()),
+        }
+    }
+
     #[async_move(boxed_send)]
-    pub fn eval(self) -> Result<VagueNormal> {
+    fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock(State::Normal) {
             let mut purity = true;
 
@@ -172,6 +192,12 @@ impl Inner {
     }
 }
 
+#[derive(Clone, Debug)]
+pub enum VagueNormal {
+    Pure(Normal),
+    Impure(Normal),
+}
+
 #[cfg(test)]
 mod test {
     use std::sync::atomic::{AtomicUsize, Ordering};
@@ -179,7 +205,6 @@ mod test {
     use futures::executor::block_on;
     use test::Bencher;
 
-    use core::normal::Normal;
     use core::signature::Signature;
     use core::utils::{papp, IDENTITY};
 
@@ -192,8 +217,7 @@ mod test {
 
     #[test]
     fn eval_error() {
-        let e =
-            block_on(Thunk::new(Value::from(42.0), Arguments::new(&[], &[])).eval()).unwrap_err();
+        let e = block_on(Thunk::new(42.into(), Arguments::new(&[], &[])).eval()).unwrap_err();
 
         assert_eq!(e.name(), "TypeError");
         assert_eq!(e.message(), "42 is not a function");
@@ -219,7 +243,7 @@ mod test {
             }
         }
 
-        Ok(Normal::Number(SUM.load(Ordering::SeqCst) as f64).into())
+        Ok(Value::Number(SUM.load(Ordering::SeqCst) as f64).into())
     }
 
     #[test]

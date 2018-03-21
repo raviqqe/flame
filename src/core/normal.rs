@@ -57,8 +57,8 @@ impl Normal {
             (Normal::Number(x), Normal::Number(y)) => x == y,
             (Normal::Nil, Normal::Nil) => true,
             (Normal::String(x), Normal::String(y)) => x == y,
-            (Normal::Function(_), _) => return Err(await!(Error::not_equalable(self))?),
-            (_, Normal::Function(_)) => return Err(await!(Error::not_equalable(n))?),
+            (Normal::Function(f), _) => return Err(await!(Error::not_equalable(f.into()))?),
+            (_, Normal::Function(f)) => return Err(await!(Error::not_equalable(f.into()))?),
             _ => false,
         })
     }
@@ -70,10 +70,10 @@ impl Normal {
             (Normal::Number(x), Normal::Number(y)) => if let Some(o) = x.partial_cmp(&y) {
                 o
             } else {
-                return Err(await!(Error::not_comparable(self, n))?);
+                return Err(await!(Error::not_comparable(self.into(), n.into()))?);
             },
             (Normal::String(x), Normal::String(y)) => x.cmp(&y),
-            _ => return Err(await!(Error::not_comparable(self, n))?),
+            _ => return Err(await!(Error::not_comparable(self.into(), n.into()))?),
         })
     }
 }
