@@ -3,6 +3,8 @@ use std::ops::{Deref, DerefMut};
 #[derive(Clone, Debug)]
 pub struct Ref<T>(pub *const T);
 
+impl<T: Clone> Copy for Ref<T> {}
+
 impl<T> Deref for Ref<T> {
     type Target = T;
 
@@ -28,6 +30,8 @@ unsafe impl<T> Sync for Ref<T> {}
 
 #[derive(Clone, Debug)]
 pub struct RefMut<T>(pub *mut T);
+
+impl<T: Clone> Copy for RefMut<T> {}
 
 impl<T> Deref for RefMut<T> {
     type Target = T;
