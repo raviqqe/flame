@@ -311,4 +311,9 @@ mod test {
     fn bench_arguments_new(b: &mut Bencher) {
         b.iter(|| black_box(Arguments::new(&[], &[])));
     }
+
+    #[bench]
+    fn bench_arguments_rest_positionals(b: &mut Bencher) {
+        b.iter(|| black_box(Arguments::new(&[], &[])).rest_positionals());
+    }
 }
