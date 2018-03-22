@@ -29,16 +29,17 @@ impl HalfSignature {
         mut args: RefMut<Arguments>,
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
-        for s in this.requireds.clone() {
+        for i in 0..this.requireds.len() {
             let v = match args.clone().next_positional() {
                 Some(v) => v,
-                None => await!(Arguments::search_keyword(args.clone(), s.clone()))?,
+                None => await!(Arguments::search_keyword(args.clone(), this.requireds[i].clone()))?,
             };
 
             vs.push(v);
         }
 
-        for o in this.optionals.clone() {
+        for i in 0..this.optionals.len() {
+            let o = this.optionals[i].clone();
             let r = await!(Arguments::search_keyword(args.clone(), o.name));
             vs.push(
                 args.clone()
@@ -60,12 +61,13 @@ impl HalfSignature {
         mut args: RefMut<Arguments>,
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
-        for s in this.requireds.clone() {
-            let v = await!(Arguments::search_keyword(args.clone(), s))?;
+        for i in 0..this.requireds.len() {
+            let v = await!(Arguments::search_keyword(args.clone(), this.requireds[i].clone()))?;
             vs.push(v);
         }
 
-        for o in this.optionals.clone() {
+        for i in 0..this.optionals.len() {
+            let o = this.optionals[i].clone();
             let r = await!(Arguments::search_keyword(args.clone(), o.name));
             vs.push(r.unwrap_or(o.value));
         }
