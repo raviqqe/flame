@@ -32,7 +32,10 @@ impl HalfSignature {
         for i in 0..this.requireds.len() {
             let v = match args.clone().next_positional() {
                 Some(v) => v,
-                None => await!(Arguments::search_keyword(args.clone(), this.requireds[i].clone()))?,
+                None => await!(Arguments::search_keyword(
+                    args.clone(),
+                    this.requireds[i].clone()
+                ))?,
             };
 
             vs.push(v);
@@ -62,7 +65,10 @@ impl HalfSignature {
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
         for i in 0..this.requireds.len() {
-            let v = await!(Arguments::search_keyword(args.clone(), this.requireds[i].clone()))?;
+            let v = await!(Arguments::search_keyword(
+                args.clone(),
+                this.requireds[i].clone()
+            ))?;
             vs.push(v);
         }
 
