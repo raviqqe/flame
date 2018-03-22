@@ -45,7 +45,7 @@ impl Function {
                 let (f, vs) = (*r).clone();
                 app(f, vs.merge(&a))
             }
-            Function::Builtin(r) => await!(r.1(await!(Signature::bind(Ref(&r.0), a))?))?,
+            Function::Builtin(r) => await!(r.1(await!(Ref(&r.0).bind(a))?))?,
         })
     }
 }

@@ -25,14 +25,14 @@ impl HalfSignature {
 
     #[async_move]
     pub fn bind_positionals(
-        this: Ref<Self>,
+        self: Ref<Self>,
         mut args: RefMut<Arguments>,
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
-        await!(this.bind_required_positionals(args, vs))?;
-        await!(this.bind_optional_positionals(args, vs))?;
+        await!(self.bind_required_positionals(args, vs))?;
+        await!(self.bind_optional_positionals(args, vs))?;
 
-        if this.rest != "" {
+        if self.rest != "" {
             vs.push(args.rest_positionals());
         }
 
@@ -48,7 +48,7 @@ impl HalfSignature {
         for i in 0..self.requireds.len() {
             let v = match args.next_positional() {
                 Some(v) => v,
-                None => await!(Arguments::search_keyword(args, self.requireds[i].clone()))?,
+                None => await!(args.search_keyword(self.requireds[i].clone()))?,
             };
 
             vs.push(v);
@@ -65,7 +65,7 @@ impl HalfSignature {
     ) -> Result<()> {
         for i in 0..self.optionals.len() {
             let o = self.optionals[i].clone();
-            let r = await!(Arguments::search_keyword(args, o.name));
+            let r = await!(args.search_keyword(o.name));
             vs.push(args.next_positional().unwrap_or(r.unwrap_or(o.value)));
         }
 
@@ -74,22 +74,22 @@ impl HalfSignature {
 
     #[async_move]
     pub fn bind_keywords(
-        this: Ref<HalfSignature>,
+        self: Ref<HalfSignature>,
         mut args: RefMut<Arguments>,
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
-        for i in 0..this.requireds.len() {
-            let v = await!(Arguments::search_keyword(args, this.requireds[i].clone()))?;
+        for i in 0..self.requireds.len() {
+            let v = await!(args.search_keyword(self.requireds[i].clone()))?;
             vs.push(v);
         }
 
-        for i in 0..this.optionals.len() {
-            let o = this.optionals[i].clone();
-            let r = await!(Arguments::search_keyword(args, o.name));
+        for i in 0..self.optionals.len() {
+            let o = self.optionals[i].clone();
+            let r = await!(args.search_keyword(o.name));
             vs.push(r.unwrap_or(o.value));
         }
 
-        if this.rest != "" {
+        if self.rest != "" {
             vs.push(args.rest_keywords());
         }
 
@@ -145,11 +145,7 @@ mod test {
         ] {
             let mut v = vec![];
 
-            block_on(HalfSignature::bind_positionals(
-                (&s).into(),
-                (&mut a).into(),
-                (&mut v).into(),
-            )).unwrap();
+            block_on(Ref(&s).bind_positionals((&mut a).into(), (&mut v).into())).unwrap();
 
             assert_eq!(v.len(), l);
         }
@@ -163,11 +159,7 @@ mod test {
                 Arguments::positionals(&[]),
             ),
         ] {
-            block_on(HalfSignature::bind_positionals(
-                (&s).into(),
-                (&mut a).into(),
-                (&mut vec![]).into(),
-            )).unwrap_err();
+            block_on(Ref(&s).bind_positionals((&mut a).into(), (&mut vec![]).into())).unwrap_err();
         }
     }
 
@@ -178,11 +170,10 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(HalfSignature::bind_positionals(
-                (&s).into(),
-                (&mut a).into(),
-                (&mut Vec::with_capacity(s.arity())).into(),
-            )).unwrap();
+            block_on(
+                Ref(&s)
+                    .bind_positionals((&mut a).into(), (&mut Vec::with_capacity(s.arity())).into()),
+            ).unwrap();
         });
     }
 
@@ -193,11 +184,10 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(HalfSignature::bind_positionals(
-                (&s).into(),
-                (&mut a).into(),
-                (&mut Vec::with_capacity(s.arity())).into(),
-            )).unwrap();
+            block_on(
+                Ref(&s)
+                    .bind_positionals((&mut a).into(), (&mut Vec::with_capacity(s.arity())).into()),
+            ).unwrap();
         });
     }
 
@@ -208,8 +198,7 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(HalfSignature::bind_required_positionals(
-                (&s).into(),
+            block_on(Ref(&s).bind_required_positionals(
                 (&mut a).into(),
                 (&mut Vec::with_capacity(s.arity())).into(),
             )).unwrap();
@@ -223,11 +212,10 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(HalfSignature::bind_positionals(
-                (&s).into(),
-                (&mut a).into(),
-                (&mut Vec::with_capacity(s.arity())).into(),
-            )).unwrap();
+            block_on(
+                Ref(&s)
+                    .bind_positionals((&mut a).into(), (&mut Vec::with_capacity(s.arity())).into()),
+            ).unwrap();
         });
     }
 }

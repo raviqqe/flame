@@ -30,20 +30,11 @@ impl Signature {
     }
 
     #[async_move]
-    pub fn bind(this: Ref<Self>, a: RefMut<Arguments>) -> Result<Vec<Value>> {
-        let mut vs = Vec::with_capacity(this.arity());
+    pub fn bind(self: Ref<Self>, a: RefMut<Arguments>) -> Result<Vec<Value>> {
+        let mut vs = Vec::with_capacity(self.arity());
 
-        await!(HalfSignature::bind_positionals(
-            Ref(&this.positionals),
-            a.clone(),
-            RefMut(&mut vs),
-        ))?;
-
-        await!(HalfSignature::bind_keywords(
-            Ref(&this.keywords),
-            a.clone(),
-            RefMut(&mut vs),
-        ))?;
+        await!(Ref(&self.positionals).bind_positionals(a, RefMut(&mut vs),))?;
+        await!(Ref(&self.keywords).bind_keywords(a, RefMut(&mut vs),))?;
 
         await!(Arguments::check_empty(a.into()))?;
 
@@ -94,7 +85,7 @@ mod test {
                 Arguments::positionals(&[42.into()]),
             ),
         ] {
-            block_on(Signature::bind(Ref(&s), RefMut(&mut a))).unwrap();
+            block_on(Ref(&s).bind(RefMut(&mut a))).unwrap();
         }
     }
 
@@ -112,7 +103,7 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(Signature::bind((&s).into(), (&mut a).into())).unwrap();
+            block_on(Ref(&s).bind((&mut a).into())).unwrap();
         });
     }
 }

@@ -91,20 +91,20 @@ impl Arguments {
     }
 
     #[async_move]
-    pub fn search_keyword(mut this: RefMut<Self>, s: Str) -> Result<Value> {
-        for k in &mut this.keywords {
+    pub fn search_keyword(mut self: RefMut<Self>, s: Str) -> Result<Value> {
+        for k in &mut self.keywords {
             if s == k.name {
                 return Ok(replace(k, KeywordArgument::new("", Value::Nil)).value);
             }
         }
 
-        let v = this.expanded_dict
+        let v = self.expanded_dict
             .clone()
             .ok_or_else(|| Error::argument("cannot find a keyword argument"))?;
         let d = await!(v.dictionary())?;
         let v = await!(d.clone().find(s.clone().into()))?;
 
-        this.expanded_dict = Some(await!(d.delete(s.into()))?.into());
+        self.expanded_dict = Some(await!(d.delete(s.into()))?.into());
 
         Ok(v)
     }
@@ -124,16 +124,16 @@ impl Arguments {
     }
 
     #[async_move]
-    pub fn check_empty(this: Ref<Self>) -> Result<()> {
-        if !this.positionals.is_empty() {
+    pub fn check_empty(self: Ref<Self>) -> Result<()> {
+        if !self.positionals.is_empty() {
             return Err(Error::argument(&format!(
                 "{} positional arguments are left.",
-                this.positionals.len()
+                self.positionals.len()
             )));
         }
 
-        if let Some(v) = this.expanded_dict.clone() {
-            let n = this.keywords.len() + await!(v.dictionary())?.size();
+        if let Some(v) = self.expanded_dict.clone() {
+            let n = self.keywords.len() + await!(v.dictionary())?.size();
 
             if n > 0 {
                 return Err(Error::argument(&format!(
