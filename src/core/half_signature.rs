@@ -29,30 +29,44 @@ impl HalfSignature {
         mut args: RefMut<Arguments>,
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
-        for i in 0..this.requireds.len() {
-            let v = match args.clone().next_positional() {
+        await!(this.bind_required_positionals(args, vs))?;
+        await!(this.bind_optional_positionals(args, vs))?;
+
+        if this.rest != "" {
+            vs.push(args.rest_positionals());
+        }
+
+        Ok(())
+    }
+
+    #[async_move]
+    fn bind_required_positionals(
+        self: Ref<Self>,
+        mut args: RefMut<Arguments>,
+        mut vs: RefMut<Vec<Value>>,
+    ) -> Result<()> {
+        for i in 0..self.requireds.len() {
+            let v = match args.next_positional() {
                 Some(v) => v,
-                None => await!(Arguments::search_keyword(
-                    args.clone(),
-                    this.requireds[i].clone()
-                ))?,
+                None => await!(Arguments::search_keyword(args, self.requireds[i].clone()))?,
             };
 
             vs.push(v);
         }
 
-        for i in 0..this.optionals.len() {
-            let o = this.optionals[i].clone();
-            let r = await!(Arguments::search_keyword(args.clone(), o.name));
-            vs.push(
-                args.clone()
-                    .next_positional()
-                    .unwrap_or(r.unwrap_or(o.value.clone())),
-            );
-        }
+        Ok(())
+    }
 
-        if this.rest != "" {
-            vs.push(args.rest_positionals());
+    #[async_move]
+    fn bind_optional_positionals(
+        self: Ref<Self>,
+        mut args: RefMut<Arguments>,
+        mut vs: RefMut<Vec<Value>>,
+    ) -> Result<()> {
+        for i in 0..self.optionals.len() {
+            let o = self.optionals[i].clone();
+            let r = await!(Arguments::search_keyword(args, o.name));
+            vs.push(args.next_positional().unwrap_or(r.unwrap_or(o.value)));
         }
 
         Ok(())
@@ -65,16 +79,13 @@ impl HalfSignature {
         mut vs: RefMut<Vec<Value>>,
     ) -> Result<()> {
         for i in 0..this.requireds.len() {
-            let v = await!(Arguments::search_keyword(
-                args.clone(),
-                this.requireds[i].clone()
-            ))?;
+            let v = await!(Arguments::search_keyword(args, this.requireds[i].clone()))?;
             vs.push(v);
         }
 
         for i in 0..this.optionals.len() {
             let o = this.optionals[i].clone();
-            let r = await!(Arguments::search_keyword(args.clone(), o.name));
+            let r = await!(Arguments::search_keyword(args, o.name));
             vs.push(r.unwrap_or(o.value));
         }
 
@@ -168,6 +179,36 @@ mod test {
         b.iter(|| {
             let mut a = a.clone();
             block_on(HalfSignature::bind_positionals(
+                (&s).into(),
+                (&mut a).into(),
+                (&mut Vec::with_capacity(s.arity())).into(),
+            )).unwrap();
+        });
+    }
+
+    #[bench]
+    fn bench_half_signature_bind_positionals_empty(b: &mut Bencher) {
+        let s = HalfSignature::new(vec![], vec![], "".into());
+        let a = Arguments::positionals(&[]);
+
+        b.iter(|| {
+            let mut a = a.clone();
+            block_on(HalfSignature::bind_positionals(
+                (&s).into(),
+                (&mut a).into(),
+                (&mut Vec::with_capacity(s.arity())).into(),
+            )).unwrap();
+        });
+    }
+
+    #[bench]
+    fn bench_half_signature_bind_requied_positionals(b: &mut Bencher) {
+        let s = HalfSignature::new(vec!["x".into()], vec![], "".into());
+        let a = Arguments::positionals(&[42.into()]);
+
+        b.iter(|| {
+            let mut a = a.clone();
+            block_on(HalfSignature::bind_required_positionals(
                 (&s).into(),
                 (&mut a).into(),
                 (&mut Vec::with_capacity(s.arity())).into(),
