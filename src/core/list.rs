@@ -192,14 +192,7 @@ impl<'a> From<&'a [Value]> for List {
 
 pure_function!(
     FIRST,
-    Signature::new(
-        vec!["list".into()],
-        vec![],
-        "".into(),
-        vec![],
-        vec![],
-        "".into()
-    ),
+    Signature::new(vec!["list".into()], "".into(), vec![], "".into()),
     first
 );
 
@@ -211,14 +204,7 @@ fn first(vs: Vec<Value>) -> Result<Value> {
 
 pure_function!(
     REST,
-    Signature::new(
-        vec!["list".into()],
-        vec![],
-        "".into(),
-        vec![],
-        vec![],
-        "".into()
-    ),
+    Signature::new(vec!["list".into()], "".into(), vec![], "".into()),
     rest
 );
 
@@ -230,14 +216,7 @@ fn rest(vs: Vec<Value>) -> Result<Value> {
 
 pure_function!(
     PREPEND,
-    Signature::new(
-        vec![],
-        vec![],
-        "elemsAndList".into(),
-        vec![],
-        vec![],
-        "".into()
-    ),
+    Signature::new(vec![], "elemsAndList".into(), vec![], "".into()),
     prepend
 );
 

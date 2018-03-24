@@ -4,7 +4,7 @@ use super::super::core::{Result, Signature, Value};
 
 pure_function!(
     LIST,
-    Signature::new(vec![], vec![], "rest".into(), vec![], vec![], "".into()),
+    Signature::new(vec![], "rest".into(), vec![], "".into()),
     list
 );
 

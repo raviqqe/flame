@@ -1,7 +1,7 @@
 use futures::prelude::*;
 
 use super::arguments::Arguments;
-use super::half_signature::HalfSignature;
+use super::half_signature::{KeywordParameters, PositionalParameters};
 use super::optional_parameter::OptionalParameter;
 use super::result::Result;
 use super::string::Str;
@@ -10,22 +10,15 @@ use super::value::Value;
 
 #[derive(Clone, Debug, Default)]
 pub struct Signature {
-    positionals: HalfSignature,
-    keywords: HalfSignature,
+    positionals: PositionalParameters,
+    keywords: KeywordParameters,
 }
 
 impl Signature {
-    pub fn new(
-        pr: Vec<Str>,
-        po: Vec<OptionalParameter>,
-        pp: Str,
-        kr: Vec<Str>,
-        ko: Vec<OptionalParameter>,
-        kk: Str,
-    ) -> Self {
+    pub fn new(ps: Vec<Str>, pr: Str, ks: Vec<OptionalParameter>, kr: Str) -> Self {
         Signature {
-            positionals: HalfSignature::new(pr, po, pp),
-            keywords: HalfSignature::new(kr, ko, kk),
+            positionals: PositionalParameters::new(ps, pr),
+            keywords: KeywordParameters::new(ks, kr),
         }
     }
 
@@ -33,8 +26,8 @@ impl Signature {
     pub fn bind(self: Ref<Self>, a: RefMut<Arguments>) -> Result<Vec<Value>> {
         let mut vs = Vec::with_capacity(self.arity());
 
-        await!(Ref(&self.positionals).bind_positionals(a, RefMut(&mut vs),))?;
-        await!(Ref(&self.keywords).bind_keywords(a, RefMut(&mut vs),))?;
+        await!(Ref(&self.positionals).bind(a, RefMut(&mut vs)))?;
+        await!(Ref(&self.keywords).bind(a, RefMut(&mut vs)))?;
 
         await!(Arguments::check_empty(a.into()))?;
 
@@ -51,11 +44,13 @@ mod test {
     use futures::executor::block_on;
     use test::Bencher;
 
+    use super::super::arguments::{Expansion, KeywordArgument};
+
     use super::*;
 
     #[test]
     fn new() {
-        Signature::new(vec![], vec![], "".into(), vec![], vec![], "".into());
+        Signature::new(vec![], "".into(), vec![], "".into());
     }
 
     #[test]
@@ -63,26 +58,17 @@ mod test {
         for (s, mut a) in vec![
             (Signature::default(), Arguments::default()),
             (
-                Signature::new(
-                    vec!["x".into()],
-                    vec![],
-                    "".into(),
-                    vec![],
-                    vec![],
-                    "".into(),
-                ),
+                Signature::new(vec!["x".into()], "".into(), vec![], "".into()),
                 Arguments::positionals(&[42.into()]),
             ),
             (
                 Signature::new(
                     vec![],
+                    "".into(),
                     vec![OptionalParameter::new("x", 42)],
                     "".into(),
-                    vec![],
-                    vec![],
-                    "".into(),
                 ),
-                Arguments::positionals(&[42.into()]),
+                Arguments::new(&[], &[Expansion::Unexpanded(KeywordArgument::new("x", 42))]),
             ),
         ] {
             block_on(Ref(&s).bind(RefMut(&mut a))).unwrap();
@@ -91,14 +77,7 @@ mod test {
 
     #[bench]
     fn bench_signature_bind(b: &mut Bencher) {
-        let s = Signature::new(
-            vec!["x".into()],
-            vec![],
-            "".into(),
-            vec![],
-            vec![],
-            "".into(),
-        );
+        let s = Signature::new(vec!["x".into()], "".into(), vec![], "".into());
         let a = Arguments::positionals(&[42.into()]);
 
         b.iter(|| {

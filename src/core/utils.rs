@@ -16,14 +16,7 @@ pub fn papp(f: Value, vs: &[Value]) -> Value {
 
 pure_function!(
     IDENTITY,
-    Signature::new(
-        vec!["x".into()],
-        vec![],
-        "".into(),
-        vec![],
-        vec![],
-        "".into()
-    ),
+    Signature::new(vec!["x".into()], "".into(), vec![], "".into()),
     identity
 );
 
@@ -34,14 +27,7 @@ fn identity(vs: Vec<Value>) -> Result<Value> {
 
 pure_function!(
     TEST_FUNCTION,
-    Signature::new(
-        vec![],
-        vec![],
-        "elemsAndList".into(),
-        vec![],
-        vec![],
-        "".into()
-    ),
+    Signature::new(vec![], "elemsAndList".into(), vec![], "".into()),
     test_function
 );
 

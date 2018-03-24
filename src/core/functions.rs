@@ -12,7 +12,7 @@ pub use super::utils::IDENTITY;
 
 pure_function!(
     EQUAL,
-    Signature::new(vec![], vec![], "xs".into(), vec![], vec![], "".into()),
+    Signature::new(vec![], "xs".into(), vec![], "".into()),
     equal
 );
 

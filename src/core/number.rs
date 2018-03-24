@@ -6,7 +6,7 @@ use super::value::Value;
 
 pure_function!(
     ADD,
-    Signature::new(vec![], vec![], "ns".into(), vec![], vec![], "".into()),
+    Signature::new(vec![], "ns".into(), vec![], "".into()),
     add
 );
 
@@ -26,7 +26,7 @@ fn add(vs: Vec<Value>) -> Result<Value> {
 
 pure_function!(
     SUBTRACT,
-    Signature::new(vec![], vec![], "ns".into(), vec![], vec![], "".into()),
+    Signature::new(vec![], "ns".into(), vec![], "".into()),
     subtract
 );
 
@@ -47,7 +47,7 @@ fn subtract(vs: Vec<Value>) -> Result<Value> {
 
 pure_function!(
     MULTIPLY,
-    Signature::new(vec![], vec![], "ns".into(), vec![], vec![], "".into()),
+    Signature::new(vec![], "ns".into(), vec![], "".into()),
     multiply
 );
 
@@ -67,7 +67,7 @@ fn multiply(vs: Vec<Value>) -> Result<Value> {
 
 pure_function!(
     DIVIDE,
-    Signature::new(vec![], vec![], "ns".into(), vec![], vec![], "".into()),
+    Signature::new(vec![], "ns".into(), vec![], "".into()),
     divide
 );
 

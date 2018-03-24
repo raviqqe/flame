@@ -11,9 +11,7 @@ pure_function!(
     INSERT,
     Signature::new(
         vec!["collection".into()],
-        vec![],
         "keyValuePairs".into(),
-        vec![],
         vec![],
         "".into()
     ),
@@ -77,9 +75,7 @@ pure_function!(
     MERGE,
     Signature::new(
         vec!["collection".into()],
-        vec![],
         "collections".into(),
-        vec![],
         vec![],
         "".into()
     ),

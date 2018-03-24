@@ -4,14 +4,7 @@ use super::super::core::{papp, Arguments, Function, Result, Signature, Value};
 
 pure_function!(
     Y,
-    Signature::new(
-        vec!["function".into()],
-        vec![],
-        "".into(),
-        vec![],
-        vec![],
-        "".into()
-    ),
+    Signature::new(vec!["function".into()], "".into(), vec![], "".into()),
     y
 );
 
@@ -38,14 +31,7 @@ mod test {
 
     pure_function!(
         FACTORIAL,
-        Signature::new(
-            vec!["me".into(), "n".into()],
-            vec![],
-            "".into(),
-            vec![],
-            vec![],
-            "".into()
-        ),
+        Signature::new(vec!["me".into(), "n".into()], "".into(), vec![], "".into()),
         factorial
     );
 
@@ -103,14 +89,7 @@ mod test {
 
     pure_function!(
         INFINITY,
-        Signature::new(
-            vec!["me".into()],
-            vec![],
-            "".into(),
-            vec![],
-            vec![],
-            "".into()
-        ),
+        Signature::new(vec!["me".into()], "".into(), vec![], "".into()),
         infinity
     );
 
@@ -130,14 +109,7 @@ mod test {
 
     pure_function!(
         DECREMENT_TO_0,
-        Signature::new(
-            vec!["me".into(), "n".into()],
-            vec![],
-            "".into(),
-            vec![],
-            vec![],
-            "".into()
-        ),
+        Signature::new(vec!["me".into(), "n".into()], "".into(), vec![], "".into()),
         decrement_to_0
     );
 

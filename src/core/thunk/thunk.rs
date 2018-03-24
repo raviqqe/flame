@@ -228,7 +228,7 @@ mod test {
 
     pure_function!(
         INCREMENT,
-        Signature::new(vec![], vec![], "".into(), vec![], vec![], "".into()),
+        Signature::new(vec![], "".into(), vec![], "".into()),
         increment
     );
 

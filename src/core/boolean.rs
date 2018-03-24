@@ -6,7 +6,7 @@ use super::value::Value;
 
 pure_function!(
     IF,
-    Signature::new(vec![], vec![], "conds".into(), vec![], vec![], "".into()),
+    Signature::new(vec![], "conds".into(), vec![], "".into()),
     iff
 );
 
