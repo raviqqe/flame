@@ -1,7 +1,6 @@
 use futures::prelude::*;
 
 use super::arguments::Arguments;
-use super::optional_parameter::OptionalParameter;
 use super::result::Result;
 use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
@@ -85,6 +84,21 @@ impl KeywordParameters {
 
     pub fn arity(&self) -> usize {
         self.parameters.len() + (self.rest == "") as usize
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct OptionalParameter {
+    pub name: Str,
+    pub value: Value,
+}
+
+impl OptionalParameter {
+    pub fn new(n: impl Into<Str>, v: impl Into<Value>) -> Self {
+        OptionalParameter {
+            name: n.into(),
+            value: v.into(),
+        }
     }
 }
 

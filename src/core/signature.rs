@@ -1,8 +1,7 @@
 use futures::prelude::*;
 
 use super::arguments::Arguments;
-use super::half_signature::{KeywordParameters, PositionalParameters};
-use super::optional_parameter::OptionalParameter;
+use super::parameters::{KeywordParameters, OptionalParameter, PositionalParameters};
 use super::result::Result;
 use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
