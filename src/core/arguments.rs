@@ -44,7 +44,7 @@ impl Arguments {
                 Expansion::Expanded(_) => true,
                 Expansion::Unexpanded(ref k) => kq.push_back(k).is_err(),
             } {
-                d = Some(Self::merge_keyword_arguments(&ks[i..]).into());
+                d = Some(Self::merge_keyword_arguments(&ks[i..]));
                 break;
             }
         }
@@ -109,11 +109,11 @@ impl Arguments {
         let ks = replace(&mut self.keywords, ArrayQueue::new());
         let d = replace(&mut self.expanded_dict, None);
 
-        let mut v = d.unwrap_or(Value::from(Dictionary::new()));
+        let mut v = d.unwrap_or(Dictionary::new().into());
 
         for k in &ks {
             let k = k.clone();
-            v = v.insert(Value::from(k.name), k.value);
+            v = v.insert(k.name, k.value);
         }
 
         v
@@ -123,7 +123,7 @@ impl Arguments {
     pub fn check_empty(self: Ref<Self>) -> Result<()> {
         if !self.positionals.is_empty() {
             return Err(Error::argument(&format!(
-                "{} positional arguments are left.",
+                "{} positional arguments are left",
                 self.positionals.len()
             )));
         }
@@ -133,7 +133,7 @@ impl Arguments {
 
             if n > 0 {
                 return Err(Error::argument(&format!(
-                    "{} keyword arguments are left.",
+                    "{} keyword arguments are left",
                     n
                 )));
             }
