@@ -22,10 +22,10 @@ impl Signature {
     }
 
     #[async_move]
-    pub fn bind(self: Ref<Self>, a: RefMut<Arguments>) -> Result<Vec<Value>> {
+    pub fn bind(self: Ref<Self>, mut a: RefMut<Arguments>) -> Result<Vec<Value>> {
         let mut vs = Vec::with_capacity(self.arity());
 
-        await!(Ref(&self.positionals).bind(a, RefMut(&mut vs)))?;
+        self.positionals.bind(&mut a, &mut vs)?;
         await!(Ref(&self.keywords).bind(a, RefMut(&mut vs)))?;
 
         await!(Arguments::check_empty(a.into()))?;

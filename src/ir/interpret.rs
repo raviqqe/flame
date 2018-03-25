@@ -9,13 +9,30 @@ pub fn interpret(vs: Vec<Value>, bs: &[u8]) -> Value {
 #[cfg(test)]
 mod test {
     use futures::executor::block_on;
+    use futures::prelude::*;
 
-    use super::super::super::core::{papp, Dictionary, List};
+    use super::super::super::core::{papp, Dictionary, List, OptionalParameter, Result, Signature};
     use super::super::super::core::functions::{EQUAL, IDENTITY};
 
     use super::super::ir;
 
     use super::*;
+
+    pure_function!(
+        IDENTITY_KEYWORD,
+        Signature::new(
+            vec![],
+            "".into(),
+            vec![OptionalParameter::new("x", 42)],
+            "".into()
+        ),
+        identity
+    );
+
+    #[async_move(boxed_send)]
+    fn identity(vs: Vec<Value>) -> Result {
+        Ok(vs[0].clone())
+    }
 
     #[test]
     fn interpretation() {
@@ -32,13 +49,13 @@ mod test {
                 42.into(),
             ),
             (
-                vec![IDENTITY.clone(), "x".into(), 42.into()],
+                vec![IDENTITY_KEYWORD.clone(), "x".into(), 42.into()],
                 &[0, 0, 1, ir::Expansion::Unexpanded as u8, 1, 2, 3],
                 42.into(),
             ),
             (
                 vec![
-                    IDENTITY.clone(),
+                    IDENTITY_KEYWORD.clone(),
                     Dictionary::new().strict_insert("x", 42).into(),
                 ],
                 &[0, 0, 1, ir::Expansion::Expanded as u8, 1, 2],

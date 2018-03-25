@@ -1,6 +1,7 @@
 use futures::prelude::*;
 
 use super::arguments::Arguments;
+use super::error::Error;
 use super::result::Result;
 use super::string::Str;
 use super::unsafe_ref::{Ref, RefMut};
@@ -20,20 +21,12 @@ impl PositionalParameters {
         }
     }
 
-    #[async_move]
-    pub fn bind(
-        self: Ref<Self>,
-        mut args: RefMut<Arguments>,
-        mut vs: RefMut<Vec<Value>>,
-    ) -> Result<()> {
-        // TODO: Use an iterator with an immovable generator.
-        for i in 0..self.parameters.len() {
-            let v = match args.next_positional() {
-                Some(v) => v,
-                None => await!(args.search_keyword(self.parameters[i].clone()))?,
-            };
-
-            vs.push(v);
+    pub fn bind(&self, args: &mut Arguments, vs: &mut Vec<Value>) -> Result<()> {
+        for p in &self.parameters {
+            match args.next_positional() {
+                Some(v) => vs.push(v),
+                None => return Err(Error::argument(&format!("argument {:?} is missing", p))),
+            }
         }
 
         if self.rest != "" {
@@ -117,7 +110,7 @@ mod test {
 
     #[test]
     fn positional_parameters_bind() {
-        for (s, mut a, l) in vec![
+        for (ps, mut a, l) in vec![
             (
                 PositionalParameters::new(vec![], "".into()),
                 Arguments::default(),
@@ -136,7 +129,7 @@ mod test {
         ] {
             let mut v = vec![];
 
-            block_on(Ref(&s).bind((&mut a).into(), (&mut v).into())).unwrap();
+            ps.bind(&mut a, &mut v).unwrap();
 
             assert_eq!(v.len(), l);
         }
@@ -144,7 +137,7 @@ mod test {
 
     #[test]
     fn keyword_parameters_bind() {
-        for (s, mut a, l) in vec![
+        for (ks, mut a, l) in vec![
             (
                 KeywordParameters::new(vec![OptionalParameter::new("x", 42)], "".into()),
                 Arguments::default(),
@@ -158,7 +151,7 @@ mod test {
         ] {
             let mut v = vec![];
 
-            block_on(Ref(&s).bind((&mut a).into(), (&mut v).into())).unwrap();
+            block_on(Ref(&ks).bind((&mut a).into(), (&mut v).into())).unwrap();
 
             assert_eq!(v.len(), l);
         }
@@ -166,49 +159,51 @@ mod test {
 
     #[test]
     fn positional_parameters_bind_error() {
-        for (s, mut a) in vec![
+        for (ps, mut a) in vec![
             (
                 PositionalParameters::new(vec!["x".into()], "".into()),
-                Arguments::positionals(&[]),
+                Arguments::default(),
             ),
         ] {
-            block_on(Ref(&s).bind((&mut a).into(), (&mut vec![]).into())).unwrap_err();
+            ps.bind(&mut a, &mut vec![]).unwrap_err();
         }
     }
 
     #[bench]
     fn bench_positional_parameters_bind(b: &mut Bencher) {
-        let s = PositionalParameters::new(vec!["x".into()], "".into());
+        let ps = PositionalParameters::new(vec!["x".into()], "".into());
         let a = Arguments::positionals(&[42.into()]);
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(Ref(&s).bind((&mut a).into(), (&mut Vec::with_capacity(s.arity())).into()))
+            ps.bind(&mut a, &mut Vec::with_capacity(ps.arity()))
                 .unwrap();
         });
     }
 
     #[bench]
     fn bench_positional_parameters_bind_empty(b: &mut Bencher) {
-        let s = PositionalParameters::new(vec![], "".into());
+        let ps = PositionalParameters::new(vec![], "".into());
         let a = Arguments::positionals(&[]);
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(Ref(&s).bind((&mut a).into(), (&mut Vec::with_capacity(s.arity())).into()))
+            ps.bind(&mut a, &mut Vec::with_capacity(ps.arity()))
                 .unwrap();
         });
     }
 
     #[bench]
-    fn bench_positional_parameters_bind_keywords(b: &mut Bencher) {
-        let s = PositionalParameters::new(vec!["x".into()], "".into());
+    fn bench_keyword_parameters_bind(b: &mut Bencher) {
+        let ks = KeywordParameters::new(vec![OptionalParameter::new("x", 42)], "".into());
         let a = Arguments::new(&[], &[Expansion::Unexpanded(KeywordArgument::new("x", 42))]);
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(Ref(&s).bind((&mut a).into(), (&mut Vec::with_capacity(s.arity())).into()))
-                .unwrap();
+            block_on(Ref(&ks).bind(
+                (&mut a).into(),
+                (&mut Vec::with_capacity(ks.arity())).into(),
+            )).unwrap();
         });
     }
 }
