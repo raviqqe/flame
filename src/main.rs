@@ -1,18 +1,16 @@
 #![feature(arbitrary_self_types, conservative_impl_trait, generators, generator_trait,
-           integer_atomics, proc_macro, str_escape, test, try_from, type_ascription,
+           integer_atomics, pin, proc_macro, str_escape, test, try_from, type_ascription,
            universal_impl_trait)]
 
 extern crate array_queue;
 extern crate docopt;
 extern crate futures_await as futures;
-extern crate futures_stable as futures_stable;
 extern crate hamt_sync;
 #[macro_use]
 extern crate lazy_static;
 extern crate pest;
 #[macro_use]
 extern crate pest_derive;
-extern crate pin_api;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;

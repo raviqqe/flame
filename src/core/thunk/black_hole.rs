@@ -1,10 +1,10 @@
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
+use std::marker::Unpin;
 use std::sync::{Mutex, PoisonError};
 
 use futures::prelude::*;
 use futures::task::{AtomicWaker, Context};
-use pin_api::Unpin;
 
 use super::super::unsafe_ref::Ref;
 

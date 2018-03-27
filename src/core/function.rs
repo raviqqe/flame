@@ -1,7 +1,7 @@
+use std::marker::Unpin;
 use std::sync::Arc;
 
 use futures::prelude::*;
-use pin_api::Unpin;
 
 use super::arguments::Arguments;
 use super::error::Error;

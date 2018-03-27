@@ -5,7 +5,7 @@ mod test {
 
     use futures::executor::block_on;
     use futures::prelude::*;
-    use futures_stable::block_on_stable;
+    use futures::stable::StableFuture;
     use test::Bencher;
 
     use super::super::core::{Result, Value};
@@ -53,7 +53,7 @@ mod test {
 
     #[bench]
     fn bench_async_function(b: &mut Bencher) {
-        b.iter(|| block_on_stable(async_function()).unwrap());
+        b.iter(|| block_on(async_function().pin()).unwrap());
     }
 
     #[async_move]
