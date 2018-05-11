@@ -6,21 +6,21 @@ use core::Value;
 
 use super::error::RuntimeError;
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 pub fn evaluate(v: Value) -> Result<(), Never> {
     await!(v.impure()).unwrap();
     Ok(())
 }
 
-#[async_move]
+#[async]
 pub fn run(es: Vec<Effect>) -> Result<(), RuntimeError> {
-    let mut p = ThreadPool::new();
+    let mut p = ThreadPool::new()?;
 
     for e in es {
         if e.expanded {
             unimplemented!()
         } else {
-            p.spawn(evaluate(e.value)).unwrap();
+            p.spawn_pinned(evaluate(e.value)).unwrap();
         }
     }
 

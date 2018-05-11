@@ -8,7 +8,7 @@ pure_function!(
     y
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn y(vs: Vec<Value>) -> Result {
     let f = vs[0].clone();
 
@@ -20,7 +20,7 @@ mod test {
     use std::thread::sleep;
     use std::time::Duration;
 
-    use futures::executor::{block_on, ThreadPool};
+    use futures::{executor::ThreadPool, stable::block_on_stable};
     use test::Bencher;
 
     use run::evaluate;
@@ -35,7 +35,7 @@ mod test {
         factorial
     );
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn factorial(vs: Vec<Value>) -> Result {
         let f = vs[0].clone();
         let n = vs[1].clone();
@@ -66,14 +66,14 @@ mod test {
 
     #[test]
     fn recursive_function() {
-        block_on(papp(Y.clone(), &[FACTORIAL.clone()]).function()).unwrap();
+        block_on_stable(papp(Y.clone(), &[FACTORIAL.clone()]).function()).unwrap();
     }
 
     #[test]
     fn y_factorial() {
         for x in 0..32 {
             assert_eq!(
-                block_on(papp(papp(Y.clone(), &[FACTORIAL.clone()]), &[x.into()]).number())
+                block_on_stable(papp(papp(Y.clone(), &[FACTORIAL.clone()]), &[x.into()]).number())
                     .unwrap(),
                 strict_factorial(x as f64)
             );
@@ -82,9 +82,9 @@ mod test {
 
     #[bench]
     fn bench_y_factorial(b: &mut Bencher) {
-        let f = block_on(papp(Y.clone(), &[FACTORIAL.clone()]).function()).unwrap();
+        let f = block_on_stable(papp(Y.clone(), &[FACTORIAL.clone()]).function()).unwrap();
 
-        b.iter(|| block_on(papp(f.clone().into(), &[100.into()]).number()).unwrap());
+        b.iter(|| block_on_stable(papp(f.clone().into(), &[100.into()]).number()).unwrap());
     }
 
     pure_function!(
@@ -93,7 +93,7 @@ mod test {
         infinity
     );
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn infinity(vs: Vec<Value>) -> Result {
         Ok(papp(vs[0].clone(), &[]))
     }
@@ -101,7 +101,8 @@ mod test {
     #[test]
     fn infinite_recursion() {
         ThreadPool::new()
-            .spawn(evaluate(papp(papp(Y.clone(), &[INFINITY.clone()]), &[])))
+            .unwrap()
+            .spawn_pinned(evaluate(papp(papp(Y.clone(), &[INFINITY.clone()]), &[])))
             .unwrap();
 
         sleep(Duration::from_secs(10));
@@ -113,7 +114,7 @@ mod test {
         decrement_to_0
     );
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn decrement_to_0(vs: Vec<Value>) -> Result {
         let n = await!(vs[1].clone().number())?;
 
@@ -129,7 +130,7 @@ mod test {
         let f = papp(Y.clone(), &[DECREMENT_TO_0.clone()]);
 
         b.iter(|| {
-            block_on(papp(f.clone(), &[1000.into()]).pured()).unwrap();
+            block_on_stable(papp(f.clone(), &[1000.into()]).pured()).unwrap();
         });
     }
 }

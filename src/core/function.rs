@@ -1,4 +1,4 @@
-use std::marker::Unpin;
+use std::boxed::PinBox;
 use std::sync::Arc;
 
 use futures::prelude::*;
@@ -11,7 +11,7 @@ use super::unsafe_ref::{Ref, RefMut};
 use super::utils::app;
 use super::value::Value;
 
-type ResultFuture = Box<Future<Item = Value, Error = Error> + Send + Unpin>;
+type ResultFuture = PinBox<Future<Item = Value, Error = Error> + Send>;
 type SubFunction = fn(vs: Vec<Value>) -> ResultFuture;
 
 pub type Result = result::Result<Value>;
@@ -38,7 +38,7 @@ impl Function {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn call(self, a: RefMut<Arguments>) -> Result {
         Ok(match self {
             Function::Closure(r) => {
@@ -51,7 +51,7 @@ impl Function {
 }
 
 macro_rules! pure_function {
-    ($i: ident, $e: expr, $f: ident) => {
+    ($i:ident, $e:expr, $f:ident) => {
         lazy_static! {
             pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f, true));
         }
@@ -59,7 +59,7 @@ macro_rules! pure_function {
 }
 
 macro_rules! impure_function {
-    ($i: ident, $e: expr, $f: ident) => {
+    ($i:ident, $e:expr, $f:ident) => {
         lazy_static! {
             pub static ref $i: Value = ::core::Value::from(::core::Function::new($e, $f, false));
         }
@@ -70,7 +70,7 @@ macro_rules! impure_function {
 mod test {
     use std::mem::size_of;
 
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
     use test::Bencher;
 
     use super::*;
@@ -80,7 +80,7 @@ mod test {
     pure_function!(TEST_FUNC, Default::default(), test_func);
     impure_function!(TEST_FUNC_IMPURE, Default::default(), test_func);
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn test_func(vs: Vec<Value>) -> Result {
         Ok(Value::from(42.0))
     }
@@ -89,19 +89,20 @@ mod test {
     fn closure() {
         let f = Function::closure(IDENTITY.clone(), Arguments::positionals(&[42.into()]));
 
-        assert_eq!(block_on(papp(f.into(), &[]).number()).unwrap(), 42.0);
+        assert_eq!(block_on_stable(papp(f.into(), &[]).number()).unwrap(), 42.0);
     }
 
     #[test]
     fn pure_function_call() {
-        block_on(papp(TEST_FUNC.clone(), &[]).pured()).unwrap();
-        block_on(papp(IDENTITY.clone(), &[papp(TEST_FUNC.clone(), &[])]).pured()).unwrap();
+        block_on_stable(papp(TEST_FUNC.clone(), &[]).pured()).unwrap();
+        block_on_stable(papp(IDENTITY.clone(), &[papp(TEST_FUNC.clone(), &[])]).pured()).unwrap();
     }
 
     #[test]
     fn impure_function_call() {
-        block_on(papp(TEST_FUNC_IMPURE.clone(), &[]).impure()).unwrap();
-        block_on(papp(IDENTITY.clone(), &[papp(TEST_FUNC_IMPURE.clone(), &[])]).impure()).unwrap();
+        block_on_stable(papp(TEST_FUNC_IMPURE.clone(), &[]).impure()).unwrap();
+        block_on_stable(papp(IDENTITY.clone(), &[papp(TEST_FUNC_IMPURE.clone(), &[])]).impure())
+            .unwrap();
     }
 
     #[test]
@@ -113,7 +114,7 @@ mod test {
     #[bench]
     fn function_call(b: &mut Bencher) {
         b.iter(|| {
-            block_on(papp(IDENTITY.clone(), &[1000.into()]).pured()).unwrap();
+            block_on_stable(papp(IDENTITY.clone(), &[1000.into()]).pured()).unwrap();
         });
     }
 }

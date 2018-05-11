@@ -1,6 +1,5 @@
 use std::error::Error;
 use std::fmt::{self, Display, Formatter};
-use std::marker::Unpin;
 use std::sync::{Mutex, PoisonError};
 
 use futures::prelude::*;
@@ -30,11 +29,9 @@ impl BlackHole {
     }
 }
 
-unsafe impl Unpin for BlackHole {}
-
 impl Future for BlackHole {
-    type Item = ();
     type Error = BlackHoleError;
+    type Item = ();
 
     fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
         (&*self).poll(c)
@@ -42,8 +39,8 @@ impl Future for BlackHole {
 }
 
 impl Future for Ref<BlackHole> {
-    type Item = ();
     type Error = BlackHoleError;
+    type Item = ();
 
     fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
         (&**self: &BlackHole).poll(c)
@@ -51,8 +48,8 @@ impl Future for Ref<BlackHole> {
 }
 
 impl<'a> Future for &'a BlackHole {
-    type Item = ();
     type Error = BlackHoleError;
+    type Item = ();
 
     fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
         match *self.0.lock()? {
@@ -100,8 +97,8 @@ impl<T> From<PoisonError<T>> for BlackHoleError {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
     use std::sync::mpsc::{channel, Sender};
+    use std::sync::Arc;
     use std::thread::sleep;
     use std::time::Duration;
 
@@ -124,8 +121,8 @@ mod tests {
     }
 
     impl Future for ArcBlackHole {
-        type Item = ();
         type Error = BlackHoleError;
+        type Item = ();
 
         fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
             (&*self.0).poll(c)
@@ -142,7 +139,7 @@ mod tests {
         BlackHole::new().release().unwrap();
     }
 
-    #[async_move]
+    #[async(boxed, send)]
     fn send(s: Sender<i32>, b: ArcBlackHole) -> Result<(), Never> {
         s.send(1).unwrap();
         await!(b).unwrap();
@@ -150,7 +147,7 @@ mod tests {
         Ok(())
     }
 
-    #[async_move]
+    #[async(boxed, send)]
     fn release(s: Sender<i32>, b: ArcBlackHole) -> Result<(), Never> {
         s.send(2).unwrap();
         b.release().unwrap();
@@ -159,20 +156,20 @@ mod tests {
 
     #[test]
     fn black_hole_wait() {
-        let mut p = ThreadPool::new();
+        let mut p = ThreadPool::new().unwrap();
 
         let b = ArcBlackHole::new();
         let (s, r) = channel();
 
         assert!(r.try_recv().is_err());
 
-        p.spawn(Box::new(send(s.clone(), b.clone()))).unwrap();
+        p.spawn_pinned(send(s.clone(), b.clone())).unwrap();
 
         sleep(Duration::from_millis(100));
         assert_eq!(r.recv().unwrap(), 1);
         assert!(r.try_recv().is_err());
 
-        p.spawn(Box::new(release(s.clone(), b.clone()))).unwrap();
+        p.spawn_pinned(release(s.clone(), b.clone())).unwrap();
 
         sleep(Duration::from_millis(100));
         assert_eq!(r.recv().unwrap(), 2);

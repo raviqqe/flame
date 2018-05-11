@@ -1,11 +1,12 @@
 use std::str::FromStr;
 
-use pest::Parser;
 use pest::iterators::Pair;
+use pest::Parser;
 
-use super::super::ast::{Arguments, DefFunction, Effect, Expansion, Expression, HalfSignature,
-                        Import, InnerStatement, KeywordArgument, LetVariable, Module,
-                        OptionalParameter, Signature, Statement};
+use super::super::ast::{
+    Arguments, DefFunction, Effect, Expansion, Expression, HalfSignature, Import, InnerStatement,
+    KeywordArgument, LetVariable, Module, OptionalParameter, Signature, Statement,
+};
 
 use super::error::ParsingError;
 
@@ -554,12 +555,10 @@ mod test {
                         HalfSignature::new(vec!["x".into()], vec![], "".into()),
                         HalfSignature::default(),
                     ),
-                    vec![
-                        InnerStatement::LetVariable(LetVariable::new(
-                            "y".into(),
-                            Expression::Number(42.into()),
-                        )),
-                    ],
+                    vec![InnerStatement::LetVariable(LetVariable::new(
+                        "y".into(),
+                        Expression::Number(42.into()),
+                    ))],
                     Expression::Name("x".into()),
                 ),
             ),
@@ -571,17 +570,15 @@ mod test {
                         HalfSignature::new(vec!["x".into()], vec![], "".into()),
                         HalfSignature::default(),
                     ),
-                    vec![
-                        InnerStatement::DefFunction(DefFunction::new(
-                            "g".into(),
-                            Signature::new(
-                                HalfSignature::new(vec!["y".into()], vec![], "".into()),
-                                HalfSignature::default(),
-                            ),
-                            vec![],
-                            Expression::Name("y".into()),
-                        )),
-                    ],
+                    vec![InnerStatement::DefFunction(DefFunction::new(
+                        "g".into(),
+                        Signature::new(
+                            HalfSignature::new(vec!["y".into()], vec![], "".into()),
+                            HalfSignature::default(),
+                        ),
+                        vec![],
+                        Expression::Name("y".into()),
+                    ))],
                     Expression::Name("x".into()),
                 ),
             ),
@@ -593,22 +590,18 @@ mod test {
                         HalfSignature::new(vec!["x".into()], vec![], "".into()),
                         HalfSignature::default(),
                     ),
-                    vec![
-                        InnerStatement::DefFunction(DefFunction::new(
-                            "g".into(),
-                            Signature::new(
-                                HalfSignature::new(vec!["y".into()], vec![], "".into()),
-                                HalfSignature::default(),
-                            ),
-                            vec![
-                                InnerStatement::LetVariable(LetVariable::new(
-                                    "z".into(),
-                                    Expression::Number(42.0),
-                                )),
-                            ],
-                            Expression::Name("y".into()),
-                        )),
-                    ],
+                    vec![InnerStatement::DefFunction(DefFunction::new(
+                        "g".into(),
+                        Signature::new(
+                            HalfSignature::new(vec!["y".into()], vec![], "".into()),
+                            HalfSignature::default(),
+                        ),
+                        vec![InnerStatement::LetVariable(LetVariable::new(
+                            "z".into(),
+                            Expression::Number(42.0),
+                        ))],
+                        Expression::Name("y".into()),
+                    ))],
                     Expression::Name("x".into()),
                 ),
             ),
@@ -681,9 +674,10 @@ mod test {
                 "123",
                 Module::new(
                     vec![],
-                    vec![
-                        Statement::Effect(Effect::new(Expression::Number(123.0), false)),
-                    ],
+                    vec![Statement::Effect(Effect::new(
+                        Expression::Number(123.0),
+                        false,
+                    ))],
                 ),
             ),
             (
@@ -712,26 +706,22 @@ mod test {
                 "(let name 42)",
                 Module::new(
                     vec![],
-                    vec![
-                        Statement::LetVariable(LetVariable::new(
-                            "name".into(),
-                            Expression::Number(42.0),
-                        )),
-                    ],
+                    vec![Statement::LetVariable(LetVariable::new(
+                        "name".into(),
+                        Expression::Number(42.0),
+                    ))],
                 ),
             ),
             (
                 "(def (f) 42)",
                 Module::new(
                     vec![],
-                    vec![
-                        Statement::DefFunction(DefFunction::new(
-                            "f".into(),
-                            Signature::default(),
-                            vec![],
-                            Expression::Number(42.0),
-                        )),
-                    ],
+                    vec![Statement::DefFunction(DefFunction::new(
+                        "f".into(),
+                        Signature::default(),
+                        vec![],
+                        Expression::Number(42.0),
+                    ))],
                 ),
             ),
             (
@@ -753,26 +743,22 @@ mod test {
                 "(let name 42)",
                 Module::new(
                     vec![],
-                    vec![
-                        Statement::LetVariable(LetVariable::new(
-                            "name".into(),
-                            Expression::Number(42.0),
-                        )),
-                    ],
+                    vec![Statement::LetVariable(LetVariable::new(
+                        "name".into(),
+                        Expression::Number(42.0),
+                    ))],
                 ),
             ),
             (
                 "(def (f) 42)",
                 Module::new(
                     vec![],
-                    vec![
-                        Statement::DefFunction(DefFunction::new(
-                            "f".into(),
-                            Signature::default(),
-                            vec![],
-                            Expression::Number(42.0),
-                        )),
-                    ],
+                    vec![Statement::DefFunction(DefFunction::new(
+                        "f".into(),
+                        Signature::default(),
+                        vec![],
+                        Expression::Number(42.0),
+                    ))],
                 ),
             ),
             (

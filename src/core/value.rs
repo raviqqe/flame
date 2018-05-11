@@ -29,7 +29,7 @@ pub enum Value {
 }
 
 impl Value {
-    #[async_move]
+    #[async]
     pub fn pured(self) -> Result<Normal> {
         match self {
             Value::Thunk(t) => await!(t.eval_pure()),
@@ -37,7 +37,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn impure(self) -> Result<Normal> {
         match self {
             Value::Thunk(t) => await!(t.eval_impure()),
@@ -45,7 +45,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn boolean(self) -> Result<bool> {
         let n = await!(self.pured())?;
 
@@ -55,7 +55,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn dictionary(self) -> Result<Dictionary> {
         let n = await!(self.pured())?;
 
@@ -65,7 +65,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn function(self) -> Result<Function> {
         let n = await!(self.pured())?;
 
@@ -75,7 +75,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn index(self) -> Result<usize> {
         let n = await!(self.number())?;
 
@@ -86,7 +86,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn list(self) -> Result<List> {
         let n = await!(self.pured())?;
 
@@ -96,7 +96,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn number(self) -> Result<f64> {
         let n = await!(self.pured())?;
 
@@ -106,7 +106,7 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn string(self) -> Result<Str> {
         let n = await!(self.pured())?;
 
@@ -116,24 +116,24 @@ impl Value {
         }
     }
 
-    #[async_move]
+    #[async]
     fn type_name(self) -> Result<Str> {
         Ok(await!(self.pured())?.type_name())
     }
 
-    #[async_move]
+    #[async]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
     }
 
-    #[async_move]
+    #[async]
     pub fn equal(self, v: Self) -> Result<bool> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;
         await!(m.equal(n))
     }
 
-    #[async_move]
+    #[async]
     pub fn compare(self, v: Self) -> Result<Ordering> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;
@@ -204,7 +204,7 @@ impl TryInto<Normal> for Value {
 mod test {
     use std::mem::size_of;
 
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
 
     use super::*;
 
@@ -243,7 +243,7 @@ mod test {
             ("foo".into(), "\"foo\""),
         ]: Vec<(Value, &str)>
         {
-            assert_eq!(&block_on(v.clone().to_string()).unwrap(), s);
+            assert_eq!(&block_on_stable(v.clone().to_string()).unwrap(), s);
         }
     }
 
@@ -293,7 +293,7 @@ mod test {
             ("a".into(), "b".into(), false),
         ]: Vec<(Value, Value, bool)>
         {
-            assert_eq!(block_on(v.clone().equal(w)).unwrap(), b);
+            assert_eq!(block_on_stable(v.clone().equal(w)).unwrap(), b);
         }
     }
 
@@ -305,7 +305,7 @@ mod test {
             (TEST_FUNCTION.clone(), 0.into()),
         ]: Vec<(Value, Value)>
         {
-            assert!(block_on(v.clone().equal(w)).is_err());
+            assert!(block_on_stable(v.clone().equal(w)).is_err());
         }
     }
 
@@ -350,7 +350,7 @@ mod test {
             ),
         ]: Vec<(Value, Value, Ordering)>
         {
-            assert_eq!(block_on(v.clone().compare(w)).unwrap(), o);
+            assert_eq!(block_on_stable(v.clone().compare(w)).unwrap(), o);
         }
     }
 
@@ -364,7 +364,7 @@ mod test {
             (Value::Nil, Value::Nil),
         ]: Vec<(Value, Value)>
         {
-            assert!(block_on(v.clone().compare(w)).is_err());
+            assert!(block_on_stable(v.clone().compare(w)).is_err());
         }
     }
 

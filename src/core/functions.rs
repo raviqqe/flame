@@ -16,7 +16,7 @@ pure_function!(
     equal
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn equal(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
 
@@ -40,7 +40,7 @@ fn equal(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
 
     use super::*;
 
@@ -79,7 +79,7 @@ mod test {
             ],
         ]: Vec<&[Value]>
         {
-            assert!(block_on(papp(EQUAL.clone(), xs).boolean()).unwrap());
+            assert!(block_on_stable(papp(EQUAL.clone(), xs).boolean()).unwrap());
         }
     }
 
@@ -94,7 +94,7 @@ mod test {
             ],
         ]: Vec<&[Value]>
         {
-            assert!(!block_on(papp(EQUAL.clone(), xs).boolean()).unwrap());
+            assert!(!block_on_stable(papp(EQUAL.clone(), xs).boolean()).unwrap());
         }
     }
 }

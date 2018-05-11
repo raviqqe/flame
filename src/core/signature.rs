@@ -21,7 +21,7 @@ impl Signature {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn bind(self: Ref<Self>, mut a: RefMut<Arguments>) -> Result<Vec<Value>> {
         let mut vs = Vec::with_capacity(self.arity());
 
@@ -40,7 +40,7 @@ impl Signature {
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
     use test::Bencher;
 
     use super::super::arguments::{Expansion, KeywordArgument};
@@ -70,7 +70,7 @@ mod test {
                 Arguments::new(&[], &[Expansion::Unexpanded(KeywordArgument::new("x", 42))]),
             ),
         ] {
-            block_on(Ref(&s).bind(RefMut(&mut a))).unwrap();
+            block_on_stable(Ref(&s).bind(RefMut(&mut a))).unwrap();
         }
     }
 
@@ -81,7 +81,7 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(Ref(&s).bind((&mut a).into())).unwrap();
+            block_on_stable(Ref(&s).bind((&mut a).into())).unwrap();
         });
     }
 }

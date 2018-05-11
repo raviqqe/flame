@@ -86,7 +86,7 @@ impl Arguments {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn search_keyword(mut self: RefMut<Self>, s: Str) -> Result<Value> {
         for k in &mut self.keywords {
             if s == k.name {
@@ -119,7 +119,7 @@ impl Arguments {
         v
     }
 
-    #[async_move]
+    #[async]
     pub fn check_empty(self: Ref<Self>) -> Result<()> {
         if !self.positionals.is_empty() {
             return Err(Error::argument(&format!(
@@ -269,7 +269,7 @@ impl KeywordArgument {
 mod test {
     use std::mem::size_of;
 
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
     use test::{black_box, Bencher};
 
     use super::*;
@@ -293,7 +293,7 @@ mod test {
             ),
         ]: Vec<(Arguments, List)>
         {
-            assert!(block_on(a.rest_positionals().equal(l.into())).unwrap());
+            assert!(block_on_stable(a.rest_positionals().equal(l.into())).unwrap());
         }
     }
 

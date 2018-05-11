@@ -8,19 +8,19 @@ pure_function!(
     list
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn list(vs: Vec<Value>) -> Result {
     Ok(vs[0].clone())
 }
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
 
     use super::*;
 
-    use super::super::super::core::{app, papp, Arguments, Expansion, List};
     use super::super::super::core::functions::EQUAL;
+    use super::super::super::core::{app, papp, Arguments, Expansion, List};
 
     #[test]
     fn list() {
@@ -49,11 +49,12 @@ mod test {
         ] {
             println!(
                 "{}",
-                block_on(app(LIST.clone(), a.clone()).to_string()).unwrap()
+                block_on_stable(app(LIST.clone(), a.clone()).to_string()).unwrap()
             );
 
             assert!(
-                block_on(papp(EQUAL.clone(), &[app(LIST.clone(), a), l.into()]).boolean()).unwrap(),
+                block_on_stable(papp(EQUAL.clone(), &[app(LIST.clone(), a), l.into()]).boolean())
+                    .unwrap(),
             );
         }
     }

@@ -3,8 +3,8 @@ mod test {
     use std::ops::{Generator, GeneratorState};
     use std::sync::Arc;
 
-    use futures::executor::block_on;
     use futures::prelude::*;
+    use futures::stable::block_on_stable;
     use futures::stable::StableFuture;
     use test::Bencher;
 
@@ -35,7 +35,7 @@ mod test {
             let mut g = generator_function();
 
             loop {
-                match g.resume() {
+                match unsafe { g.resume() } {
                     GeneratorState::Complete(r) => {
                         r.unwrap();
                         break;
@@ -53,27 +53,17 @@ mod test {
 
     #[bench]
     fn bench_async_function(b: &mut Bencher) {
-        b.iter(|| block_on(async_function().pin()).unwrap());
+        b.iter(|| block_on_stable(async_function().pin()).unwrap());
     }
 
-    #[async_move]
-    fn async_move_function() -> Result {
-        Ok(Value::Nil)
-    }
-
-    #[bench]
-    fn bench_async_move_function(b: &mut Bencher) {
-        b.iter(|| block_on(async_move_function()).unwrap());
-    }
-
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn boxed_async_function() -> Result {
         Ok(Value::Nil)
     }
 
     #[bench]
     fn bench_boxed_async_function(b: &mut Bencher) {
-        b.iter(|| block_on(boxed_async_function()).unwrap());
+        b.iter(|| block_on_stable(boxed_async_function()).unwrap());
     }
 
     #[bench]

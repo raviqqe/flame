@@ -72,7 +72,7 @@ impl Dictionary {
         Dictionary(Arc::new(Map::new()))
     }
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     pub fn to_string(self) -> Result<String> {
         let mut ss = vec![];
 
@@ -97,7 +97,7 @@ impl Dictionary {
         self.0.size()
     }
 
-    #[async_move]
+    #[async]
     pub fn insert(self, k: Value, v: Value) -> Result<Dictionary> {
         let k = Key::try_from(await!(k.pured())?)?;
         Ok(Dictionary::from(self.0.insert(k, v)))
@@ -117,7 +117,7 @@ impl Dictionary {
         Dictionary::from(m)
     }
 
-    #[async_move]
+    #[async]
     pub fn find(self, k: Value) -> Result<Value> {
         let n: Normal = await!(k.pured())?;
         let k: Key = n.try_into()?;
@@ -128,7 +128,7 @@ impl Dictionary {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn delete(self, k: Value) -> Result<Dictionary> {
         let k: Key = await!(k.pured())?.try_into()?;
 
@@ -138,7 +138,7 @@ impl Dictionary {
         }
     }
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     pub fn equal(self, d: Self) -> Result<bool> {
         let kvs1: Vec<(Key, Value)> = self.0
             .into_iter()

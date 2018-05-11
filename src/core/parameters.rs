@@ -55,7 +55,7 @@ impl KeywordParameters {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn bind(
         self: Ref<Self>,
         mut args: RefMut<Arguments>,
@@ -97,11 +97,11 @@ impl OptionalParameter {
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
     use test::Bencher;
 
-    use super::*;
     use super::super::arguments::{Expansion, KeywordArgument};
+    use super::*;
 
     #[test]
     fn new() {
@@ -151,7 +151,7 @@ mod test {
         ] {
             let mut v = vec![];
 
-            block_on(Ref(&ks).bind((&mut a).into(), (&mut v).into())).unwrap();
+            block_on_stable(Ref(&ks).bind((&mut a).into(), (&mut v).into())).unwrap();
 
             assert_eq!(v.len(), l);
         }
@@ -159,12 +159,10 @@ mod test {
 
     #[test]
     fn positional_parameters_bind_error() {
-        for (ps, mut a) in vec![
-            (
-                PositionalParameters::new(vec!["x".into()], "".into()),
-                Arguments::default(),
-            ),
-        ] {
+        for (ps, mut a) in vec![(
+            PositionalParameters::new(vec!["x".into()], "".into()),
+            Arguments::default(),
+        )] {
             ps.bind(&mut a, &mut vec![]).unwrap_err();
         }
     }
@@ -200,7 +198,7 @@ mod test {
 
         b.iter(|| {
             let mut a = a.clone();
-            block_on(Ref(&ks).bind(
+            block_on_stable(Ref(&ks).bind(
                 (&mut a).into(),
                 (&mut Vec::with_capacity(ks.arity())).into(),
             )).unwrap();

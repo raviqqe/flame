@@ -18,7 +18,7 @@ pure_function!(
     insert
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn insert(vs: Vec<Value>) -> Result<Value> {
     Ok(match await!(vs[0].clone().pured())? {
         Normal::Dictionary(mut d) => {
@@ -82,7 +82,7 @@ pure_function!(
     merge
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn merge(vs: Vec<Value>) -> Result<Value> {
     Ok(match await!(vs[0].clone().pured())? {
         Normal::Dictionary(d) => {
@@ -108,7 +108,7 @@ fn merge(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
 
     use super::*;
 
@@ -146,7 +146,7 @@ mod test {
             ),
         ]: Vec<(&[Value], Value)>
         {
-            assert!(block_on(papp(MERGE.clone(), vs).equal(x)).unwrap());
+            assert!(block_on_stable(papp(MERGE.clone(), vs).equal(x)).unwrap());
         }
     }
 }

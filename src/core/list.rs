@@ -62,7 +62,7 @@ impl List {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn rest(self) -> Result<List> {
         match self {
             List::Cons(c) => Ok(await!(c.1.clone().list())?),
@@ -84,7 +84,7 @@ impl List {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn merge(self, v: Value) -> Result<Value> {
         if await!(v.clone().list())?.is_empty() {
             return Ok(self.clone().into());
@@ -117,7 +117,7 @@ impl List {
         }
     }
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     pub fn to_string(mut self) -> Result<String> {
         let mut ss = vec![];
 
@@ -131,7 +131,7 @@ impl List {
         Ok(["[", &ss.join(" ".into()), "]"].concat().to_string())
     }
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     pub fn equal(mut self, mut l: Self) -> Result<bool> {
         loop {
             match (self.clone(), l.clone()) {
@@ -153,7 +153,7 @@ impl List {
         }
     }
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     pub fn compare(mut self, mut l: Self) -> Result<Ordering> {
         loop {
             match (self.clone(), l.clone()) {
@@ -196,7 +196,7 @@ pure_function!(
     first
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn first(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
     l.first()
@@ -208,7 +208,7 @@ pure_function!(
     rest
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn rest(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
     Ok(await!(l.rest())?.into())
@@ -220,7 +220,7 @@ pure_function!(
     prepend
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn prepend(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
     let f = l.first()?;
@@ -241,7 +241,7 @@ fn prepend(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
 
     use super::*;
 
@@ -256,7 +256,8 @@ mod test {
 
     #[test]
     fn first() {
-        let n = block_on(papp(FIRST.clone(), &[List::new(&[42.into()]).into()]).number()).unwrap();
+        let n = block_on_stable(papp(FIRST.clone(), &[List::new(&[42.into()]).into()]).number())
+            .unwrap();
 
         assert_eq!(n, 42.0);
     }
@@ -264,7 +265,7 @@ mod test {
     #[test]
     fn rest() {
         assert!(
-            block_on(
+            block_on_stable(
                 papp(REST.clone(), &[List::new(&[42.into()]).into()]).equal(List::Empty.into())
             ).unwrap()
         );
@@ -273,7 +274,7 @@ mod test {
     #[test]
     fn prepend() {
         assert!(
-            block_on(
+            block_on_stable(
                 papp(PREPEND.clone(), &[42.into(), List::Empty.into()])
                     .equal(List::new(&[42.into()]).into())
             ).unwrap()

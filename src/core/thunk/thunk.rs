@@ -1,8 +1,8 @@
 use std::cell::UnsafeCell;
 use std::convert::TryInto;
-use std::sync::Arc;
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::SeqCst;
+use std::sync::Arc;
 
 use super::black_hole::BlackHole;
 use futures::prelude::*;
@@ -23,7 +23,7 @@ impl Thunk {
         Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
-    #[async_move]
+    #[async]
     pub fn eval_pure(self) -> Result<Normal> {
         let n = await!(self.eval())?;
 
@@ -33,7 +33,7 @@ impl Thunk {
         }
     }
 
-    #[async_move]
+    #[async]
     pub fn eval_impure(self) -> Result<Normal> {
         let n = await!(self.eval())?;
 
@@ -43,7 +43,7 @@ impl Thunk {
         }
     }
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock(State::Normal) {
             let mut purity = true;
@@ -201,7 +201,7 @@ pub enum VagueNormal {
 mod test {
     use std::sync::atomic::{AtomicUsize, Ordering};
 
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
     use test::Bencher;
 
     use core::signature::Signature;
@@ -216,7 +216,8 @@ mod test {
 
     #[test]
     fn eval_error() {
-        let e = block_on(Thunk::new(42.into(), Arguments::new(&[], &[])).eval()).unwrap_err();
+        let e =
+            block_on_stable(Thunk::new(42.into(), Arguments::new(&[], &[])).eval()).unwrap_err();
 
         assert_eq!(e.name(), "TypeError");
         assert_eq!(e.message(), "42 is not a function");
@@ -232,7 +233,7 @@ mod test {
         increment
     );
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn increment(_: Vec<Value>) -> Result<Value> {
         loop {
             let s = SUM.load(Ordering::SeqCst);
@@ -250,7 +251,7 @@ mod test {
         let v = papp(INCREMENT.clone(), &[]);
 
         for _ in 0..1000 {
-            assert_eq!(block_on(v.clone().number()).unwrap(), 1.0);
+            assert_eq!(block_on_stable(v.clone().number()).unwrap(), 1.0);
         }
     }
 
@@ -262,8 +263,9 @@ mod test {
     #[bench]
     fn bench_thunk_eval(b: &mut Bencher) {
         b.iter(|| {
-            block_on(Thunk::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()])).eval())
-                .unwrap()
+            block_on_stable(
+                Thunk::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()])).eval(),
+            ).unwrap()
         });
     }
 }

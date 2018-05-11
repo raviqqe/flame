@@ -1,3 +1,4 @@
+use futures::io;
 use std::error::Error;
 use std::fmt::{Display, Formatter, Result};
 
@@ -19,5 +20,11 @@ impl Display for RuntimeError {
 impl Error for RuntimeError {
     fn description(&self) -> &str {
         &self.0
+    }
+}
+
+impl From<io::Error> for RuntimeError {
+    fn from(e: io::Error) -> Self {
+        RuntimeError(format!("{}", e))
     }
 }

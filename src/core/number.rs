@@ -10,7 +10,7 @@ pure_function!(
     add
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn add(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n = 0.0;
@@ -30,7 +30,7 @@ pure_function!(
     subtract
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn subtract(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n = await!(l.first()?.number())?;
@@ -51,7 +51,7 @@ pure_function!(
     multiply
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn multiply(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n: f64 = 1.0;
@@ -71,7 +71,7 @@ pure_function!(
     divide
 );
 
-#[async_move(boxed_send)]
+#[async(boxed, send)]
 fn divide(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n = await!(l.first()?.number())?;
@@ -88,7 +88,7 @@ fn divide(vs: Vec<Value>) -> Result<Value> {
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
+    use futures::stable::block_on_stable;
 
     use super::*;
 
@@ -102,7 +102,7 @@ mod test {
             (&[1.into(), 2.into(), 3.into()], 6.0),
         ]: Vec<(&[Value], f64)>
         {
-            assert_eq!(block_on(papp(ADD.clone(), xs).number()).unwrap(), y);
+            assert_eq!(block_on_stable(papp(ADD.clone(), xs).number()).unwrap(), y);
         }
     }
 
@@ -114,13 +114,16 @@ mod test {
             (&[1.into(), 2.into(), 3.into()], -4.0),
         ]: Vec<(&[Value], f64)>
         {
-            assert_eq!(block_on(papp(SUBTRACT.clone(), xs).number()).unwrap(), y);
+            assert_eq!(
+                block_on_stable(papp(SUBTRACT.clone(), xs).number()).unwrap(),
+                y
+            );
         }
     }
 
     #[test]
     fn subtract_error() {
-        assert!(block_on(papp(SUBTRACT.clone(), &[]).number()).is_err());
+        assert!(block_on_stable(papp(SUBTRACT.clone(), &[]).number()).is_err());
     }
 
     #[test]
@@ -131,7 +134,10 @@ mod test {
             (&[1.into(), 2.into(), 3.into()], 6.0),
         ]: Vec<(&[Value], f64)>
         {
-            assert_eq!(block_on(papp(MULTIPLY.clone(), xs).number()).unwrap(), y);
+            assert_eq!(
+                block_on_stable(papp(MULTIPLY.clone(), xs).number()).unwrap(),
+                y
+            );
         }
     }
 
@@ -144,12 +150,15 @@ mod test {
             (&[1.into(), 2.into(), 2.into()], 0.25),
         ]: Vec<(&[Value], f64)>
         {
-            assert_eq!(block_on(papp(DIVIDE.clone(), xs).number()).unwrap(), y);
+            assert_eq!(
+                block_on_stable(papp(DIVIDE.clone(), xs).number()).unwrap(),
+                y
+            );
         }
     }
 
     #[test]
     fn divide_error() {
-        assert!(block_on(papp(DIVIDE.clone(), &[]).number()).is_err());
+        assert!(block_on_stable(papp(DIVIDE.clone(), &[]).number()).is_err());
     }
 }

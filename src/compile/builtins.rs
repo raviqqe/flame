@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use super::super::builtin::*;
-use super::super::core::{Str, Value};
 use super::super::core::functions::*;
+use super::super::core::{Str, Value};
 
 pub fn builtins() -> HashMap<Str, Value> {
     let mut h = HashMap::new();

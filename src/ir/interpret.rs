@@ -8,11 +8,11 @@ pub fn interpret(vs: Vec<Value>, bs: &[u8]) -> Value {
 
 #[cfg(test)]
 mod test {
-    use futures::executor::block_on;
     use futures::prelude::*;
+    use futures::stable::block_on_stable;
 
-    use super::super::super::core::{papp, Dictionary, List, OptionalParameter, Result, Signature};
     use super::super::super::core::functions::{EQUAL, IDENTITY};
+    use super::super::super::core::{papp, Dictionary, List, OptionalParameter, Result, Signature};
 
     use super::super::ir;
 
@@ -29,7 +29,7 @@ mod test {
         identity
     );
 
-    #[async_move(boxed_send)]
+    #[async(boxed, send)]
     fn identity(vs: Vec<Value>) -> Result {
         Ok(vs[0].clone())
     }
@@ -63,7 +63,9 @@ mod test {
             ),
         ]: Vec<(Vec<Value>, &[u8], Value)>
         {
-            assert!(block_on(papp(EQUAL.clone(), &[interpret(vs, bs), v]).boolean()).unwrap());
+            assert!(
+                block_on_stable(papp(EQUAL.clone(), &[interpret(vs, bs), v]).boolean()).unwrap()
+            );
         }
     }
 }
