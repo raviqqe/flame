@@ -104,6 +104,7 @@ mod tests {
 
     use futures::executor::ThreadPool;
     use futures::prelude::*;
+    use test::Bencher;
 
     use super::*;
 
@@ -177,5 +178,10 @@ mod tests {
         sleep(Duration::from_millis(100));
         assert_eq!(r.recv().unwrap(), 3);
         assert!(r.try_recv().is_err());
+    }
+
+    #[bench]
+    fn bench_black_hole_new(b: &mut Bencher) {
+        b.iter(|| BlackHole::new());
     }
 }

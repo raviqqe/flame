@@ -256,6 +256,11 @@ mod test {
     }
 
     #[bench]
+    fn bench_inner_new(b: &mut Bencher) {
+        b.iter(|| Inner::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()])));
+    }
+
+    #[bench]
     fn bench_thunk_new(b: &mut Bencher) {
         b.iter(|| Thunk::new(IDENTITY.clone(), Arguments::positionals(&[1000.into()])));
     }
