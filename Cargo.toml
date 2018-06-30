@@ -6,7 +6,7 @@ authors = ["Yota Toyama <raviqqe@gmail.com>"]
 [dependencies]
 array-queue = "0.3"
 docopt = "0.8"
-futures = { git = "https://github.com/rust-lang-nursery/futures-rs", features = ["nightly"] }
+futures = { git = "https://github.com/rust-lang-nursery/futures-rs", branch = "0.3", features = ["nightly"] }
 hamt-sync = "0.2"
 lazy_static = "1"
 pest = "1"
