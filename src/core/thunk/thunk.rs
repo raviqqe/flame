@@ -5,7 +5,6 @@ use std::sync::atomic::Ordering::SeqCst;
 use std::sync::Arc;
 
 use super::black_hole::BlackHole;
-use futures::prelude::*;
 
 use core::arguments::Arguments;
 use core::error::Error;
@@ -23,7 +22,6 @@ impl Thunk {
         Thunk(Arc::new(UnsafeCell::new(Inner::new(f, a))))
     }
 
-    #[async]
     pub fn eval_pure(self) -> Result<Normal> {
         let n = await!(self.eval())?;
 
@@ -33,7 +31,6 @@ impl Thunk {
         }
     }
 
-    #[async]
     pub fn eval_impure(self) -> Result<Normal> {
         let n = await!(self.eval())?;
 
@@ -43,7 +40,6 @@ impl Thunk {
         }
     }
 
-    #[async(boxed, send)]
     fn eval(self) -> Result<VagueNormal> {
         if self.inner_mut().lock(State::Normal) {
             let mut purity = true;

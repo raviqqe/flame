@@ -1,4 +1,3 @@
-use futures::prelude::*;
 use std;
 use std::cmp::Ordering;
 use std::convert::TryInto;
@@ -29,7 +28,6 @@ pub enum Value {
 }
 
 impl Value {
-    #[async]
     pub fn pured(self) -> Result<Normal> {
         match self {
             Value::Thunk(t) => await!(t.eval_pure()),
@@ -37,7 +35,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn impure(self) -> Result<Normal> {
         match self {
             Value::Thunk(t) => await!(t.eval_impure()),
@@ -45,7 +42,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn boolean(self) -> Result<bool> {
         let n = await!(self.pured())?;
 
@@ -55,7 +51,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn dictionary(self) -> Result<Dictionary> {
         let n = await!(self.pured())?;
 
@@ -65,7 +60,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn function(self) -> Result<Function> {
         let n = await!(self.pured())?;
 
@@ -75,7 +69,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn index(self) -> Result<usize> {
         let n = await!(self.number())?;
 
@@ -86,7 +79,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn list(self) -> Result<List> {
         let n = await!(self.pured())?;
 
@@ -96,7 +88,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn number(self) -> Result<f64> {
         let n = await!(self.pured())?;
 
@@ -106,7 +97,6 @@ impl Value {
         }
     }
 
-    #[async]
     pub fn string(self) -> Result<Str> {
         let n = await!(self.pured())?;
 
@@ -116,24 +106,20 @@ impl Value {
         }
     }
 
-    #[async]
     fn type_name(self) -> Result<Str> {
         Ok(await!(self.pured())?.type_name())
     }
 
-    #[async]
     pub fn to_string(self) -> Result<String> {
         await!(await!(self.pured())?.to_string())
     }
 
-    #[async]
     pub fn equal(self, v: Self) -> Result<bool> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;
         await!(m.equal(n))
     }
 
-    #[async]
     pub fn compare(self, v: Self) -> Result<Ordering> {
         let m = await!(self.pured())?;
         let n = await!(v.pured())?;

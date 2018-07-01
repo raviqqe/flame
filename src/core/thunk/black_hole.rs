@@ -30,33 +30,31 @@ impl BlackHole {
 }
 
 impl Future for BlackHole {
-    type Error = BlackHoleError;
-    type Item = ();
+    type Output = Result<(), BlackHoleError>;
 
-    fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
+    fn poll(&mut self, c: &mut Context) -> Poll<Self::Output> {
         (&*self).poll(c)
     }
 }
 
 impl Future for Ref<BlackHole> {
-    type Error = BlackHoleError;
-    type Item = ();
+    type Output = Result<(), BlackHoleError>;
 
-    fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
+    fn poll(&mut self, c: &mut Context) -> Poll<Self::Output> {
         (&**self: &BlackHole).poll(c)
     }
 }
 
 impl<'a> Future for &'a BlackHole {
-    type Error = BlackHoleError;
-    type Item = ();
+    type Output = Result<(), BlackHoleError>;
 
-    fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
-        match *self.0.lock()? {
-            Inner::Released => Ok(Async::Ready(())),
-            Inner::Wait(ref w) => {
+    fn poll(&mut self, c: &mut Context) -> Poll<Self::Output> {
+        match *self.0.lock() {
+            Err(e) => Poll::Ready(Err(e.into())),
+            Ok(Inner::Released) => Poll::Ready(Ok(())),
+            Ok(Inner::Wait(ref w)) => {
                 w.register(c.waker());
-                Ok(Async::Pending)
+                Poll::Pending
             }
         }
     }
@@ -122,8 +120,8 @@ mod tests {
     }
 
     impl Future for ArcBlackHole {
-        type Error = BlackHoleError;
         type Item = ();
+        type Error = BlackHoleError;
 
         fn poll(&mut self, c: &mut Context) -> Poll<Self::Item, Self::Error> {
             (&*self.0).poll(c)

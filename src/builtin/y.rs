@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use super::super::core::{papp, Arguments, Function, Result, Signature, Value};
 
 pure_function!(
@@ -8,8 +6,7 @@ pure_function!(
     y
 );
 
-#[async(boxed, send)]
-fn y(vs: Vec<Value>) -> Result {
+async fn y(vs: Vec<Value>) -> Result {
     let f = vs[0].clone();
 
     Ok(Function::closure(f.clone(), Arguments::positionals(&[papp(Y.clone(), &[f])])).into())
@@ -35,8 +32,7 @@ mod test {
         factorial
     );
 
-    #[async(boxed, send)]
-    fn factorial(vs: Vec<Value>) -> Result {
+    async fn factorial(vs: Vec<Value>) -> Result {
         let f = vs[0].clone();
         let n = vs[1].clone();
 
@@ -93,8 +89,7 @@ mod test {
         infinity
     );
 
-    #[async(boxed, send)]
-    fn infinity(vs: Vec<Value>) -> Result {
+    async fn infinity(vs: Vec<Value>) -> Result {
         Ok(papp(vs[0].clone(), &[]))
     }
 
@@ -114,8 +109,7 @@ mod test {
         decrement_to_0
     );
 
-    #[async(boxed, send)]
-    fn decrement_to_0(vs: Vec<Value>) -> Result {
+    async fn decrement_to_0(vs: Vec<Value>) -> Result {
         let n = await!(vs[1].clone().number())?;
 
         if n == 0.0 {

@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use super::result::Result;
 use super::signature::Signature;
 use super::value::Value;
@@ -16,8 +14,7 @@ pure_function!(
     equal
 );
 
-#[async(boxed, send)]
-fn equal(vs: Vec<Value>) -> Result<Value> {
+async fn equal(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
 
     if l.is_empty() {

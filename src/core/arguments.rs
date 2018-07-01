@@ -58,7 +58,8 @@ impl Arguments {
     }
 
     pub fn positionals(vs: &[Value]) -> Self {
-        let ps: Vec<Expansion<Value>> = vs.iter()
+        let ps: Vec<Expansion<Value>> = vs
+            .iter()
             .map(|v| Expansion::Unexpanded(v.clone()))
             .collect();
         Self::new(&ps, &[])
@@ -86,7 +87,6 @@ impl Arguments {
         }
     }
 
-    #[async]
     pub fn search_keyword(mut self: RefMut<Self>, s: Str) -> Result<Value> {
         for k in &mut self.keywords {
             if s == k.name {
@@ -94,7 +94,8 @@ impl Arguments {
             }
         }
 
-        let v = self.expanded_dict
+        let v = self
+            .expanded_dict
             .clone()
             .ok_or_else(|| Error::argument("cannot find a keyword argument"))?;
         let d = await!(v.dictionary())?;
@@ -119,7 +120,6 @@ impl Arguments {
         v
     }
 
-    #[async]
     pub fn check_empty(self: Ref<Self>) -> Result<()> {
         if !self.positionals.is_empty() {
             return Err(Error::argument(&format!(

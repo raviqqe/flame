@@ -72,11 +72,11 @@ impl Dictionary {
         Dictionary(Arc::new(Map::new()))
     }
 
-    #[async(boxed, send)]
     pub fn to_string(self) -> Result<String> {
         let mut ss = vec![];
 
-        let kvs: Vec<(Key, Value)> = self.0
+        let kvs: Vec<(Key, Value)> = self
+            .0
             .into_iter()
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
@@ -97,7 +97,6 @@ impl Dictionary {
         self.0.size()
     }
 
-    #[async]
     pub fn insert(self, k: Value, v: Value) -> Result<Dictionary> {
         let k = Key::try_from(await!(k.pured())?)?;
         Ok(Dictionary::from(self.0.insert(k, v)))
@@ -117,7 +116,6 @@ impl Dictionary {
         Dictionary::from(m)
     }
 
-    #[async]
     pub fn find(self, k: Value) -> Result<Value> {
         let n: Normal = await!(k.pured())?;
         let k: Key = n.try_into()?;
@@ -128,7 +126,6 @@ impl Dictionary {
         }
     }
 
-    #[async]
     pub fn delete(self, k: Value) -> Result<Dictionary> {
         let k: Key = await!(k.pured())?.try_into()?;
 
@@ -138,14 +135,15 @@ impl Dictionary {
         }
     }
 
-    #[async(boxed, send)]
     pub fn equal(self, d: Self) -> Result<bool> {
-        let kvs1: Vec<(Key, Value)> = self.0
+        let kvs1: Vec<(Key, Value)> = self
+            .0
             .into_iter()
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
 
-        let kvs2: Vec<(Key, Value)> = d.0
+        let kvs2: Vec<(Key, Value)> = d
+            .0
             .into_iter()
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();

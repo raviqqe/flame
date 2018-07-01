@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use super::arguments::Arguments;
 use super::error::Error;
 use super::result::Result;
@@ -55,7 +53,6 @@ impl KeywordParameters {
         }
     }
 
-    #[async]
     pub fn bind(
         self: Ref<Self>,
         mut args: RefMut<Arguments>,

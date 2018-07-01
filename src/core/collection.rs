@@ -18,8 +18,7 @@ pure_function!(
     insert
 );
 
-#[async(boxed, send)]
-fn insert(vs: Vec<Value>) -> Result<Value> {
+async fn insert(vs: Vec<Value>) -> Result<Value> {
     Ok(match await!(vs[0].clone().pured())? {
         Normal::Dictionary(mut d) => {
             let mut l = await!(vs[1].clone().list())?;
@@ -82,8 +81,7 @@ pure_function!(
     merge
 );
 
-#[async(boxed, send)]
-fn merge(vs: Vec<Value>) -> Result<Value> {
+async fn merge(vs: Vec<Value>) -> Result<Value> {
     Ok(match await!(vs[0].clone().pured())? {
         Normal::Dictionary(d) => {
             let dd = await!(vs[1].clone().dictionary())?;

@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use super::super::core::{Result, Signature, Value};
 
 pure_function!(
@@ -8,8 +6,7 @@ pure_function!(
     list
 );
 
-#[async(boxed, send)]
-fn list(vs: Vec<Value>) -> Result {
+async fn list(vs: Vec<Value>) -> Result {
     Ok(vs[0].clone())
 }
 

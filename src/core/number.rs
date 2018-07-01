@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use super::result::Result;
 use super::signature::Signature;
 use super::value::Value;
@@ -10,8 +8,7 @@ pure_function!(
     add
 );
 
-#[async(boxed, send)]
-fn add(vs: Vec<Value>) -> Result<Value> {
+async fn add(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n = 0.0;
 
@@ -30,8 +27,7 @@ pure_function!(
     subtract
 );
 
-#[async(boxed, send)]
-fn subtract(vs: Vec<Value>) -> Result<Value> {
+async fn subtract(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n = await!(l.first()?.number())?;
     l = await!(l.rest())?;
@@ -51,8 +47,7 @@ pure_function!(
     multiply
 );
 
-#[async(boxed, send)]
-fn multiply(vs: Vec<Value>) -> Result<Value> {
+async fn multiply(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n: f64 = 1.0;
 
@@ -71,8 +66,7 @@ pure_function!(
     divide
 );
 
-#[async(boxed, send)]
-fn divide(vs: Vec<Value>) -> Result<Value> {
+async fn divide(vs: Vec<Value>) -> Result<Value> {
     let mut l = await!(vs[0].clone().list())?;
     let mut n = await!(l.first()?.number())?;
     l = await!(l.rest())?;

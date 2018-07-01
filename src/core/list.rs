@@ -62,7 +62,6 @@ impl List {
         }
     }
 
-    #[async]
     pub fn rest(self) -> Result<List> {
         match self {
             List::Cons(c) => Ok(await!(c.1.clone().list())?),
@@ -84,7 +83,6 @@ impl List {
         }
     }
 
-    #[async]
     pub fn merge(self, v: Value) -> Result<Value> {
         if await!(v.clone().list())?.is_empty() {
             return Ok(self.clone().into());
@@ -117,7 +115,6 @@ impl List {
         }
     }
 
-    #[async(boxed, send)]
     pub fn to_string(mut self) -> Result<String> {
         let mut ss = vec![];
 
@@ -131,7 +128,6 @@ impl List {
         Ok(["[", &ss.join(" ".into()), "]"].concat().to_string())
     }
 
-    #[async(boxed, send)]
     pub fn equal(mut self, mut l: Self) -> Result<bool> {
         loop {
             match (self.clone(), l.clone()) {
@@ -153,7 +149,6 @@ impl List {
         }
     }
 
-    #[async(boxed, send)]
     pub fn compare(mut self, mut l: Self) -> Result<Ordering> {
         loop {
             match (self.clone(), l.clone()) {
@@ -196,8 +191,7 @@ pure_function!(
     first
 );
 
-#[async(boxed, send)]
-fn first(vs: Vec<Value>) -> Result<Value> {
+async fn first(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
     l.first()
 }
@@ -208,8 +202,7 @@ pure_function!(
     rest
 );
 
-#[async(boxed, send)]
-fn rest(vs: Vec<Value>) -> Result<Value> {
+async fn rest(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
     Ok(await!(l.rest())?.into())
 }
@@ -220,8 +213,7 @@ pure_function!(
     prepend
 );
 
-#[async(boxed, send)]
-fn prepend(vs: Vec<Value>) -> Result<Value> {
+async fn prepend(vs: Vec<Value>) -> Result<Value> {
     let l = await!(vs[0].clone().list())?;
     let f = l.first()?;
     let r = await!(l.rest())?;

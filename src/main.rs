@@ -1,6 +1,7 @@
 #![feature(
-    arbitrary_self_types, generators, generator_trait, integer_atomics, pin, proc_macro,
-    proc_macro_non_items, str_escape, test, try_from, type_ascription
+    arbitrary_self_types, async_await, await_macro, futures_api, generators, generator_trait,
+    integer_atomics, pin, proc_macro, proc_macro_non_items, str_escape, test, try_from,
+    type_ascription
 )]
 
 extern crate array_queue;
@@ -18,7 +19,7 @@ extern crate serde_derive;
 #[cfg(test)]
 extern crate test;
 
-use futures::stable::block_on_stable;
+use futures::executor::block_on;
 
 #[macro_use]
 mod core;
@@ -66,9 +67,9 @@ fn main() {
 fn try_main() -> Result<(), Box<Error>> {
     let args: Args = Docopt::new(USAGE).and_then(|d| d.deserialize())?;
 
-    Ok(block_on_stable(run(compile(desugar(
-        parse::main_module(&read_source(args.arg_filename)?)?,
-    )?)?))?)
+    Ok(block_on(run(compile(desugar(parse::main_module(
+        &read_source(args.arg_filename)?,
+    )?)?)?))?)
 }
 
 fn read_source(s: Option<String>) -> Result<String, io::Error> {

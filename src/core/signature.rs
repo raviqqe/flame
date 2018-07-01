@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use super::arguments::Arguments;
 use super::parameters::{KeywordParameters, OptionalParameter, PositionalParameters};
 use super::result::Result;
@@ -21,7 +19,6 @@ impl Signature {
         }
     }
 
-    #[async]
     pub fn bind(self: Ref<Self>, mut a: RefMut<Arguments>) -> Result<Vec<Value>> {
         let mut vs = Vec::with_capacity(self.arity());
 

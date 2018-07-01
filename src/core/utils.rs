@@ -1,5 +1,3 @@
-use futures::prelude::*;
-
 use super::arguments::Arguments;
 use super::result::Result;
 use super::signature::Signature;
@@ -20,8 +18,7 @@ pure_function!(
     identity
 );
 
-#[async(boxed, send)]
-fn identity(vs: Vec<Value>) -> Result<Value> {
+async fn identity(vs: Vec<Value>) -> Result<Value> {
     Ok(vs[0].clone())
 }
 
@@ -31,7 +28,6 @@ pure_function!(
     test_function
 );
 
-#[async(boxed, send)]
-fn test_function(_: Vec<Value>) -> Result<Value> {
+async fn test_function(_: Vec<Value>) -> Result<Value> {
     Ok(Value::Nil)
 }

@@ -38,7 +38,6 @@ impl Function {
         }
     }
 
-    #[async]
     pub fn call(self, a: RefMut<Arguments>) -> Result {
         Ok(match self {
             Function::Closure(r) => {
@@ -80,8 +79,7 @@ mod test {
     pure_function!(TEST_FUNC, Default::default(), test_func);
     impure_function!(TEST_FUNC_IMPURE, Default::default(), test_func);
 
-    #[async(boxed, send)]
-    fn test_func(vs: Vec<Value>) -> Result {
+    async fn test_func(vs: Vec<Value>) -> Result {
         Ok(Value::from(42.0))
     }
 
